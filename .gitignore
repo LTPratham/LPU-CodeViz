@@ -1,0 +1,28 @@
+# Node / Frontend
+node_modules/
+.next/
+dist/
+out/
+build/
+.npm
+.eslintcache
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+backend/venv/
+backend/.env

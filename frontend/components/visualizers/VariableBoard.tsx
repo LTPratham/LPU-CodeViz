@@ -1,0 +1,113 @@
+"use client";
+import { motion, AnimatePresence } from "framer-motion";
+import type { VariableState } from "@/lib/types";
+
+interface Props {
+  state: VariableState;
+  speed?: number;
+}
+
+const STATUS_STYLES = {
+  default: { bg: "#1E293B", border: "#374151", color: "#94A3B8", labelColor: "#64748B" },
+  active:  { bg: "rgba(245,158,11,0.18)", border: "#F59E0B", color: "#F59E0B", labelColor: "#94A3B8" },
+  updated: { bg: "rgba(29,158,117,0.18)", border: "#1D9E75", color: "#24C28F", labelColor: "#94A3B8" },
+};
+
+export default function VariableBoard({ state, speed = 1 }: Props) {
+  const duration = 0.35 / speed;
+
+  return (
+    <div style={{ width: "100%", padding: "24px 16px" }}>
+      <div style={{ textAlign: "center", marginBottom: 24, fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        Memory Board — Variable Snapshot
+      </div>
+
+      {/* Variable grid */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+        gap: 12,
+        maxWidth: 600,
+        margin: "0 auto",
+      }}>
+        <AnimatePresence>
+          {state.variables.map((v) => {
+            const style = STATUS_STYLES[v.status] || STATUS_STYLES.default;
+            return (
+              <motion.div
+                key={v.name}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration }}
+                style={{
+                  background: style.bg,
+                  border: `2px solid ${style.border}`,
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  boxShadow: v.status !== "default" ? `0 0 14px ${style.border}40` : "none",
+                }}
+              >
+                {/* Type tag */}
+                <div style={{ fontSize: 10, color: "var(--primary)", fontFamily: "var(--font-mono)", marginBottom: 4, fontWeight: 600 }}>
+                  {v.type}
+                </div>
+                {/* Variable name */}
+                <div style={{ fontSize: 12, color: style.labelColor, fontFamily: "var(--font-mono)", marginBottom: 6, fontWeight: 600 }}>
+                  {v.name}
+                </div>
+                {/* Value */}
+                <motion.div
+                  key={String(v.value)}
+                  initial={{ scale: 1.3, color: "#fff" }}
+                  animate={{ scale: 1, color: style.color }}
+                  transition={{ duration: 0.25 }}
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    fontFamily: "var(--font-mono)",
+                    lineHeight: 1.2,
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {v.value === null ? "null" : String(v.value)}
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Console output */}
+      {state.output && state.output.length > 0 && (
+        <div style={{ marginTop: 28, maxWidth: 600, margin: "28px auto 0" }}>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+            Console Output
+          </div>
+          <div style={{
+            background: "#0D1117",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            padding: "12px 16px",
+            fontFamily: "var(--font-mono)",
+            fontSize: 13,
+            lineHeight: 1.8,
+          }}>
+            {state.output.map((line, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+                style={{ color: "#22C55E" }}
+              >
+                <span style={{ color: "#64748B", marginRight: 8 }}>{">"}</span>{line}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

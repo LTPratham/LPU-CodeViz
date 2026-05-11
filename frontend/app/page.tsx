@@ -32,7 +32,7 @@ const FEATURES = [
     color: "#F59E0B",
   },
   {
-    icon: "🌳",
+    icon: "⎇",
     title: "Binary Tree",
     desc: "BST with in-order, pre-order, post-order traversal animations and node highlighting",
     badge: "CSE202",
@@ -234,7 +234,7 @@ export default function LandingPage() {
             animationDelay: "0.1s",
           }}
         >
-          🎓 Built for LPU B.Tech Students
+          Built for LPU B.Tech Students
         </div>
 
         {/* Headline */}
@@ -250,8 +250,8 @@ export default function LandingPage() {
             animationDelay: "0.15s",
           }}
         >
-          Understand code,{" "}
-          <span className="gradient-text">don&apos;t just copy it</span>
+          Stop memorizing code.{" "}
+          <span className="gradient-text">Start understanding it.</span>
         </h1>
 
         {/* Sub headline */}
@@ -261,15 +261,15 @@ export default function LandingPage() {
             fontSize: "clamp(16px, 2.5vw, 22px)",
             color: "var(--text-secondary)",
             textAlign: "center",
-            maxWidth: 640,
+            maxWidth: 700,
             marginBottom: 40,
             lineHeight: 1.6,
             animationDelay: "0.25s",
           }}
         >
-          Step-by-step animated visualizations for{" "}
-          <strong style={{ color: "var(--text)" }}>C, C++, Python, and SQL</strong> — with
-          plain-English explanations and an AI tutor that answers your questions.
+          Ace your mid-terms and practicals with step-by-step animated visualizers for{" "}
+          <strong style={{ color: "var(--text)" }}>C, C++, Python, and SQL</strong>. 
+          Includes plain-English line-by-line explanations and an AI tutor ready to answer all your "Why?" questions.
         </p>
 
         {/* CTA buttons */}
@@ -288,7 +288,7 @@ export default function LandingPage() {
             className="btn btn-primary animate-pulse-glow"
             style={{ padding: "14px 36px", fontSize: 16, borderRadius: 12 }}
           >
-            🚀 Start Visualizing Free
+            Start Visualizing Free
           </Link>
           <a
             href="#features"
@@ -470,7 +470,7 @@ export default function LandingPage() {
                   color: "var(--primary-light)",
                 }}
               >
-                🔄 Comparing arr[1] and arr[2]
+                Comparing arr[1] and arr[2]
               </div>
               <div style={{ lineHeight: 1.7 }}>
                 Since 34 &gt; 25, they need to be swapped to move the smaller value forward.
@@ -542,6 +542,62 @@ export default function LandingPage() {
           </p>
           <div style={{ marginTop: 24, fontStyle: "italic", color: "var(--text-muted)" }}>
             — Prathamesh Sawarkar
+          </div>
+        </div>
+      </section>
+
+      {/* ── Built for Curriculum ── */}
+      <section style={{ padding: "80px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", marginBottom: 16 }}>Perfectly Aligned with LPU Subjects</h2>
+            <p style={{ color: "var(--text-secondary)", fontSize: 18 }}>We took the syllabus and turned it into an interactive sandbox.</p>
+          </div>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 24 }}>
+            <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 20, marginBottom: 8 }}>INT108 - Python</h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Visualize dictionaries, lists, loops, and OOP concepts exactly as they appear in memory.</p>
+            </div>
+            <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 20, marginBottom: 8 }}>CSE101 - C Prog</h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Watch arrays and pointers update in real-time to master memory management.</p>
+            </div>
+            <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 20, marginBottom: 8 }}>INT306 - DBMS</h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>See SQL queries visually join, filter, and modify tables step-by-step.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section style={{ padding: "80px 24px", background: "var(--bg-secondary)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", textAlign: "center", marginBottom: 64 }}>How LPU CodeViz Works</h2>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 24, background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: "bold", flexShrink: 0 }}>1</div>
+              <div>
+                <h3 style={{ fontSize: 22, marginBottom: 8 }}>Write or Paste Code</h3>
+                <p style={{ color: "var(--text-secondary)", fontSize: 16, lineHeight: 1.6 }}>Use our built-in Monaco editor to write your code or select from our pre-loaded LPU syllabus examples. The environment feels exactly like VS Code.</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 24, background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: "bold", flexShrink: 0 }}>2</div>
+              <div>
+                <h3 style={{ fontSize: 22, marginBottom: 8 }}>AI Execution Engine</h3>
+                <p style={{ color: "var(--text-secondary)", fontSize: 16, lineHeight: 1.6 }}>Click "Visualize". Our secure Python backend uses the Llama-3 model to trace your code line-by-line, determining exactly how variables and data structures change in memory.</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 24, background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: "bold", flexShrink: 0 }}>3</div>
+              <div>
+                <h3 style={{ fontSize: 22, marginBottom: 8 }}>Step-by-Step Animation</h3>
+                <p style={{ color: "var(--text-secondary)", fontSize: 16, lineHeight: 1.6 }}>Watch your code come to life. Click "Next" to execute the next line. See nodes connect, stacks pop, and tables update while the AI Tutor explains the logic in simple English.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

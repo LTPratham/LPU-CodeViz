@@ -14,7 +14,7 @@ export default function TutorChat({ code, lang, currentStep }: Props) {
     {
       id: "welcome",
       role: "tutor",
-      content: "👋 Hi! I'm your LPU CodeViz tutor. Ask me anything about the code — like 'why does the loop stop at n-1?' or 'what is a stack?'",
+      content: "Hi! I'm your LPU CodeViz tutor. Ask me anything about the code — like 'why does the loop stop at n-1?' or 'what is a stack?'",
       timestamp: new Date(),
     },
   ]);
@@ -105,13 +105,14 @@ export default function TutorChat({ code, lang, currentStep }: Props) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 14,
+          fontSize: 10,
+          fontWeight: "bold",
+          color: "var(--primary-light)",
         }}>
-          🤖
+          AI
         </div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>AI Tutor</div>
-          <div style={{ fontSize: 10, color: "var(--primary)", fontWeight: 600 }}>Groq · llama-3.3-70b</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>AI Tutor</div>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", animation: "pulse 2s infinite" }} />

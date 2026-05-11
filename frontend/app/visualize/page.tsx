@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { Language, TraceStep, ExplainLine } from "@/lib/types";
-import { explainCode, traceCode } from "@/lib/api";
+import { traceCode, explainCode } from "@/lib/api";
 import { getDefaultSample } from "@/lib/sampleCodes";
 import StepController from "@/components/StepController";
 import ExplainSidebar from "@/components/ExplainSidebar";
+import { createClient } from "@/utils/supabase/client";
+import { signout } from "../login/actions";
 
 // Client-only components
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
@@ -33,11 +35,25 @@ function VisualizeContent() {
   const [mobileTab, setMobileTab] = useState<"code" | "visual" | "explain">("code");
   const [comparisons, setComparisons] = useState(0);
   const [swaps, setSwaps] = useState(0);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentStep = steps[currentStepIdx] ?? null;
   const currentLine = currentStep?.line ?? -1;
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Fetch user session
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUserEmail(data.user.email || data.user.phone || "User");
+      }
+    });
+  }, []);
 
   // Auto-play
   useEffect(() => {
@@ -206,8 +222,26 @@ function VisualizeContent() {
             style={{ borderRadius: "50%", padding: 6, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}
             title="Toggle theme"
           >
-            {theme === "dark" ? "☀️" : "🌙"}
+            {mounted ? (theme === "dark" ? "☼" : "☾") : "☾"}
           </button>
+
+          {/* User Profile / Sign Out */}
+          {userEmail && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 12, borderLeft: "1px solid var(--border)" }}>
+              <div style={{ 
+                width: 24, height: 24, borderRadius: "50%", background: "var(--primary)", color: "white",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: "bold"
+              }} title={userEmail}>
+                {userEmail.charAt(0) === "+" ? "U" : userEmail.charAt(0).toUpperCase()}
+              </div>
+              <button 
+                onClick={() => signout()}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 12, cursor: "pointer" }}
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Error badge */}
@@ -267,7 +301,6 @@ function VisualizeContent() {
         >
           {/* Canvas header */}
           <div className="panel-header">
-            <span>🎨</span>
             <span>Visual Canvas</span>
             {steps.length > 0 && (
               <span className="badge badge-green" style={{ marginLeft: "auto", fontSize: 10 }}>

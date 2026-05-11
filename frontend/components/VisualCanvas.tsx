@@ -78,7 +78,7 @@ function LoadingCanvas() {
       }} />
       <div style={{ textAlign: "center" }}>
         <p style={{ color: "var(--text-secondary)", fontSize: 15, fontWeight: 600 }}>Analyzing code...</p>
-        <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 4 }}>Groq AI is generating execution trace</p>
+        <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 4 }}>AI is generating execution trace</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

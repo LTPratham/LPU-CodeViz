@@ -43,7 +43,6 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
     }}>
       {/* Header */}
       <div className="panel-header">
-        <span style={{ fontSize: 14 }}>📖</span>
         <span>Explanation</span>
       </div>
 
@@ -129,7 +128,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 color: "#F59E0B",
                 lineHeight: 1.6,
               }}>
-                🔄 {currentStep.description}
+                {currentStep.description}
               </div>
             )}
 

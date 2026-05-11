@@ -301,7 +301,7 @@ export default function CodeEditor({
               Analyzing...
             </>
           ) : (
-            <>⚡ Visualize</>
+            <>Visualize</>
           )}
         </button>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

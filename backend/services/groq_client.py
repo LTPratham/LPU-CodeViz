@@ -1,10 +1,10 @@
 import os
-from groq import AsyncGroq
-from dotenv import load_dotenv
+from groq import AsyncGroq, RateLimitError
 
 load_dotenv()
 
-MODEL = "llama-3.3-70b-versatile"
+PRIMARY_MODEL = "llama-3.3-70b-versatile"
+FALLBACK_MODEL = "llama-3.1-8b-instant"
 
 _client: AsyncGroq | None = None
 
@@ -25,16 +25,29 @@ def get_groq_client() -> AsyncGroq:
 async def chat_completion(system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> str:
     """Single-turn chat completion. Returns the response text."""
     client = get_groq_client()
-    response = await client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_prompt},
-        ],
-        max_tokens=max_tokens,
-        temperature=0.3,
-    )
-    return response.choices[0].message.content or ""
+    try:
+        response = await client.chat.completions.create(
+            model=PRIMARY_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=0.3,
+        )
+        return response.choices[0].message.content or ""
+    except RateLimitError:
+        print(f"Rate limit reached for {PRIMARY_MODEL}. Trying fallback model {FALLBACK_MODEL}...")
+        response = await client.chat.completions.create(
+            model=FALLBACK_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=0.3,
+        )
+        return response.choices[0].message.content or ""
 
 
 def extract_json_block(text: str) -> str:

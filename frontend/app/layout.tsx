@@ -36,6 +36,32 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              document.addEventListener('contextmenu', event => event.preventDefault());
+              document.addEventListener('keydown', event => {
+                if (event.keyCode === 123) {
+                  event.preventDefault(); // Prevent F12
+                }
+                if (event.ctrlKey && event.shiftKey && event.keyCode === 73) {
+                  event.preventDefault(); // Prevent Ctrl+Shift+I
+                }
+                if (event.ctrlKey && event.shiftKey && event.keyCode === 74) {
+                  event.preventDefault(); // Prevent Ctrl+Shift+J
+                }
+                if (event.ctrlKey && event.keyCode === 85) {
+                  event.preventDefault(); // Prevent Ctrl+U
+                }
+                if (event.ctrlKey && event.keyCode === 67) {
+                  event.preventDefault(); // Prevent Ctrl+C
+                }
+              });
+              document.addEventListener('selectstart', event => event.preventDefault());
+              document.addEventListener('dragstart', event => event.preventDefault());
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>

@@ -622,6 +622,7 @@ INNER JOIN courses c ON s.course_id = c.course_id;`,
     lang: "cpp",
     title: "Queue Class (Array)",
     topic: "CSE202",
+    description: "Queue implementation using an array in C++.",
     code: `#include <iostream>
 using namespace std;
 
@@ -674,6 +675,7 @@ int main() {
     lang: "python",
     title: "Binary Search Tree Insert",
     topic: "INT108",
+    description: "Binary Search Tree insertion in Python.",
     code: `class Node:
     def __init__(self, key):
         self.left = None

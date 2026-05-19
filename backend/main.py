@@ -1,3 +1,7 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,7 +23,7 @@ allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins + ["http://localhost:3000", "https://codecanvas.app"],
+    allow_origins=allowed_origins + ["http://localhost:3000", "https://codecanvas.app", "https://lpu-code-viz.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

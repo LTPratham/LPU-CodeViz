@@ -31,3 +31,4 @@ export async function GET(request: NextRequest) {
   errorUrl.searchParams.set('error', 'Invalid or expired confirmation link.')
   return NextResponse.redirect(errorUrl)
 }
+

@@ -1,7 +1,7 @@
-# LPU CodeViz
+# CodeCanvas
 
 <div align="center">
-  <img src="assets/landing_page_dark.png" alt="LPU CodeViz Landing Page" width="800"/>
+  <img src="assets/landing_page_dark.png" alt="CodeCanvas Landing Page" width="800"/>
 </div>
 
 ## 💡 Why I Built This
@@ -10,7 +10,7 @@
 
 When I started coding, I realized that many students struggle because they don't have any initial knowledge about how code actually executes in memory. Popular platforms like GeeksForGeeks are great, but they can be a bit tricky and overwhelming for beginners who just need to see exactly what each line does.
 
-I created **LPU CodeViz** so students can visually step through their C, C++, Python, and SQL programs. By seeing variables change, stacks pop, and arrays sort in real-time, learning becomes intuitive rather than intimidating.
+I created **CodeCanvas** so students can visually step through their C, C++, Python, and SQL programs. By seeing variables change, stacks pop, and arrays sort in real-time, learning becomes intuitive rather than intimidating.
 
 ---
 
@@ -49,7 +49,7 @@ The frontend receives this array of snapshots and feeds it into the `StepControl
 ## 🚀 Features
 
 - **9 Animated Visualizers:** Arrays, Sorting, Stacks, Queues, Linked Lists, Binary Trees, Recursion Call Stacks, SQL Tables, and Variable Boards.
-- **Syllabus Aligned:** Pre-loaded with 20+ examples perfectly mapped to LPU courses CSE101 (C), INT108 (Python), and INT306 (DBMS).
+- **Syllabus Aligned:** Pre-loaded with 20+ examples perfectly mapped to Computer Science courses (C, Python, DBMS, Java, HTML).
 - **Start from Zero:** Designed for absolute beginners with examples starting from basic variable initialization and loops.
 - **AI Tutor Chat:** Stuck on a concept? Just ask the built-in AI Tutor for help directly in the interface.
 - **One-Click Sharing:** Instantly share your code with classmates using base64-encoded URL sharing.
@@ -81,3 +81,4 @@ The frontend receives this array of snapshots and feeds it into the `StepControl
 
 ## 📧 Contact
 For any questions or feedback, reach out to me at: **prathameshsawarkar1@gmail.com**
+

@@ -70,8 +70,8 @@ export default function CodeEditor({
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Define LPU dark theme
-    monaco.editor.defineTheme("lpu-dark", {
+    // Define Canvas dark theme
+    monaco.editor.defineTheme("canvas-dark", {
       base: "vs-dark",
       inherit: true,
       rules: [
@@ -96,8 +96,8 @@ export default function CodeEditor({
       },
     });
 
-    // Define LPU light theme
-    monaco.editor.defineTheme("lpu-light", {
+    // Define Canvas light theme
+    monaco.editor.defineTheme("canvas-light", {
       base: "vs",
       inherit: true,
       rules: [
@@ -121,13 +121,13 @@ export default function CodeEditor({
       },
     });
     
-    monaco.editor.setTheme(theme === "light" ? "lpu-light" : "lpu-dark");
+    monaco.editor.setTheme(theme === "light" ? "canvas-light" : "canvas-dark");
   };
 
   // Update theme dynamically
   useEffect(() => {
     if (monacoRef.current) {
-      monacoRef.current.editor.setTheme(theme === "light" ? "lpu-light" : "lpu-dark");
+      monacoRef.current.editor.setTheme(theme === "light" ? "canvas-light" : "canvas-dark");
     }
   }, [theme]);
 
@@ -322,3 +322,4 @@ export default function CodeEditor({
     </div>
   );
 }
+

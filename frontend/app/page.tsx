@@ -137,7 +137,7 @@ export default function LandingPage() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            LPU CodeViz
+            CodeCanvas
           </span>
         </div>
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
             </div>
           ))}
 
-        {/* LPU badge */}
+        {/* CS badge */}
         <div
           className="badge badge-primary animate-fade-in"
           style={{
@@ -236,7 +236,7 @@ export default function LandingPage() {
             animationDelay: "0.1s",
           }}
         >
-          Built for LPU B.Tech Students
+          Built for Computer Science Students
         </div>
 
         {/* Headline */}
@@ -361,7 +361,7 @@ export default function LandingPage() {
             <div style={{ width: 12, height: 12, borderRadius: 6, background: "#F59E0B" }} />
             <div style={{ width: 12, height: 12, borderRadius: 6, background: "#22C55E" }} />
             <span style={{ marginLeft: 12, fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-              lpucodeviz.vercel.app/visualize
+              codecanvas.app/visualize
             </span>
           </div>
 
@@ -534,13 +534,13 @@ export default function LandingPage() {
             The Motivation
           </div>
           <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", marginBottom: 24 }}>
-            Why I built LPU CodeViz
+            Why I built CodeCanvas
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 18, lineHeight: 1.8, marginBottom: 20 }}>
             When I started coding, I realized many students struggle because they don't have any initial knowledge about how code actually executes in memory. Popular platforms like GeeksForGeeks are great, but they can be <strong style={{color: "var(--highlight)"}}>a bit tricky and overwhelming</strong> for beginners who just need to see exactly what each line does.
           </p>
           <p style={{ color: "var(--text-secondary)", fontSize: 18, lineHeight: 1.8 }}>
-            I created this platform so LPU students can visually step through their C, C++, Python, and SQL programs. By seeing variables change, stacks pop, and arrays sort in real-time, learning becomes intuitive rather than intimidating.
+            I created this platform so students can visually step through their C, C++, Python, and SQL programs. By seeing variables change, stacks pop, and arrays sort in real-time, learning becomes intuitive rather than intimidating.
           </p>
           <div style={{ marginTop: 24, fontStyle: "italic", color: "var(--text-muted)" }}>
             — Prathamesh Sawarkar
@@ -552,7 +552,7 @@ export default function LandingPage() {
       <section style={{ padding: "80px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", marginBottom: 16 }}>Perfectly Aligned with LPU Subjects</h2>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", marginBottom: 16 }}>Perfectly Aligned with CS Subjects</h2>
             <p style={{ color: "var(--text-secondary)", fontSize: 18 }}>We took the syllabus and turned it into an interactive sandbox.</p>
           </div>
           
@@ -584,14 +584,14 @@ export default function LandingPage() {
       {/* ── How It Works ── */}
       <section style={{ padding: "80px 24px", background: "var(--bg-secondary)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", textAlign: "center", marginBottom: 64 }}>How LPU CodeViz Works</h2>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 40px)", textAlign: "center", marginBottom: 64 }}>How CodeCanvas Works</h2>
           
           <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
               <div style={{ width: 48, height: 48, borderRadius: 24, background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: "bold", flexShrink: 0 }}>1</div>
               <div>
                 <h3 style={{ fontSize: 22, marginBottom: 8 }}>Write or Paste Code</h3>
-                <p style={{ color: "var(--text-secondary)", fontSize: 16, lineHeight: 1.6 }}>Use our built-in Monaco editor to write your code or select from our pre-loaded LPU syllabus examples. The environment feels exactly like VS Code.</p>
+                <p style={{ color: "var(--text-secondary)", fontSize: 16, lineHeight: 1.6 }}>Use our built-in Monaco editor to write your code or select from our pre-loaded syllabus examples. The environment feels exactly like VS Code.</p>
               </div>
             </div>
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
@@ -719,7 +719,7 @@ export default function LandingPage() {
               {
                 num: "01",
                 title: "Paste or write your code",
-                desc: "Use the built-in Monaco editor (same as VS Code) or pick from LPU exam sample codes for C, C++, Python, SQL, Java, HTML.",
+                desc: "Use the built-in Monaco editor (same as VS Code) or pick from exam sample codes for C, C++, Python, SQL, Java, HTML.",
                 icon: "📝",
               },
               {
@@ -779,7 +779,7 @@ export default function LandingPage() {
             Stop copying. <span className="gradient-text">Start understanding.</span>
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 18, marginBottom: 40, lineHeight: 1.6 }}>
-            Built specifically for LPU students — covers every data structure topic in your
+            Built specifically for CS students — covers every data structure topic in your
             CSE101, CSE202, and INT108 exams.
           </p>
           <Link
@@ -806,9 +806,9 @@ export default function LandingPage() {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 800, color: "var(--primary)" }}>LPU CodeViz</span>
+            <span style={{ fontWeight: 800, color: "var(--primary)" }}>CodeCanvas</span>
             <span style={{ color: "var(--text-muted)", fontSize: 13 }}>
-              — Built for LPU B.Tech Students
+              — Built for Computer Science Students
             </span>
           </div>
           <div style={{ color: "var(--text-muted)", fontSize: 12 }}>
@@ -822,3 +822,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

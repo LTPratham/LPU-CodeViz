@@ -112,3 +112,4 @@ async def trace(req: TraceRequest):
         status_code=500,
         detail=f"AI returned invalid trace JSON after 2 attempts: {last_error}"
     )
+

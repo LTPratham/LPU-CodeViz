@@ -168,7 +168,7 @@ function VisualizeContent() {
             fontSize: 14, fontWeight: 800, color: "white",
           }}>◈</div>
           <span style={{ fontWeight: 800, fontSize: 16, color: "var(--primary-light)" }}>
-            LPU CodeViz
+            CodeCanvas
           </span>
         </Link>
 
@@ -377,3 +377,4 @@ export default function VisualizePage() {
     </Suspense>
   );
 }
+

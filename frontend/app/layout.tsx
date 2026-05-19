@@ -7,16 +7,16 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
-  title: "LPU CodeViz — Interactive Code Visualization for LPU Students",
+  title: "CodeCanvas — Interactive Code Visualization for Computer Science Students",
   description:
-    "Understand code, don't just copy it. LPU CodeViz visualizes C, C++, Python and SQL code step-by-step with animated data structures, plain-English explanations, and an AI tutor — built for LPU B.Tech students.",
+    "Understand code, don't just copy it. CodeCanvas visualizes C, C++, Python and SQL code step-by-step with animated data structures, plain-English explanations, and an AI tutor — built for CS students.",
   keywords: [
-    "LPU", "code visualizer", "C programming", "data structures", "algorithm animation",
+    "code visualizer", "C programming", "data structures", "algorithm animation",
     "Lovely Professional University", "CSE101", "INT101", "CSE205", "INT301", "CSE202",
   ],
-  authors: [{ name: "LPU CodeViz" }],
+  authors: [{ name: "CodeCanvas" }],
   openGraph: {
-    title: "LPU CodeViz — Interactive Code Visualization",
+    title: "CodeCanvas — Interactive Code Visualization",
     description: "Visualize C, C++, Python, SQL code with animations + AI tutor explanations.",
     type: "website",
   },
@@ -71,3 +71,4 @@ export default function RootLayout({
     </html>
   );
 }
+

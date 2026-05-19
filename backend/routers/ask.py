@@ -15,7 +15,7 @@ class AskRequest(BaseModel):
     question: str
 
 
-ASK_SYSTEM = """You are a friendly, encouraging coding tutor for LPU (Lovely Professional University) B.Tech students.
+ASK_SYSTEM = """You are a friendly, encouraging coding tutor for computer science B.Tech students.
 Your tone is like a helpful senior student — warm, clear, never condescending.
 Rules:
 - Be concise: 2-4 sentences max.
@@ -54,3 +54,4 @@ async def ask(req: AskRequest):
     except Exception as e:
         logger.error(f"Error in /ask: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+

@@ -168,3 +168,4 @@ export default function LinkedListViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

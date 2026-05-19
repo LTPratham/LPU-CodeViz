@@ -119,3 +119,4 @@ export default function QueueViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

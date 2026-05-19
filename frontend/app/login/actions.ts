@@ -80,3 +80,4 @@ export async function verifyPhoneOtp(formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/visualize");
 }
+

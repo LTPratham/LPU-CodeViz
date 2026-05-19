@@ -1,4 +1,4 @@
-﻿Write-Host '🚀 Starting LPU CodeViz...' -ForegroundColor Cyan
+Write-Host '🚀 Starting CodeCanvas...' -ForegroundColor Cyan
 
 $envFile = '.\backend\.env'
 if (-not (Test-Path $envFile))

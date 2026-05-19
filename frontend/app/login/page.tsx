@@ -123,7 +123,7 @@ export default function LoginPage() {
             <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Email Address</label>
-                <input name="email" type="email" required placeholder="student@lpu.in" className="custom-input" />
+                <input name="email" type="email" required placeholder="student@university.edu" className="custom-input" />
               </div>
               <div>
                 <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Password</label>
@@ -240,3 +240,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

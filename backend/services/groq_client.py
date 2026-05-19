@@ -58,3 +58,4 @@ def extract_json_block(text: str) -> str:
         return match.group(1).strip()
     # Otherwise return as-is, stripped
     return text.strip()
+

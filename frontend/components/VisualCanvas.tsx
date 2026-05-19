@@ -169,3 +169,4 @@ export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading
     </div>
   );
 }
+

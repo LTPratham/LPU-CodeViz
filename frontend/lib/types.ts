@@ -1,4 +1,4 @@
-// ─── All TypeScript types for LPU CodeViz ───────────────────────
+// ─── All TypeScript types for CodeCanvas ───────────────────────
 
 // Language
 export type Language = "c" | "cpp" | "python" | "sql" | "java" | "html";
@@ -192,3 +192,4 @@ export interface SampleCode {
   description: string;
   topic: string;
 }
+

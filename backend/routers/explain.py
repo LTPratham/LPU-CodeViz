@@ -13,7 +13,7 @@ class ExplainRequest(BaseModel):
     code: str
 
 
-EXPLAIN_SYSTEM = """You are a coding tutor for LPU (Lovely Professional University) undergraduate students.
+EXPLAIN_SYSTEM = """You are a coding tutor for computer science undergraduate students.
 Explain code in simple, friendly English. No jargon. Students are beginners.
 Always return ONLY valid JSON — no prose, no markdown outside the JSON, no explanation."""
 
@@ -26,7 +26,7 @@ Each item must have exactly these fields:
 {{
   "line": <line number as integer>,
   "code": "<the exact code on that line, trimmed>",
-  "explain": "<1-2 sentence plain English explanation for an LPU beginner>",
+  "explain": "<1-2 sentence plain English explanation for a beginner>",
   "concept": "<one CS concept tag, e.g. Loop, Recursion, Stack Push, Comparison, Assignment, Function Call, Return, Declaration, SQL Insert, etc.>",
   "category": "<one of: core | structure | io | logic | db>"
 }}
@@ -62,3 +62,4 @@ async def explain(req: ExplainRequest):
     except Exception as e:
         logger.error(f"Error in /explain: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+

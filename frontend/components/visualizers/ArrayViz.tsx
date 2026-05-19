@@ -153,3 +153,4 @@ export default function ArrayViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

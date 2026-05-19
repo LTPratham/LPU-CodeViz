@@ -132,3 +132,4 @@ export default function RecursionViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

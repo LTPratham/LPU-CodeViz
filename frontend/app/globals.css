@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ─── LPU CodeViz Design System ─── */
+/* ─── CodeCanvas Design System ─── */
 :root {
   --primary:        #1D9E75;
   --primary-light:  #24C28F;
@@ -332,3 +332,4 @@ code, pre, .font-mono {
 @media (max-width: 768px) {
   body { font-size: 14px; }
 }
+

@@ -168,3 +168,4 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
     </div>
   );
 }
+

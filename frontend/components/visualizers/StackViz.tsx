@@ -104,3 +104,4 @@ export default function StackViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

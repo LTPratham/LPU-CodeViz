@@ -174,7 +174,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                   : currentExplain.category === "core"
                   ? "This is a fundamental programming operation. "
                   : ""}
-                Understanding this pattern is essential for your LPU exams.
+                Understanding this pattern is essential for your exams.
               </div>
             )}
           </div>
@@ -232,3 +232,4 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
     </div>
   );
 }
+

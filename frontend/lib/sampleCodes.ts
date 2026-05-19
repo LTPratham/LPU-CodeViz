@@ -896,3 +896,4 @@ export const getSamplesByLang = (lang: string) =>
 
 export const getDefaultSample = (lang: string): SampleCode | undefined =>
   sampleCodes.find((s) => s.lang === lang);
+

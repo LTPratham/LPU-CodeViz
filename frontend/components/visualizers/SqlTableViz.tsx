@@ -140,3 +140,4 @@ export default function SqlTableViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

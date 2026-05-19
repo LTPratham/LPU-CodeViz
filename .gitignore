@@ -26,3 +26,4 @@ env/
 # Project specific
 backend/venv/
 backend/.env
+

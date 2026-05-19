@@ -14,7 +14,7 @@ export default function TutorChat({ code, lang, currentStep }: Props) {
     {
       id: "welcome",
       role: "tutor",
-      content: "Hi! I'm your LPU CodeViz tutor. Ask me anything about the code — like 'why does the loop stop at n-1?' or 'what is a stack?'",
+      content: "Hi! I'm your CodeCanvas tutor. Ask me anything about the code — like 'why does the loop stop at n-1?' or 'what is a stack?'",
       timestamp: new Date(),
     },
   ]);
@@ -258,3 +258,4 @@ export default function TutorChat({ code, lang, currentStep }: Props) {
     </div>
   );
 }
+

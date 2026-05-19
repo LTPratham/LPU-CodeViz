@@ -161,3 +161,4 @@ export default function TreeViz({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

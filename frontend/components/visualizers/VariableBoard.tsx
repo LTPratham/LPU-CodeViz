@@ -111,3 +111,4 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
     </div>
   );
 }
+

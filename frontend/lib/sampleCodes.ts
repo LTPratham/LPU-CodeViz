@@ -723,13 +723,64 @@ root = insert(root, 80)
     }
 }`
   },
+  {
+    id: "java-oop",
+    title: "2. OOP: Classes and Objects",
+    lang: "java",
+    topic: "CSE380",
+    description: "Unit 2: Understanding object creation and method calling.",
+    code: `class Student {
+    String name;
+    int rollNo;
+    
+    Student(String n, int r) {
+        name = n;
+        rollNo = r;
+    }
+    
+    void display() {
+        System.out.println("Student Name: " + name);
+        System.out.println("Roll Number: " + rollNo);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Student s1 = new Student("Alice", 101);
+        s1.display();
+    }
+}`
+  },
+  {
+    id: "java-arrays",
+    title: "3. 2D Arrays & Loops",
+    lang: "java",
+    topic: "CSE380",
+    description: "Unit 4: Working with 2D arrays and nested loops in Java.",
+    code: `public class Main {
+    public static void main(String[] args) {
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6}
+        };
+        
+        System.out.println("Matrix elements:");
+        for(int i = 0; i < matrix.length; i++) {
+            for(int j = 0; j < matrix[i].length; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+}`
+  },
   // ─── HTML ────────────────────────────────────────────────────────
   {
     id: "html-basics",
     title: "1. HTML Structure",
     lang: "html",
     topic: "CSE326",
-    description: "Basic HTML document structure.",
+    description: "Unit 1: Basic HTML document structure, tags and lists.",
     code: `<!DOCTYPE html>
 <html>
 <head>
@@ -739,9 +790,102 @@ root = insert(root, 80)
     <h1>Welcome to Web Programming</h1>
     <p>This is a paragraph of text.</p>
     <ul>
-        <li>Item 1</li>
-        <li>Item 2</li>
+        <li>HTML5 semantics</li>
+        <li>Basic tags</li>
     </ul>
+</body>
+</html>`
+  },
+  {
+    id: "html-forms",
+    title: "2. HTML Forms & Inputs",
+    lang: "html",
+    topic: "CSE326",
+    description: "Unit 2: Forms, checkboxes, dropdowns, and radio buttons.",
+    code: `<!DOCTYPE html>
+<html>
+<body>
+    <h2>Student Registration Form</h2>
+    <form action="/submit" method="post">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br><br>
+        
+        <p>Choose your course:</p>
+        <input type="radio" id="cse326" name="course" value="CSE326">
+        <label for="cse326">CSE326</label><br>
+        <input type="radio" id="cse380" name="course" value="CSE380">
+        <label for="cse380">CSE380</label><br><br>
+        
+        <label for="branch">Branch:</label>
+        <select id="branch" name="branch">
+            <option value="cse">CSE</option>
+            <option value="ece">ECE</option>
+        </select><br><br>
+        
+        <input type="submit" value="Submit">
+    </form> 
+</body>
+</html>`
+  },
+  {
+    id: "html-css",
+    title: "3. CSS Box Model",
+    lang: "html",
+    topic: "CSE326",
+    description: "Unit 3: Internal CSS, styling properties and box model.",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .box {
+        background-color: lightblue;
+        width: 300px;
+        border: 5px solid navy;
+        padding: 20px;
+        margin: 20px;
+        text-align: center;
+    }
+    .box:hover {
+        background-color: lightcoral;
+        color: white;
+    }
+</style>
+</head>
+<body>
+    <div class="box">
+        <h3>Hover over me!</h3>
+        <p>This demonstrates the CSS Box Model: Margin, Border, Padding, and Content.</p>
+    </div>
+</body>
+</html>`
+  },
+  {
+    id: "html-js",
+    title: "4. JavaScript DOM",
+    lang: "html",
+    topic: "CSE326",
+    description: "Unit 4/6: Javascript DOM manipulation and event handling.",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .highlight { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2 id="demo">Interactive Web Page</h2>
+    <button onclick="changeText()">Click Me!</button>
+
+    <script>
+        function changeText() {
+            var element = document.getElementById("demo");
+            element.innerHTML = "Hello JavaScript DOM!";
+            element.className = "highlight";
+        }
+    </script>
 </body>
 </html>`
   }

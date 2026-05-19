@@ -57,6 +57,8 @@ async def explain(req: ExplainRequest):
     except json.JSONDecodeError as e:
         logger.error(f"JSON parse error in /explain: {e}\nRaw: {raw[:500]}")
         raise HTTPException(status_code=500, detail="AI returned invalid JSON. Try again.")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in /explain: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -102,6 +102,8 @@ async def trace(req: TraceRequest):
             last_error = e
             logger.warning(f"Attempt {attempt+1} JSON error in /trace: {e}")
             continue
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Error in /trace: {e}")
             raise HTTPException(status_code=500, detail=str(e))

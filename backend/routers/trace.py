@@ -69,8 +69,8 @@ Rules:
 - Each step must show the COMPLETE current state (not just the change)
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted"
 - For recursion: push a new frame for each call, pop on return
-- If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {"error": true, "message": "Syntax error description"}
-- Return ONLY the JSON object. Start with { and end with }"""
+- If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}}
+- Return ONLY the JSON object. Start with {{ and end with }}"""
 
 
 @router.post("/trace")

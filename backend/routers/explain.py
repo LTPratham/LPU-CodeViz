@@ -31,9 +31,9 @@ Each item must have exactly these fields:
   "category": "<one of: core | structure | io | logic | db>"
 }}
 
-If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {"error": true, "message": "Syntax error description"} instead of an array.
+If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}} instead of an array.
 
-Return ONLY the JSON array (or error object). Start with [ or { and end with ] or }."""
+Return ONLY the JSON array (or error object). Start with [ or {{ and end with ] or }}."""
 
 
 @router.post("/explain")

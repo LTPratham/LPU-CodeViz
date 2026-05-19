@@ -87,7 +87,7 @@ async def trace(req: TraceRequest):
             json_str = extract_json_block(raw)
             result = json.loads(json_str)
 
-            if result.get("error"):
+            if isinstance(result, dict) and result.get("error"):
                 raise HTTPException(status_code=400, detail=result.get("message", "Invalid code or syntax error."))
 
             # Validate

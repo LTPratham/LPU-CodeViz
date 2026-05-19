@@ -214,6 +214,8 @@ export default function CodeEditor({
               border: "1px solid var(--border)",
               borderRadius: 10,
               overflow: "hidden",
+              overflowY: "auto",
+              maxHeight: "60vh",
               boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
               minWidth: 220,
             }}>

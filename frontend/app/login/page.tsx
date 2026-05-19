@@ -4,6 +4,7 @@ import { useState } from "react";
 import { login, signup, sendOtp, verifyPhoneOtp } from "./actions";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +13,20 @@ export default function LoginPage() {
   const [authMode, setAuthMode] = useState<"email" | "phone">("email");
   const [otpSent, setOtpSent] = useState(false);
   const [phone, setPhone] = useState("");
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      }
+    });
+    if (error) setError(error.message);
+    setLoading(false);
+  };
 
   async function handleEmailSubmit(formData: FormData) {
     setLoading(true);
@@ -146,6 +161,22 @@ export default function LoginPage() {
           )}
         </AnimatePresence>
 
+        <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
+          <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>OR</span>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
+        </div>
+
+        <button 
+          onClick={handleGoogleLogin} 
+          disabled={loading} 
+          className="btn-google" 
+          style={{ marginTop: 24 }}
+        >
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 20, height: 20 }} />
+          Sign in with Google
+        </button>
+
       </motion.div>
 
       <style>{`
@@ -180,6 +211,28 @@ export default function LoginPage() {
           transition: opacity 0.2s;
         }
         .btn-primary:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+        .btn-google {
+          width: 100%;
+          padding: 12px;
+          background: transparent;
+          color: var(--text-primary);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+        .btn-google:hover:not(:disabled) {
+          background: var(--card-hover, rgba(0,0,0,0.05));
+        }
+        .btn-google:disabled {
           opacity: 0.7;
           cursor: not-allowed;
         }

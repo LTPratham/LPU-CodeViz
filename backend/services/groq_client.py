@@ -2,6 +2,8 @@ import os
 from groq import AsyncGroq, RateLimitError
 from dotenv import load_dotenv
 
+load_dotenv()
+
 PRIMARY_MODEL = "llama-3.3-70b-versatile"
 FALLBACK_MODEL = "llama-3.1-8b-instant"
 

@@ -9,9 +9,12 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && data?.session) {
+      const amr = data.session.user?.app_metadata?.amr || [];
+      const isRecovery = amr.includes("recovery");
+      const redirectUrl = isRecovery ? "/reset-password" : next;
+      return NextResponse.redirect(`${origin}${redirectUrl}`);
     }
   }
 

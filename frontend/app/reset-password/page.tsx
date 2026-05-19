@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -112,11 +113,17 @@ export default function ResetPasswordPage() {
           boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
         }}
       >
-        <h1 style={{ fontSize: 24, marginBottom: 8 }}>
-          Create new password
+        <Link href="/login" style={{ 
+          display: "inline-block", marginBottom: 24, color: "var(--text-muted)", textDecoration: "none", fontSize: 14
+        }}>
+          ← Back to Sign In
+        </Link>
+        
+        <h1 style={{ fontSize: 24, marginBottom: 8, fontWeight: 700, color: "var(--text-primary)" }}>
+          Stuck? Reset password
         </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
-          Please enter your new password below to secure your account.
+        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+          Create a new secure password below to unlock your workspace and go back to learning!
         </p>
 
         <form onSubmit={handleResetPassword} style={{ display: "flex", flexDirection: "column", gap: 16 }}>

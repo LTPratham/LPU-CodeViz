@@ -20,6 +20,9 @@ interface Props {
   isLoading?: boolean;
   comparisons?: number;
   swaps?: number;
+  code?: string;
+  language?: string;
+  isLastStep?: boolean;
 }
 
 function EmptyCanvas({ message }: { message: string }) {
@@ -91,7 +94,7 @@ function isSortingCode(ds: string): boolean {
   );
 }
 
-export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading = false, comparisons = 0, swaps = 0 }: Props) {
+export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading = false, comparisons = 0, swaps = 0, code, language, isLastStep }: Props) {
   if (isLoading) return <LoadingCanvas />;
   if (!step) return <EmptyCanvas message="No visualization yet" />;
 
@@ -102,6 +105,28 @@ export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading
     if (!state) return <EmptyCanvas message="No state data" />;
 
     // Route to correct visualizer based on dataStructure type
+    if (language === "html" && isLastStep && code) {
+      return (
+        <div style={{ width: "100%", height: "100%", padding: "16px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ marginBottom: 12, fontWeight: 700, color: "var(--primary)", fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Rendered Web Output
+          </div>
+          <iframe
+            srcDoc={code}
+            style={{
+              flex: 1,
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              background: "#fff",
+              width: "100%"
+            }}
+            title="HTML Output"
+            sandbox="allow-scripts"
+          />
+        </div>
+      );
+    }
+    
     if (ds.includes("sort") || isSortingCode(ds)) {
       if (state.type === "array") {
         return <SortingViz state={state} speed={speed} comparisons={comparisons} swaps={swaps} />;

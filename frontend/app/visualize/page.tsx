@@ -316,6 +316,9 @@ function VisualizeContent() {
               isLoading={isLoading}
               comparisons={comparisons}
               swaps={swaps}
+              code={code}
+              language={language}
+              isLastStep={steps.length > 0 && currentStepIdx === steps.length - 1}
             />
           </div>
         </div>

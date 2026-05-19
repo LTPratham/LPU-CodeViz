@@ -216,7 +216,7 @@ export default function CodeEditor({
               overflow: "hidden",
               overflowY: "auto",
               overscrollBehavior: "contain",
-              maxHeight: "60vh",
+              maxHeight: "300px",
               boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
               minWidth: 220,
             }}>

@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [authMode, setAuthMode] = useState<"email" | "phone">("email");
   const [otpSent, setOtpSent] = useState(false);
   const [phone, setPhone] = useState("");
+  
+  // Forgot password states
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -57,6 +62,25 @@ export default function LoginPage() {
     setLoading(false);
   }
 
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResetSent(false);
+    
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setResetSent(true);
+    }
+    setLoading(false);
+  };
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -86,47 +110,92 @@ export default function LoginPage() {
         </Link>
         
         <h1 style={{ fontSize: 24, marginBottom: 8 }}>
-          {authMode === "email" 
-            ? (isLogin ? "Welcome back" : "Create an account") 
-            : "Sign in with Phone"}
+          {showForgotPassword
+            ? "Reset password"
+            : (authMode === "email" 
+                ? (isLogin ? "Welcome back" : "Create an account") 
+                : "Sign in with Phone")}
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
-          {authMode === "email" 
-            ? "Use your university email to securely access your visualizations."
-            : "We will send you a 6-digit secure code via SMS."}
+          {showForgotPassword
+            ? "Enter your email address and we'll send you a link to reset your password."
+            : (authMode === "email" 
+                ? "Use your university email to securely access your visualizations."
+                : "We will send you a 6-digit secure code via SMS.")}
         </p>
 
         {/* Custom Tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "rgba(0,0,0,0.2)", padding: 4, borderRadius: 10 }}>
-          <button 
-            onClick={() => { setAuthMode("email"); setError(null); }}
-            style={{
-              flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
-              background: authMode === "email" ? "var(--primary)" : "transparent",
-              color: authMode === "email" ? "white" : "var(--text-secondary)",
-              transition: "all 0.2s"
-            }}
-          >Email</button>
-          <button 
-            onClick={() => { setAuthMode("phone"); setError(null); }}
-            style={{
-              flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
-              background: authMode === "phone" ? "var(--primary)" : "transparent",
-              color: authMode === "phone" ? "white" : "var(--text-secondary)",
-              transition: "all 0.2s"
-            }}
-          >Phone</button>
-        </div>
+        {!showForgotPassword && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "rgba(0,0,0,0.2)", padding: 4, borderRadius: 10 }}>
+            <button 
+              onClick={() => { setAuthMode("email"); setError(null); }}
+              style={{
+                flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                background: authMode === "email" ? "var(--primary)" : "transparent",
+                color: authMode === "email" ? "white" : "var(--text-secondary)",
+                transition: "all 0.2s"
+              }}
+            >Email</button>
+            <button 
+              onClick={() => { setAuthMode("phone"); setError(null); }}
+              style={{
+                flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                background: authMode === "phone" ? "var(--primary)" : "transparent",
+                color: authMode === "phone" ? "white" : "var(--text-secondary)",
+                transition: "all 0.2s"
+              }}
+            >Phone</button>
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
-          {authMode === "email" ? (
+          {showForgotPassword ? (
+            <motion.form key="forgot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleForgotPasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Email Address</label>
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="student@university.edu" 
+                  className="custom-input"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                />
+              </div>
+              {error && <div className="error-msg">{error}</div>}
+              {resetSent && (
+                <div style={{ padding: 12, background: "rgba(34,197,94,0.1)", color: "#22C55E", borderRadius: 8, fontSize: 14 }}>
+                  Reset link sent! Please check your email inbox.
+                </div>
+              )}
+              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 8 }}>
+                {loading ? "Sending..." : "Send Reset Link"}
+              </button>
+              <div style={{ marginTop: 12, textAlign: "center", fontSize: 14 }}>
+                <button type="button" onClick={() => { setShowForgotPassword(false); setError(null); }} style={{ background: "none", border: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", padding: 0 }}>
+                  Back to Sign In
+                </button>
+              </div>
+            </motion.form>
+          ) : authMode === "email" ? (
             <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Email Address</label>
                 <input name="email" type="email" required placeholder="student@university.edu" className="custom-input" />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Password</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <label style={{ fontSize: 14, color: "var(--text-secondary)" }}>Password</label>
+                  {isLogin && (
+                    <button 
+                      type="button" 
+                      onClick={() => { setShowForgotPassword(true); setError(null); }} 
+                      style={{ background: "none", border: "none", color: "var(--primary)", fontSize: 13, fontWeight: 500, cursor: "pointer", padding: 0 }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <input name="password" type="password" required placeholder="••••••••" className="custom-input" />
               </div>
               {error && <div className="error-msg">{error}</div>}

@@ -31,7 +31,17 @@ export default function StepController({
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const target = e.target as HTMLElement;
+      if (
+        !target ||
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target.closest(".monaco-editor") ||
+        target.closest(".monaco-list") ||
+        target.closest('[contenteditable="true"]')
+      ) {
+        return;
+      }
       if (e.key === "ArrowRight") { e.preventDefault(); onNext(); }
       if (e.key === "ArrowLeft")  { e.preventDefault(); onPrev(); }
       if (e.key === " ")          { e.preventDefault(); onPlayPause(); }

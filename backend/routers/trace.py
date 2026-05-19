@@ -69,7 +69,8 @@ Rules:
 - Each step must show the COMPLETE current state (not just the change)
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted"
 - For recursion: push a new frame for each call, pop on return
-- Return ONLY the JSON object. Start with {{ and end with }}"""
+- If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {"error": true, "message": "Syntax error description"}
+- Return ONLY the JSON object. Start with { and end with }"""
 
 
 @router.post("/trace")
@@ -85,6 +86,9 @@ async def trace(req: TraceRequest):
             raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096)
             json_str = extract_json_block(raw)
             result = json.loads(json_str)
+
+            if result.get("error"):
+                raise HTTPException(status_code=400, detail=result.get("message", "Invalid code or syntax error."))
 
             # Validate
             if "steps" not in result or not isinstance(result.get("steps"), list):

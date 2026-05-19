@@ -31,7 +31,9 @@ Each item must have exactly these fields:
   "category": "<one of: core | structure | io | logic | db>"
 }}
 
-Return ONLY the JSON array. Start with [ and end with ]."""
+If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {"error": true, "message": "Syntax error description"} instead of an array.
+
+Return ONLY the JSON array (or error object). Start with [ or { and end with ] or }."""
 
 
 @router.post("/explain")
@@ -47,6 +49,8 @@ async def explain(req: ExplainRequest):
         raw = await chat_completion(EXPLAIN_SYSTEM, user_prompt, max_tokens=3000)
         json_str = extract_json_block(raw)
         result = json.loads(json_str)
+        if isinstance(result, dict) and result.get("error"):
+            raise HTTPException(status_code=400, detail=result.get("message", "Invalid code or syntax error."))
         if not isinstance(result, list):
             raise ValueError("Expected JSON array")
         return result

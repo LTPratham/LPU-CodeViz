@@ -270,7 +270,7 @@ export default function LandingPage() {
           }}
         >
           Ace your mid-terms and practicals with step-by-step animated visualizers for{" "}
-          <strong style={{ color: "var(--text)" }}>C, C++, Python, and SQL</strong>. 
+          <strong style={{ color: "var(--text)" }}>C, C++, Python, SQL, Java, and HTML</strong>. 
           Includes plain-English line-by-line explanations and an AI tutor ready to answer all your "Why?" questions.
         </p>
 
@@ -719,7 +719,7 @@ export default function LandingPage() {
               {
                 num: "01",
                 title: "Paste or write your code",
-                desc: "Use the built-in Monaco editor (same as VS Code) or pick from LPU exam sample codes for C, C++, Python, SQL.",
+                desc: "Use the built-in Monaco editor (same as VS Code) or pick from LPU exam sample codes for C, C++, Python, SQL, Java, HTML.",
                 icon: "📝",
               },
               {

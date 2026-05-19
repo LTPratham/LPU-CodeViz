@@ -20,6 +20,8 @@ const LANGUAGES: { id: Language; label: string; monacoId: string; ext: string }[
   { id: "cpp",    label: "C++",    monacoId: "cpp",  ext: ".cpp" },
   { id: "python", label: "Python", monacoId: "python",ext: ".py" },
   { id: "sql",    label: "SQL",    monacoId: "sql",  ext: ".sql" },
+  { id: "java",   label: "Java",   monacoId: "java", ext: ".java"},
+  { id: "html",   label: "HTML",   monacoId: "html", ext: ".html"},
 ];
 
 export default function CodeEditor({

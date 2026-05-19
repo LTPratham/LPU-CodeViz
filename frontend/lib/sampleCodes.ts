@@ -704,6 +704,47 @@ root = insert(root, 60)
 root = insert(root, 80)
 `,
   },
+  // ─── Java ────────────────────────────────────────────────────────
+  {
+    id: "java-basics",
+    title: "1. Basics (Class & Main)",
+    lang: "java",
+    topic: "CSE380",
+    description: "Start from zero: Creating a basic Java Class and main method.",
+    code: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, Java!");
+        
+        int a = 10;
+        int b = 20;
+        int sum = a + b;
+        
+        System.out.println("Sum is: " + sum);
+    }
+}`
+  },
+  // ─── HTML ────────────────────────────────────────────────────────
+  {
+    id: "html-basics",
+    title: "1. HTML Structure",
+    lang: "html",
+    topic: "CSE326",
+    description: "Basic HTML document structure.",
+    code: `<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Web Page</title>
+</head>
+<body>
+    <h1>Welcome to Web Programming</h1>
+    <p>This is a paragraph of text.</p>
+    <ul>
+        <li>Item 1</li>
+        <li>Item 2</li>
+    </ul>
+</body>
+</html>`
+  }
 ];
 
 export const getSamplesByLang = (lang: string) =>

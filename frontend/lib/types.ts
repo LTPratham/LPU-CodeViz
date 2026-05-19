@@ -1,7 +1,7 @@
 // ─── All TypeScript types for LPU CodeViz ───────────────────────
 
 // Language
-export type Language = "c" | "cpp" | "python" | "sql";
+export type Language = "c" | "cpp" | "python" | "sql" | "java" | "html";
 
 // ─── Visualizer State Types ───
 

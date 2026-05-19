@@ -79,7 +79,7 @@ function VisualizeContent() {
     const urlLang = searchParams.get("lang") as Language | null;
     const urlCode = searchParams.get("code");
     
-    if (urlLang && ["c", "cpp", "python", "sql"].includes(urlLang)) {
+    if (urlLang && ["c", "cpp", "python", "sql", "java", "html"].includes(urlLang)) {
       setLanguage(urlLang);
     }
     

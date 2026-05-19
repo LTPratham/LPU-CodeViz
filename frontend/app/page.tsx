@@ -66,6 +66,8 @@ const SUBJECTS = [
   { code: "INT108", name: "Python" },
   { code: "INT306", name: "DBMS / SQL" },
   { code: "CSE202", name: "Data Structures" },
+  { code: "CSE380", name: "Java" },
+  { code: "CSE326", name: "Web / HTML" },
 ];
 
 const FLOATING_SNIPPETS = [
@@ -566,6 +568,14 @@ export default function LandingPage() {
             <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
               <h3 style={{ fontSize: 20, marginBottom: 8 }}>INT306 - DBMS</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>See SQL queries visually join, filter, and modify tables step-by-step.</p>
+            </div>
+            <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 20, marginBottom: 8 }}>CSE380 - Java</h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Visualize objects, inheritance, abstract classes, and complex generic collections in memory.</p>
+            </div>
+            <div style={{ background: "var(--card)", padding: 32, borderRadius: 16, border: "1px solid var(--border)" }}>
+              <h3 style={{ fontSize: 20, marginBottom: 8 }}>CSE326 - Web / HTML</h3>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Interactive tracing of DOM manipulation, CSS layout boxes, and JavaScript event loops.</p>
             </div>
           </div>
         </div>

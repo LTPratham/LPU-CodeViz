@@ -36,6 +36,7 @@ function VisualizeContent() {
   const [comparisons, setComparisons] = useState(0);
   const [swaps, setSwaps] = useState(0);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -347,13 +348,83 @@ function VisualizeContent() {
         onSpeedChange={setSpeed}
       />
 
-      {/* ── AI Tutor Chat ── */}
-      <div style={{ height: 240, flexShrink: 0 }}>
-        <TutorChat code={code} lang={language} currentStep={currentStep} />
-      </div>
+      {/* ── Floating AI Tutor Chatbot ── */}
+      {isChatOpen && (
+        <div style={{
+          position: "fixed",
+          bottom: 142,
+          right: 20,
+          width: "calc(100vw - 40px)",
+          maxWidth: 380,
+          height: "calc(100vh - 220px)",
+          maxHeight: 480,
+          borderRadius: 16,
+          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          zIndex: 1000,
+          animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}>
+          <TutorChat
+            code={code}
+            lang={language}
+            currentStep={currentStep}
+            onClose={() => setIsChatOpen(false)}
+          />
+        </div>
+      )}
 
-      {/* Mobile responsive styles */}
+      {/* ── Chatbot Toggle Button ── */}
+      <button
+        onClick={() => setIsChatOpen((prev) => !prev)}
+        style={{
+          position: "fixed",
+          bottom: 80,
+          right: 20,
+          width: 52,
+          height: 52,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+          border: "none",
+          color: "white",
+          fontSize: 24,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 20px var(--primary-glow)",
+          zIndex: 1001,
+          transition: "transform 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.1)";
+          e.currentTarget.style.boxShadow = "0 6px 24px var(--primary-glow)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "0 4px 20px var(--primary-glow)";
+        }}
+        title="Toggle AI Tutor Chat"
+        aria-label="Toggle AI Tutor Chat"
+      >
+        {isChatOpen ? "✕" : "💬"}
+      </button>
+
+      {/* Mobile responsive and animation styles */}
       <style>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
         @media (max-width: 900px) {
           .main-grid {
             grid-template-columns: 1fr !important;

@@ -7,9 +7,10 @@ interface Props {
   code: string;
   lang: Language;
   currentStep: TraceStep | null;
+  onClose?: () => void;
 }
 
-export default function TutorChat({ code, lang, currentStep }: Props) {
+export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -114,9 +115,34 @@ export default function TutorChat({ code, lang, currentStep }: Props) {
         <div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>AI Tutor</div>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", animation: "pulse 2s infinite" }} />
-          <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Live</span>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", animation: "pulse 2s infinite" }} />
+            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Live</span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--text-muted)",
+                fontSize: 16,
+                cursor: "pointer",
+                padding: "2px 4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+              title="Close chat"
+              aria-label="Close chat"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 

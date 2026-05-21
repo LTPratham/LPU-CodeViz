@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const type = searchParams.get("type");
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/visualize";
 
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && data?.session) {
       const amr = data.session.user?.app_metadata?.amr || [];
-      const isRecovery = amr.includes("recovery");
+      const isRecovery = amr.includes("recovery") || type === "recovery" || next === "/reset-password";
       const redirectUrl = isRecovery ? "/reset-password" : next;
       return NextResponse.redirect(`${origin}${redirectUrl}`);
     }

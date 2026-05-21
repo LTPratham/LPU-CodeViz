@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { Language, TraceStep, ExplainLine, PredictionChallenge } from "@/lib/types";
 import { traceCode, explainCode } from "@/lib/api";
+import { tryLocalExecution } from "@/lib/localExecution";
 import { getDefaultSample } from "@/lib/sampleCodes";
 import StepController from "@/components/StepController";
 import ExplainSidebar from "@/components/ExplainSidebar";
@@ -145,6 +146,30 @@ function VisualizeContent() {
     setActiveChallenge(null);
     setUserAnswer(null);
     setChallengeState("unanswered");
+
+    // Check for client-side local execution fallback
+    const localTrace = tryLocalExecution(activeLang, activeCode);
+    if (localTrace) {
+      setSteps(localTrace.steps);
+      setDataStructure(localTrace.dataStructure);
+      try {
+        const explainRes = await explainCode({ lang: activeLang, code: activeCode });
+        setExplanations(explainRes);
+      } catch (err: unknown) {
+        console.warn("Failed to fetch explanations from backend, using client-side fallback", err);
+        const lines = activeCode.split("\n");
+        const fallbackExplains: ExplainLine[] = lines.map((lineText, idx) => ({
+          line: idx + 1,
+          code: lineText,
+          explain: lineText.trim() ? "Executed client-side." : "",
+          concept: "Local Execution",
+          category: "core"
+        }));
+        setExplanations(fallbackExplains);
+      }
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const [traceRes, explainRes] = await Promise.all([

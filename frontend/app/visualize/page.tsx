@@ -16,6 +16,7 @@ import { signout } from "../login/actions";
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
 const VisualCanvas= dynamic(() => import("@/components/VisualCanvas"),{ ssr: false });
 const TutorChat   = dynamic(() => import("@/components/TutorChat"),   { ssr: false });
+const AlgorithmCatalog = dynamic(() => import("@/components/AlgorithmCatalog"), { ssr: false });
 
 function VisualizeContent() {
   const router = useRouter();
@@ -37,6 +38,7 @@ function VisualizeContent() {
   const [swaps, setSwaps] = useState(0);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -102,8 +104,10 @@ function VisualizeContent() {
     if (currentStep.action === "swap")    setSwaps((s) => s + 1);
   }, [currentStepIdx]);
 
-  const handleVisualize = useCallback(async () => {
-    if (!code.trim()) return;
+  const handleVisualize = useCallback(async (overrideCode?: string, overrideLang?: Language) => {
+    const activeCode = overrideCode ?? code;
+    const activeLang = overrideLang ?? language;
+    if (!activeCode.trim()) return;
     setIsLoading(true);
     setError(null);
     setSteps([]);
@@ -115,8 +119,8 @@ function VisualizeContent() {
 
     try {
       const [traceRes, explainRes] = await Promise.all([
-        traceCode({ lang: language, code }),
-        explainCode({ lang: language, code }),
+        traceCode({ lang: activeLang, code: activeCode }),
+        explainCode({ lang: activeLang, code: activeCode }),
       ]);
 
       setSteps(traceRes.steps);
@@ -129,6 +133,13 @@ function VisualizeContent() {
       setIsLoading(false);
     }
   }, [code, language]);
+
+  const handleCatalogSelect = useCallback((selectedCode: string, selectedLang: Language) => {
+    setCode(selectedCode);
+    setLanguage(selectedLang);
+    setIsCatalogOpen(false);
+    handleVisualize(selectedCode, selectedLang);
+  }, [handleVisualize]);
 
   const goFirst  = () => { setIsPlaying(false); setCurrentStepIdx(0); };
   const goPrev   = () => { setIsPlaying(false); setCurrentStepIdx((i) => Math.max(0, i - 1)); };
@@ -202,6 +213,15 @@ function VisualizeContent() {
         </div>
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
+          {/* Algorithm Catalog Button */}
+          <button
+            onClick={() => setIsCatalogOpen(true)}
+            className="btn btn-ghost"
+            style={{ padding: "6px 12px", fontSize: 12, height: "auto" }}
+          >
+            📚 Catalog
+          </button>
+
           {/* Share Button */}
           <button
             onClick={() => {
@@ -346,6 +366,13 @@ function VisualizeContent() {
         onLast={goLast}
         onPlayPause={playPause}
         onSpeedChange={setSpeed}
+      />
+
+      {/* ── Algorithm Catalog Sliding Drawer ── */}
+      <AlgorithmCatalog
+        isOpen={isCatalogOpen}
+        onClose={() => setIsCatalogOpen(false)}
+        onSelect={handleCatalogSelect}
       />
 
       {/* ── Floating AI Tutor Chatbot ── */}

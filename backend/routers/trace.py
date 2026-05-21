@@ -65,10 +65,14 @@ If "sqltable":
   {{ "type": "sqltable", "tableName": "<name>", "columns": ["col1","col2"], "rows": [{{"values": [<v1>,<v2>], "status": "default|inserted|selected|filtered|joining"}}] }}
 
 Rules:
-- Generate 8-20 steps (more for sorting — include each compare and swap)
-- Each step must show the COMPLETE current state (not just the change)
-- For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted"
-- For recursion: push a new frame for each call, pop on return
+- The total number of steps in the "steps" array must NEVER exceed 18. This is a critical requirement to prevent token limits and response truncation.
+- If the simulation naturally requires more than 18 steps (e.g., sorting algorithms with multiple passes or deep loops):
+  - Detailedly simulate the first 10-12 steps (e.g., showing the first pass of comparisons and swaps).
+  - Skip the middle redundant iterations.
+  - Simulate the last 3-5 steps showing the final steps and the final sorted/completed state.
+- Each step must show the COMPLETE current state (not just the change).
+- For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted".
+- For recursion: push a new frame for each call, pop on return.
 - If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}}
 - Return ONLY the JSON object. Start with {{ and end with }}"""
 

@@ -105,8 +105,8 @@ function VisualizeContent() {
   }, [currentStepIdx]);
 
   const handleVisualize = useCallback(async (overrideCode?: string, overrideLang?: Language) => {
-    const activeCode = overrideCode ?? code;
-    const activeLang = overrideLang ?? language;
+    const activeCode = typeof overrideCode === "string" ? overrideCode : code;
+    const activeLang = typeof overrideLang === "string" ? overrideLang : language;
     if (!activeCode.trim()) return;
     setIsLoading(true);
     setError(null);

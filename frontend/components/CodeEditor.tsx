@@ -215,7 +215,7 @@ export default function CodeEditor({
       }}>
         <button
           id="visualize-btn"
-          onClick={onVisualize}
+          onClick={() => onVisualize()}
           disabled={isLoading || !code.trim()}
           className="btn btn-primary"
           style={{

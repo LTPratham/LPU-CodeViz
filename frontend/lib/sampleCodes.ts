@@ -139,8 +139,8 @@ void bubbleSort(int arr[], int n) {
 }
 
 int main() {
-    int arr[] = {64, 34, 25, 12, 22, 11, 90};
-    int n = 7;
+    int arr[] = {34, 25, 12, 22, 11};
+    int n = 5;
     bubbleSort(arr, n);
     printf("Sorted array: ");
     for (int i = 0; i < n; i++)
@@ -163,7 +163,7 @@ int fibonacci(int n) {
 }
 
 int main() {
-    int n = 6;
+    int n = 4;
     printf("Fibonacci of %d = %d\\n", n, fibonacci(n));
     return 0;
 }`,

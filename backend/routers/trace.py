@@ -15,13 +15,15 @@ class TraceRequest(BaseModel):
 
 TRACE_SYSTEM = """You are a precise code execution simulator for an educational visualizer.
 You simulate code step-by-step, producing JSON that drives animated visualizations.
-Always return ONLY valid JSON — no markdown, no prose outside JSON."""
+Always return ONLY valid JSON — no markdown, no prose outside JSON.
+CRITICAL: The simulation MUST be highly consolidated and have at most 15 steps. Summarize loops and recursion to fit within 15 steps."""
 
 TRACE_USER_TEMPLATE = """Language: {lang}
 Code:
 {code}
 
-Task: Simulate this code execution step by step. Identify the primary data structure used.
+Task: Simulate this code execution step by step in at most 15 steps. Identify the primary data structure used.
+CRITICAL: The "steps" array must NEVER exceed 15 items. If the code naturally runs longer (e.g. sorting or recursion), group multiple iterations/steps together or skip the middle steps to ensure it fits in at most 15 steps.
 
 Return a JSON object with exactly this shape:
 {{
@@ -65,9 +67,9 @@ If "sqltable":
   {{ "type": "sqltable", "tableName": "<name>", "columns": ["col1","col2"], "rows": [{{"values": [<v1>,<v2>], "status": "default|inserted|selected|filtered|joining"}}] }}
 
 Rules:
-- The total number of steps in the "steps" array must NEVER exceed 18. This is a critical requirement to prevent token limits and response truncation.
-- If the simulation naturally requires more than 18 steps (e.g., sorting algorithms with multiple passes or deep loops):
-  - Detailedly simulate the first 10-12 steps (e.g., showing the first pass of comparisons and swaps).
+- The total number of steps in the "steps" array must NEVER exceed 15. This is a critical requirement to prevent token limits and response truncation.
+- If the simulation naturally requires more than 15 steps (e.g., sorting algorithms with multiple passes or deep loops):
+  - Detailedly simulate the first 8-10 steps (e.g., showing the first pass of comparisons and swaps).
   - Skip the middle redundant iterations.
   - Simulate the last 3-5 steps showing the final steps and the final sorted/completed state.
 - Each step must show the COMPLETE current state (not just the change).

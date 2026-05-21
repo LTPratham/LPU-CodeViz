@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import type { Language, SampleCode } from "@/lib/types";
-import { getSamplesByLang, getDefaultSample } from "@/lib/sampleCodes";
+import { getDefaultSample } from "@/lib/sampleCodes";
 
 interface Props {
   code: string;
@@ -36,10 +36,7 @@ export default function CodeEditor({
   const { theme } = useTheme();
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
-  const [showSamples, setShowSamples] = useState(false);
   const decorationsRef = useRef<string[]>([]);
-
-  const samples = getSamplesByLang(language);
 
   // Highlight current line
   useEffect(() => {
@@ -131,10 +128,6 @@ export default function CodeEditor({
     }
   }, [theme]);
 
-  const loadSample = (sample: SampleCode) => {
-    onChange(sample.code);
-    setShowSamples(false);
-  };
 
   return (
     <div style={{
@@ -181,72 +174,6 @@ export default function CodeEditor({
           </button>
         ))}
 
-        {/* Sample picker */}
-        <div style={{ marginLeft: "auto", position: "relative" }}>
-          <button
-            id="sample-picker-btn"
-            onClick={() => setShowSamples((v) => !v)}
-            style={{
-              padding: "5px 12px",
-              borderRadius: 6,
-              border: "1px solid var(--border)",
-              background: "var(--card)",
-              color: "var(--text-muted)",
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 6,
-            }}
-          >
-            📋 Samples ▾
-          </button>
-
-          {showSamples && (
-            <div style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              zIndex: 50,
-              background: "var(--card)",
-              border: "1px solid var(--border)",
-              borderRadius: 10,
-              overflow: "hidden",
-              overflowY: "auto",
-              overscrollBehavior: "contain",
-              maxHeight: "300px",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-              minWidth: 220,
-            }}>
-              {samples.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => loadSample(s)}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100%",
-                    padding: "10px 14px",
-                    border: "none",
-                    borderBottom: "1px solid var(--border)",
-                    background: "transparent",
-                    color: "var(--text)",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--card-hover)"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                >
-                  <span style={{ fontWeight: 700, fontSize: 13 }}>{s.title}</span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{s.topic}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Monaco Editor */}
@@ -312,13 +239,7 @@ export default function CodeEditor({
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
 
-      {/* Click outside handler for sample picker */}
-      {showSamples && (
-        <div
-          style={{ position: "fixed", inset: 0, zIndex: 40 }}
-          onClick={() => setShowSamples(false)}
-        />
-      )}
+
     </div>
   );
 }

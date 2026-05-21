@@ -333,3 +333,19 @@ code, pre, .font-mono {
   body { font-size: 14px; }
 }
 
+/* ─── Monaco Editor Highlight ─── */
+.monaco-current-line {
+  background: rgba(29, 158, 117, 0.15) !important;
+  border-left: 3px solid var(--primary) !important;
+}
+
+.monaco-glyph {
+  background-color: var(--primary) !important;
+  border-radius: 50%;
+  width: 8px !important;
+  height: 8px !important;
+  margin-left: 4px;
+  margin-top: 7px;
+}
+
+

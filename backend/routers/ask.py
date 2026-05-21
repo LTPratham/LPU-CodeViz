@@ -25,14 +25,14 @@ Rules:
 - If asked about a concept, explain it in the context of their specific code.
 - Never lecture — just answer the question asked."""
 
-ASK_USER_TEMPLATE = """Student's Code ({lang}):
+ASK_USER_TEMPLATE = """Student's Code ({lang}, numbered lines):
 {code}
 
 Current Execution Step #{stepNum}: {stepDescription}
 
 Student's Question: {question}
 
-Answer in 2-4 sentences, referencing their actual code."""
+Answer in 2-4 sentences, referencing their actual code (refer to the line numbers if relevant)."""
 
 
 @router.post("/ask")
@@ -40,9 +40,13 @@ async def ask(req: AskRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
+    # Prepend line numbers to the code to help the LLM identify correct lines
+    numbered_lines = [f"{i+1}: {line}" for i, line in enumerate(req.code.splitlines())]
+    numbered_code = "\n".join(numbered_lines)
+
     user_prompt = ASK_USER_TEMPLATE.format(
         lang=req.lang,
-        code=req.code[:2000],  # Truncate for token limits
+        code=numbered_code[:2500],  # Truncate for token limits
         stepNum=req.stepNum,
         stepDescription=req.stepDescription,
         question=req.question,

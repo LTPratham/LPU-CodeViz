@@ -124,6 +124,7 @@ export type StepAction =
 export interface TraceStep {
   stepNum: number;
   line: number;
+  code?: string;
   action: StepAction;
   state: VisualizationState;
   description: string;

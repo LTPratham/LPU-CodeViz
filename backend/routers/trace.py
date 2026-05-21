@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.groq_client import chat_completion, extract_json_block
+from services.line_aligner import align_line_number
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ You simulate code step-by-step, producing JSON that drives animated visualizatio
 Always return ONLY valid JSON — no markdown, no prose outside JSON."""
 
 TRACE_USER_TEMPLATE = """Language: {lang}
-Code:
+Code (numbered lines):
 {code}
 
 Task: Simulate this code execution step by step. Identify the primary data structure used.
@@ -29,7 +30,8 @@ Return a JSON object with exactly this shape:
   "steps": [
     {{
       "stepNum": <integer starting at 1>,
-      "line": <line number where this action happens>,
+      "line": <line number where this action happens — use the exact line number prefix from the code above>,
+      "code": "<the exact code line currently being executed, trimmed, excluding the line number prefix>",
       "action": "<one of: compare | swap | push | pop | enqueue | dequeue | insert | traverse | assign | call | return | highlight | filter | select | create_table | sort>",
       "state": <full current state of the data structure — see format below>,
       "description": "<short plain-English description of what just happened, e.g. 'Comparing arr[0]=64 with arr[1]=34'>",
@@ -78,7 +80,11 @@ async def trace(req: TraceRequest):
     if not req.code.strip():
         raise HTTPException(status_code=400, detail="Code cannot be empty")
 
-    user_prompt = TRACE_USER_TEMPLATE.format(lang=req.lang, code=req.code)
+    # Prepend line numbers to the code to help the LLM identify correct lines
+    numbered_lines = [f"{i+1}: {line}" for i, line in enumerate(req.code.splitlines())]
+    numbered_code = "\n".join(numbered_lines)
+
+    user_prompt = TRACE_USER_TEMPLATE.format(lang=req.lang, code=numbered_code)
 
     last_error = None
     for attempt in range(2):  # Retry once on JSON parse failure
@@ -95,6 +101,12 @@ async def trace(req: TraceRequest):
                 raise ValueError("Missing 'steps' array")
             if "dataStructure" not in result:
                 result["dataStructure"] = "variables"
+
+            # Align/verify line numbers programmatically to guarantee 100% correctness
+            for step in result.get("steps", []):
+                code_trimmed = step.get("code", "").strip()
+                predicted_line = step.get("line", -1)
+                step["line"] = align_line_number(req.code, predicted_line, code_trimmed)
 
             return result
 

@@ -110,7 +110,7 @@ async def trace(req: TraceRequest):
 
             # Align/verify line numbers programmatically to guarantee 100% correctness
             for step in result.get("steps", []):
-                code_trimmed = step.get("code", "").strip()
+                code_trimmed = (step.get("code") or "").strip()
                 predicted_line = step.get("line", -1)
                 step["line"] = align_line_number(req.code, predicted_line, code_trimmed)
 

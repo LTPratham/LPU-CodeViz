@@ -61,7 +61,7 @@ async def explain(req: ExplainRequest):
         
         # Align/verify line numbers programmatically to guarantee 100% correctness
         for item in result:
-            code_trimmed = item.get("code", "").strip()
+            code_trimmed = (item.get("code") or "").strip()
             predicted_line = item.get("line", -1)
             item["line"] = align_line_number(req.code, predicted_line, code_trimmed)
                         

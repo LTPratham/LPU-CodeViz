@@ -12,6 +12,9 @@ interface Props {
   onLast: () => void;
   onPlayPause: () => void;
   onSpeedChange: (s: number) => void;
+  isChallengeMode?: boolean;
+  onToggleChallengeMode?: () => void;
+  score?: number;
 }
 
 const SPEEDS = [0.5, 1, 1.5, 2];
@@ -27,6 +30,9 @@ export default function StepController({
   onLast,
   onPlayPause,
   onSpeedChange,
+  isChallengeMode = false,
+  onToggleChallengeMode,
+  score = 0,
 }: Props) {
   // Keyboard shortcuts
   useEffect(() => {
@@ -185,6 +191,47 @@ export default function StepController({
 
       {/* Right: Speed + keyboard hint */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Challenge Mode Toggle */}
+        {onToggleChallengeMode && (
+          <button
+            onClick={onToggleChallengeMode}
+            style={{
+              padding: "5px 12px",
+              borderRadius: 8,
+              border: "1px solid",
+              borderColor: isChallengeMode ? "#F59E0B" : "var(--border)",
+              background: isChallengeMode ? "rgba(245,158,11,0.12)" : "transparent",
+              color: isChallengeMode ? "#F59E0B" : "var(--text-muted)",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              transition: "all 0.2s",
+              marginRight: 8,
+            }}
+            title="Toggle Predict-the-Next-State game mode"
+            className="challenge-toggle-btn"
+          >
+            <span>🏆</span>
+            <span>Challenge Mode: {isChallengeMode ? "ON" : "OFF"}</span>
+            {score > 0 && (
+              <span style={{
+                background: "#F59E0B",
+                color: "#0F172A",
+                borderRadius: 4,
+                padding: "1px 6px",
+                fontSize: 10,
+                fontWeight: 900,
+                marginLeft: 4,
+              }}>
+                {score} pts
+              </span>
+            )}
+          </button>
+        )}
+
         <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Speed:</span>
         {SPEEDS.map((s) => (
           <button

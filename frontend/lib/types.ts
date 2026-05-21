@@ -193,3 +193,14 @@ export interface SampleCode {
   topic: string;
 }
 
+// ─── Challenge Mode ───
+
+export interface PredictionChallenge {
+  type: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  description: string;
+}
+
+

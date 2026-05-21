@@ -4,13 +4,14 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import type { Language, TraceStep, ExplainLine } from "@/lib/types";
+import type { Language, TraceStep, ExplainLine, PredictionChallenge } from "@/lib/types";
 import { traceCode, explainCode } from "@/lib/api";
 import { getDefaultSample } from "@/lib/sampleCodes";
 import StepController from "@/components/StepController";
 import ExplainSidebar from "@/components/ExplainSidebar";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "../login/actions";
+import { generateChallenge, shuffleArray } from "@/lib/challenge";
 
 // Client-only components
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
@@ -39,6 +40,12 @@ function VisualizeContent() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [isChallengeMode, setIsChallengeMode] = useState(false);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [activeChallenge, setActiveChallenge] = useState<PredictionChallenge | null>(null);
+  const [userAnswer, setUserAnswer] = useState<string | null>(null);
+  const [challengeState, setChallengeState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -58,24 +65,41 @@ function VisualizeContent() {
     });
   }, []);
 
+  const currentStepIdxRef = useRef(currentStepIdx);
+  useEffect(() => {
+    currentStepIdxRef.current = currentStepIdx;
+  }, [currentStepIdx]);
+
   // Auto-play
   useEffect(() => {
     if (playIntervalRef.current) clearInterval(playIntervalRef.current);
     if (!isPlaying || steps.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentStepIdx((prev) => {
-        if (prev >= steps.length - 1) {
+      const prev = currentStepIdxRef.current;
+      if (prev >= steps.length - 1) {
+        setIsPlaying(false);
+        return;
+      }
+      const current = steps[prev];
+      const next = steps[prev + 1];
+      if (isChallengeMode && current && next) {
+        const challenge = generateChallenge(current, next);
+        if (challenge) {
+          challenge.options = shuffleArray(challenge.options);
+          setActiveChallenge(challenge);
+          setUserAnswer(null);
+          setChallengeState("unanswered");
           setIsPlaying(false);
-          return prev;
+          return;
         }
-        return prev + 1;
-      });
+      }
+      setCurrentStepIdx(prev + 1);
     }, 700 / speed);
 
     playIntervalRef.current = interval;
     return () => clearInterval(interval);
-  }, [isPlaying, speed, steps.length]);
+  }, [isPlaying, speed, steps, isChallengeMode]);
 
   // On mount: read from URL or default
   useEffect(() => {
@@ -116,6 +140,11 @@ function VisualizeContent() {
     setIsPlaying(false);
     setComparisons(0);
     setSwaps(0);
+    setScore(0);
+    setStreak(0);
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
 
     try {
       const [traceRes, explainRes] = await Promise.all([
@@ -141,10 +170,92 @@ function VisualizeContent() {
     handleVisualize(selectedCode, selectedLang);
   }, [handleVisualize]);
 
-  const goFirst  = () => { setIsPlaying(false); setCurrentStepIdx(0); };
-  const goPrev   = () => { setIsPlaying(false); setCurrentStepIdx((i) => Math.max(0, i - 1)); };
-  const goNext   = () => { setIsPlaying(false); setCurrentStepIdx((i) => Math.min(steps.length - 1, i + 1)); };
-  const goLast   = () => { setIsPlaying(false); setCurrentStepIdx(steps.length - 1); };
+  const handleToggleChallengeMode = () => {
+    setIsChallengeMode((v) => {
+      const newVal = !v;
+      if (!newVal) {
+        setActiveChallenge(null);
+        setUserAnswer(null);
+        setChallengeState("unanswered");
+      }
+      return newVal;
+    });
+  };
+
+  const handleAnswerSelect = (opt: string) => {
+    if (!activeChallenge || userAnswer !== null) return;
+    setUserAnswer(opt);
+    const isCorrect = opt === activeChallenge.correctAnswer;
+    if (isCorrect) {
+      setChallengeState("correct");
+      const basePoints = 10;
+      const currentStreak = streak + 1;
+      setStreak(currentStreak);
+      const bonus = currentStreak >= 2 ? Math.min(20, Math.floor(currentStreak / 2) * 5) : 0;
+      setScore((s) => s + basePoints + bonus);
+    } else {
+      setChallengeState("incorrect");
+      setStreak(0);
+    }
+  };
+
+  const confirmAndProceed = () => {
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
+    setCurrentStepIdx((prev) => Math.min(steps.length - 1, prev + 1));
+  };
+
+  const skipChallenge = () => {
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
+    setCurrentStepIdx((prev) => Math.min(steps.length - 1, prev + 1));
+  };
+
+  const goFirst  = () => {
+    setIsPlaying(false);
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
+    setCurrentStepIdx(0);
+  };
+
+  const goPrev   = () => {
+    setIsPlaying(false);
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
+    setCurrentStepIdx((i) => Math.max(0, i - 1));
+  };
+
+  const goNext   = () => {
+    setIsPlaying(false);
+    const prev = currentStepIdx;
+    if (prev >= steps.length - 1) return;
+    const current = steps[prev];
+    const next = steps[prev + 1];
+    if (isChallengeMode && current && next) {
+      const challenge = generateChallenge(current, next);
+      if (challenge) {
+        challenge.options = shuffleArray(challenge.options);
+        setActiveChallenge(challenge);
+        setUserAnswer(null);
+        setChallengeState("unanswered");
+        return;
+      }
+    }
+    setCurrentStepIdx(prev + 1);
+  };
+
+  const goLast   = () => {
+    setIsPlaying(false);
+    setActiveChallenge(null);
+    setUserAnswer(null);
+    setChallengeState("unanswered");
+    setCurrentStepIdx(steps.length - 1);
+  };
+
   const playPause= () => {
     if (currentStepIdx >= steps.length - 1) setCurrentStepIdx(0);
     setIsPlaying((v) => !v);
@@ -317,6 +428,7 @@ function VisualizeContent() {
           flexDirection: "column",
           overflow: "hidden",
           background: "#111827",
+          position: "relative",
         }}
           className="panel-visual"
         >
@@ -342,6 +454,225 @@ function VisualizeContent() {
               isLastStep={steps.length > 0 && currentStepIdx === steps.length - 1}
             />
           </div>
+
+          {/* Gamified Challenge Overlay */}
+          {activeChallenge && (
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(15, 23, 42, 0.75)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 24,
+              zIndex: 50,
+              animation: "fadeIn 0.25s ease-out",
+            }}>
+              <div style={{
+                width: "100%",
+                maxWidth: 440,
+                background: "rgba(30, 41, 59, 0.75)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05)",
+                borderRadius: 16,
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                color: "#F8FAFC",
+                animation: "scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>🧠</span>
+                    <span style={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: 12, color: "#F59E0B" }}>
+                      Prediction Challenge
+                    </span>
+                  </div>
+                  {streak > 0 && (
+                    <span style={{
+                      fontSize: 12,
+                      background: "rgba(245, 158, 11, 0.2)",
+                      color: "#F59E0B",
+                      padding: "2px 8px",
+                      borderRadius: 20,
+                      fontWeight: 800,
+                      animation: "pulse 1.5s infinite",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3
+                    }}>
+                      🔥 {streak} Streak
+                    </span>
+                  )}
+                </div>
+
+                {/* Question */}
+                <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.5 }}>
+                  {activeChallenge.question}
+                </div>
+
+                {/* Options */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {activeChallenge.options.map((opt) => {
+                    const isSelected = userAnswer === opt;
+                    const isCorrectAnswer = opt === activeChallenge.correctAnswer;
+                    
+                    let btnStyle: React.CSSProperties = {
+                      width: "100%",
+                      padding: "12px 16px",
+                      borderRadius: 10,
+                      textAlign: "left",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      background: "rgba(255, 255, 255, 0.04)",
+                      color: "#E2E8F0",
+                    };
+
+                    if (userAnswer !== null) {
+                      if (isCorrectAnswer) {
+                        btnStyle.background = "rgba(16, 185, 129, 0.2)";
+                        btnStyle.borderColor = "#10B981";
+                        btnStyle.color = "#34D399";
+                        btnStyle.fontWeight = 700;
+                      } else if (isSelected) {
+                        btnStyle.background = "rgba(239, 68, 68, 0.2)";
+                        btnStyle.borderColor = "#EF4444";
+                        btnStyle.color = "#F87171";
+                      } else {
+                        btnStyle.opacity = 0.5;
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => handleAnswerSelect(opt)}
+                        disabled={userAnswer !== null}
+                        style={btnStyle}
+                        onMouseEnter={(e) => {
+                          if (userAnswer === null) {
+                            e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+                            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                            e.currentTarget.style.transform = "translateX(4px)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (userAnswer === null) {
+                            e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
+                            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                            e.currentTarget.style.transform = "translateX(0)";
+                          }
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span>{opt}</span>
+                          {userAnswer !== null && isCorrectAnswer && <span>✓</span>}
+                          {userAnswer !== null && isSelected && !isCorrectAnswer && <span>✕</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Answer feedback and details */}
+                {userAnswer !== null && (
+                  <div style={{
+                    animation: "fadeIn 0.3s ease-out",
+                    background: challengeState === "correct" ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)",
+                    border: `1px solid ${challengeState === "correct" ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)"}`,
+                    borderRadius: 10,
+                    padding: 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6
+                  }}>
+                    <div style={{ 
+                      fontSize: 14, 
+                      fontWeight: 800, 
+                      color: challengeState === "correct" ? "#34D399" : "#F87171",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}>
+                      {challengeState === "correct" ? (
+                        <>🎉 Correct! +10 Points {streak >= 2 && `(Streak Bonus: +${Math.min(20, Math.floor(streak / 2) * 5)} pts!)`}</>
+                      ) : (
+                        <>❌ Incorrect</>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.4 }}>
+                      <strong>Action context:</strong> {activeChallenge.description}
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer controls */}
+                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                  {userAnswer === null ? (
+                    <button
+                      onClick={skipChallenge}
+                      style={{
+                        flex: 1,
+                        padding: "10px 16px",
+                        borderRadius: 8,
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "transparent",
+                        color: "#94A3B8",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "#E2E8F0";
+                        e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = "#94A3B8";
+                        e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      Skip Challenge
+                    </button>
+                  ) : (
+                    <button
+                      onClick={confirmAndProceed}
+                      style={{
+                        flex: 1,
+                        padding: "12px 16px",
+                        borderRadius: 10,
+                        border: "none",
+                        background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+                        color: "white",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        boxShadow: "0 4px 12px var(--primary-glow)",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-1px)";
+                        e.currentTarget.style.boxShadow = "0 6px 16px var(--primary-glow)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "0 4px 12px var(--primary-glow)";
+                      }}
+                    >
+                      Show Execution & Proceed
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT — Explanation Sidebar */}
@@ -366,6 +697,9 @@ function VisualizeContent() {
         onLast={goLast}
         onPlayPause={playPause}
         onSpeedChange={setSpeed}
+        isChallengeMode={isChallengeMode}
+        onToggleChallengeMode={handleToggleChallengeMode}
+        score={score}
       />
 
       {/* ── Algorithm Catalog Sliding Drawer ── */}
@@ -450,6 +784,30 @@ function VisualizeContent() {
           to {
             opacity: 1;
             transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.85;
+            transform: scale(0.96);
           }
         }
         @media (max-width: 900px) {

@@ -888,6 +888,86 @@ public class Main {
     </script>
 </body>
 </html>`
+  },
+  {
+    id: "py-graph-bfs-dfs",
+    title: "Graph Traversal (BFS/DFS)",
+    lang: "python",
+    topic: "Graphs",
+    description: "Graph traversal showing visited nodes and active frontier using BFS",
+    code: `# Graph Traversal (Breadth-First Search)
+def bfs_traversal(graph, start):
+    visited = []
+    queue = [start]
+    
+    while queue:
+        node = queue.pop(0)
+        if node not in visited:
+            visited.append(node)
+            # Add unvisited neighbors to the queue
+            for neighbor in graph[node]:
+                if neighbor not in visited and neighbor not in queue:
+                    queue.append(neighbor)
+    return visited
+
+# Adjacency list representation of a graph
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B', 'F'],
+    'F': ['C', 'E']
+}
+
+result = bfs_traversal(graph, 'A')
+print("BFS Traversal Order:", result)`
+  },
+  {
+    id: "py-graph-dijkstra",
+    title: "Dijkstra's Shortest Path",
+    lang: "python",
+    topic: "Graphs",
+    description: "Dijkstra's shortest path on a weighted undirected graph",
+    code: `# Dijkstra's shortest path algorithm
+def dijkstra(graph, start, end):
+    distances = {node: float('inf') for node in graph}
+    distances[start] = 0
+    visited = []
+    shortest_path = []
+    
+    while len(visited) < len(graph):
+        # Find unvisited node with min distance
+        curr = None
+        for node in graph:
+            if node not in visited:
+                if curr is None or distances[node] < distances[curr]:
+                    curr = node
+        
+        if curr is None or distances[curr] == float('inf'):
+            break
+            
+        visited.append(curr)
+        
+        # Update distance to neighbors
+        for neighbor, weight in graph[curr].items():
+            new_dist = distances[curr] + weight
+            if new_dist < distances[neighbor]:
+                distances[neighbor] = new_dist
+                
+    return distances[end]
+
+# Graph represented with node links and edge weights
+graph = {
+    'A': {'B': 4, 'C': 2},
+    'B': {'A': 4, 'C': 1, 'D': 5},
+    'C': {'A': 2, 'B': 1, 'D': 8, 'E': 10},
+    'D': {'B': 5, 'C': 8, 'E': 2},
+    'E': {'C': 10, 'D': 2}
+}
+
+shortest_distance = dijkstra(graph, 'A', 'E')
+print("Shortest distance from A to E:", shortest_distance)`
   }
 ];
 

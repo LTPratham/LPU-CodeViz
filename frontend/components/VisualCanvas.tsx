@@ -12,6 +12,7 @@ const TreeViz      = dynamic(() => import("./visualizers/TreeViz"),      { ssr: 
 const RecursionViz = dynamic(() => import("./visualizers/RecursionViz"), { ssr: false });
 const SqlTableViz  = dynamic(() => import("./visualizers/SqlTableViz"),  { ssr: false });
 const VariableBoard= dynamic(() => import("./visualizers/VariableBoard"),{ ssr: false });
+const GraphViz     = dynamic(() => import("./visualizers/GraphViz"),     { ssr: false });
 
 interface Props {
   step: TraceStep | null;
@@ -140,6 +141,7 @@ export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading
     if (state.type === "recursion")   return <RecursionViz state={state} speed={speed} />;
     if (state.type === "sqltable")    return <SqlTableViz state={state} speed={speed} />;
     if (state.type === "variables")   return <VariableBoard state={state} speed={speed} />;
+    if (state.type === "graph")       return <GraphViz state={state} speed={speed} />;
 
     const unknownState = state as unknown as { type: string };
     return <EmptyCanvas message={`Unknown type: ${unknownState.type}`} />;

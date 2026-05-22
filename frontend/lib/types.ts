@@ -104,6 +104,27 @@ export interface SqlTableState {
   secondTable?: Omit<SqlTableState, "type">;
 }
 
+export interface GraphNode {
+  id: string;
+  value: string | number;
+  status: "default" | "visiting" | "visited" | "highlighted" | "shortest_path";
+}
+
+export interface GraphEdge {
+  from: string;
+  to: string;
+  weight?: number;
+  directed?: boolean;
+  status: "default" | "highlighted" | "shortest_path";
+}
+
+export interface GraphState {
+  type: "graph";
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  directed?: boolean;
+}
+
 export type VisualizationState =
   | ArrayState
   | StackState
@@ -112,7 +133,8 @@ export type VisualizationState =
   | TreeState
   | RecursionState
   | VariableState
-  | SqlTableState;
+  | SqlTableState
+  | GraphState;
 
 // ─── Trace / Steps ───
 

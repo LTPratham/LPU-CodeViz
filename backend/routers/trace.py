@@ -28,7 +28,7 @@ CRITICAL: The "steps" array must NEVER exceed 15 items. If the code naturally ru
 
 Return a JSON object with exactly this shape:
 {{
-  "dataStructure": "<one of: array | stack | queue | linkedlist | binarytree | recursion | variables | sqltable | sorting>",
+  "dataStructure": "<one of: array | stack | queue | linkedlist | binarytree | recursion | variables | sqltable | sorting | graph>",
   "steps": [
     {{
       "stepNum": <integer starting at 1>,
@@ -67,6 +67,9 @@ If "variables":
 
 If "sqltable":
   {{ "type": "sqltable", "tableName": "<name>", "columns": ["col1","col2"], "rows": [{{"values": [<v1>,<v2>], "status": "default|inserted|selected|filtered|joining"}}] }}
+
+If "graph":
+  {{ "type": "graph", "nodes": [{{"id": "A", "value": "A", "status": "default|visiting|visited|highlighted|shortest_path"}}], "edges": [{{"from": "A", "to": "B", "weight": <optional number>, "directed": <optional bool>, "status": "default|highlighted|shortest_path"}}], "directed": <optional bool> }}
 
 Rules:
 - The total number of steps in the "steps" array must NEVER exceed 15. This is a critical requirement to prevent token limits and response truncation.

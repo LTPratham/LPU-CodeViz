@@ -111,6 +111,15 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
             <motion.div
               key={el.index}
               layout
+              drag
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={0.8}
+              whileDrag={{
+                scale: 1.15,
+                boxShadow: `0 8px 24px ${s.border}`,
+                zIndex: 10,
+              }}
+              whileTap={{ cursor: "grabbing" }}
               animate={{
                 background: s.bg,
                 borderColor: s.border,
@@ -130,6 +139,7 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
                 fontWeight: 700,
                 fontSize: 14,
                 fontFamily: "var(--font-mono)",
+                cursor: "grab",
               }}
             >
               {el.value}

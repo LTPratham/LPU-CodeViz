@@ -37,6 +37,15 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
               <motion.div
                 key={v.name}
                 layout
+                drag
+                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                dragElastic={0.8}
+                whileDrag={{
+                  scale: 1.06,
+                  boxShadow: `0 8px 24px ${style.border}`,
+                  zIndex: 10,
+                }}
+                whileTap={{ cursor: "grabbing" }}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -47,6 +56,7 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
                   borderRadius: 10,
                   padding: "12px 14px",
                   boxShadow: v.status !== "default" ? `0 0 14px ${style.border}40` : "none",
+                  cursor: "grab",
                 }}
               >
                 {/* Type tag */}

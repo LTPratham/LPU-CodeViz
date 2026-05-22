@@ -43,7 +43,24 @@ export default function LinkedListViz({ state, speed = 1 }: Props) {
                   style={{ display: "flex", alignItems: "center" }}
                 >
                   {/* Node box */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <motion.div
+                    drag
+                    dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                    dragElastic={0.8}
+                    whileDrag={{
+                      scale: 1.05,
+                      boxShadow: `0 8px 24px ${style.border}`,
+                      zIndex: 10,
+                    }}
+                    whileTap={{ cursor: "grabbing" }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                      cursor: "grab",
+                    }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -93,7 +110,7 @@ export default function LinkedListViz({ state, speed = 1 }: Props) {
                     <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
                       {node.id}
                     </span>
-                  </div>
+                  </motion.div>
 
                   {/* Arrow between nodes */}
                   {!isLast && (

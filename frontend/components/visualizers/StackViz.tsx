@@ -51,6 +51,15 @@ export default function StackViz({ state, speed = 1 }: Props) {
               <motion.div
                 key={`stack-el-${state.elements.length - 1 - i}-${el.value}`}
                 layout
+                drag
+                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                dragElastic={0.8}
+                whileDrag={{
+                  scale: 1.05,
+                  boxShadow: `0 8px 24px ${style.border}`,
+                  zIndex: 10,
+                }}
+                whileTap={{ cursor: "grabbing" }}
                 initial={{ opacity: 0, x: -40, scale: 0.8 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 40, scale: 0.8 }}
@@ -72,6 +81,7 @@ export default function StackViz({ state, speed = 1 }: Props) {
                   fontFamily: "var(--font-mono)",
                   boxShadow: el.status !== "default" ? `0 0 16px ${style.border}40` : "none",
                   marginBottom: 1,
+                  cursor: "grab",
                 }}
               >
                 <span>{el.value}</span>

@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import type { TreeState, TreeNode } from "@/lib/types";
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface Props {
   state: TreeState;
@@ -48,8 +48,34 @@ export default function TreeViz({ state, speed = 1 }: Props) {
   const layout = useMemo(() => buildLayout(state.nodes), [state.nodes]);
   const nodeMap = useMemo(() => new Map(layout.map((n) => [n.id, n])), [layout]);
 
-  const svgWidth = Math.max(480, layout.reduce((m, n) => Math.max(m, n.x + 40), 0) + 40);
-  const svgHeight = Math.max(200, layout.reduce((m, n) => Math.max(m, n.y + 40), 0) + 40);
+  const [offsets, setOffsets] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Reset offsets when layout structure changes (e.g. node additions/deletions)
+  const layoutHash = useMemo(() => state.nodes.map((n) => n.id).join(","), [state.nodes]);
+  useEffect(() => {
+    setOffsets({});
+  }, [layoutHash]);
+
+  // Dynamically compute width and height to accommodate dragged nodes
+  const svgWidth = useMemo(() => {
+    return Math.max(
+      480,
+      layout.reduce((m, n) => {
+        const dx = offsets[n.id]?.x || 0;
+        return Math.max(m, n.x + dx + 40);
+      }, 0) + 40
+    );
+  }, [layout, offsets]);
+
+  const svgHeight = useMemo(() => {
+    return Math.max(
+      200,
+      layout.reduce((m, n) => {
+        const dy = offsets[n.id]?.y || 0;
+        return Math.max(m, n.y + dy + 40);
+      }, 0) + 40
+    );
+  }, [layout, offsets]);
 
   return (
     <div style={{ width: "100%", padding: "16px" }}>
@@ -59,34 +85,48 @@ export default function TreeViz({ state, speed = 1 }: Props) {
 
       <div style={{ overflowX: "auto" }}>
         <svg width={svgWidth} height={svgHeight} style={{ display: "block", margin: "0 auto" }}>
-          {/* Edges */}
+          {/* Edges & Labels */}
           {layout.map((node) => {
-            const s = STATUS_STYLES[node.status] || STATUS_STYLES.default;
+            const nodeX = node.x + (offsets[node.id]?.x || 0);
+            const nodeY = node.y + (offsets[node.id]?.y || 0);
+
             return (
-              <>
+              <g key={`edges-group-${node.id}`}>
                 {node.left && nodeMap.has(node.left) && (() => {
                   const child = nodeMap.get(node.left)!;
+                  const childX = child.x + (offsets[child.id]?.x || 0);
+                  const childY = child.y + (offsets[child.id]?.y || 0);
+                  const mx = (nodeX + childX) / 2 - 8;
+                  const my = (nodeY + childY) / 2;
                   return (
-                    <line
-                      key={`edge-${node.id}-L`}
-                      x1={node.x} y1={node.y}
-                      x2={child.x} y2={child.y}
-                      stroke="#2D3E56" strokeWidth={2}
-                    />
+                    <g key={`edge-L-${node.id}`}>
+                      <line
+                        x1={nodeX} y1={nodeY}
+                        x2={childX} y2={childY}
+                        stroke="#2D3E56" strokeWidth={2}
+                      />
+                      <text x={mx} y={my} fill="#64748B" fontSize={9} fontWeight={700}>L</text>
+                    </g>
                   );
                 })()}
                 {node.right && nodeMap.has(node.right) && (() => {
                   const child = nodeMap.get(node.right)!;
+                  const childX = child.x + (offsets[child.id]?.x || 0);
+                  const childY = child.y + (offsets[child.id]?.y || 0);
+                  const mx = (nodeX + childX) / 2 + 4;
+                  const my = (nodeY + childY) / 2;
                   return (
-                    <line
-                      key={`edge-${node.id}-R`}
-                      x1={node.x} y1={node.y}
-                      x2={child.x} y2={child.y}
-                      stroke="#2D3E56" strokeWidth={2}
-                    />
+                    <g key={`edge-R-${node.id}`}>
+                      <line
+                        x1={nodeX} y1={nodeY}
+                        x2={childX} y2={childY}
+                        stroke="#2D3E56" strokeWidth={2}
+                      />
+                      <text x={mx} y={my} fill="#64748B" fontSize={9} fontWeight={700}>R</text>
+                    </g>
                   );
                 })()}
-              </>
+              </g>
             );
           })}
 
@@ -94,7 +134,31 @@ export default function TreeViz({ state, speed = 1 }: Props) {
           {layout.map((node) => {
             const s = STATUS_STYLES[node.status] || STATUS_STYLES.default;
             return (
-              <g key={node.id}>
+              <motion.g
+                key={`${node.id}-${layoutHash}`}
+                drag
+                dragMomentum={false}
+                dragElastic={0}
+                onDrag={(event, info) => {
+                  setOffsets((prev) => {
+                    const current = prev[node.id] || { x: 0, y: 0 };
+                    const newX = current.x + info.delta.x;
+                    const newY = current.y + info.delta.y;
+                    return {
+                      ...prev,
+                      [node.id]: {
+                        x: Math.max(-node.x + 30, newX),
+                        y: Math.max(-node.y + 30, newY),
+                      },
+                    };
+                  });
+                }}
+                whileHover={{ cursor: "grab", scale: 1.05 }}
+                whileTap={{ cursor: "grabbing", scale: 0.98 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration }}
+              >
                 <motion.circle
                   cx={node.x}
                   cy={node.y}
@@ -105,7 +169,7 @@ export default function TreeViz({ state, speed = 1 }: Props) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration, ease: "easeOut" }}
-                  style={{ filter: node.status !== "default" ? `drop-shadow(0 0 8px ${s.stroke})` : "none" }}
+                  style={{ filter: node.status !== "default" ? `drop-shadow(0 0 10px ${s.stroke})` : "none" }}
                 />
                 <text
                   x={node.x}
@@ -116,23 +180,11 @@ export default function TreeViz({ state, speed = 1 }: Props) {
                   fontSize={13}
                   fontWeight={700}
                   fontFamily="var(--font-mono)"
+                  style={{ pointerEvents: "none" }}
                 >
                   {node.value}
                 </text>
-                {/* L/R labels */}
-                {node.left && nodeMap.has(node.left) && (() => {
-                  const child = nodeMap.get(node.left)!;
-                  const mx = (node.x + child.x) / 2 - 8;
-                  const my = (node.y + child.y) / 2;
-                  return <text key={`lbl-L-${node.id}`} x={mx} y={my} fill="#64748B" fontSize={9} fontWeight={700}>L</text>;
-                })()}
-                {node.right && nodeMap.has(node.right) && (() => {
-                  const child = nodeMap.get(node.right)!;
-                  const mx = (node.x + child.x) / 2 + 4;
-                  const my = (node.y + child.y) / 2;
-                  return <text key={`lbl-R-${node.id}`} x={mx} y={my} fill="#64748B" fontSize={9} fontWeight={700}>R</text>;
-                })()}
-              </g>
+              </motion.g>
             );
           })}
         </svg>

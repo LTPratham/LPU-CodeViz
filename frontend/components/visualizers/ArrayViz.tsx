@@ -71,6 +71,15 @@ export default function ArrayViz({ state, speed = 1 }: Props) {
               >
                 {/* Value box */}
                 <motion.div
+                  drag
+                  dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                  dragElastic={0.8}
+                  whileDrag={{
+                    scale: 1.15,
+                    boxShadow: `0 8px 30px ${style.border}`,
+                    zIndex: 10,
+                  }}
+                  whileTap={{ cursor: "grabbing" }}
                   animate={{
                     background: style.bg,
                     borderColor: style.border,
@@ -95,6 +104,7 @@ export default function ArrayViz({ state, speed = 1 }: Props) {
                         ? `0 4px 20px ${style.border}`
                         : "none",
                     transition: "box-shadow 0.2s",
+                    cursor: "grab",
                   }}
                 >
                   {el.value}

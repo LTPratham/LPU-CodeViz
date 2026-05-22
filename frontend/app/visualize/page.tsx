@@ -197,8 +197,9 @@ function VisualizeContent() {
 
   const handleGenerateCode = useCallback((generatedCode: string) => {
     setCode(generatedCode);
-    handleVisualize(generatedCode, language);
-  }, [language, handleVisualize]);
+    setLanguage("python");
+    handleVisualize(generatedCode, "python");
+  }, [handleVisualize]);
 
   const handleToggleChallengeMode = () => {
     setIsChallengeMode((v) => {

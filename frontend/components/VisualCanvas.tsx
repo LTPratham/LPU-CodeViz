@@ -258,7 +258,7 @@ export default function VisualCanvas({
           >
             📈 Complexity
           </button>
-          {isGraph && (
+          {(isGraph || language === "python") && (
             <button
               onClick={() => setActiveTab("builder")}
               style={{

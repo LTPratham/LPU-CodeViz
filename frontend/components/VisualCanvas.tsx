@@ -122,27 +122,67 @@ export default function VisualCanvas({
 
   const ds = dataStructure.toLowerCase();
   const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
-  const state = step ? step.state : null;
-  const supportsSVGExport = state && (state.type === "graph" || state.type === "binarytree");
-
   const handleExportSVG = () => {
     if (!canvasRef.current) return;
+    
+    // Check if there is an active SVG element
     const svgEl = canvasRef.current.querySelector("svg");
-    if (!svgEl) {
-      alert("No active visualization SVG found to export!");
-      return;
+    
+    let source = "";
+    
+    if (svgEl) {
+      // Direct SVG Export
+      try {
+        const serializer = new XMLSerializer();
+        source = serializer.serializeToString(svgEl);
+        
+        if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+          source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+        if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+          source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+        }
+      } catch (err) {
+        console.error("Failed to serialize SVG:", err);
+      }
     }
+    
+    // Fallback to HTML foreignObject wrapper if no direct SVG found or serialization failed
+    if (!source) {
+      const htmlContent = canvasRef.current.innerHTML;
+      const width = canvasRef.current.offsetWidth || 800;
+      const height = canvasRef.current.offsetHeight || 600;
+      
+      // Grab all active CSS rules to preserve colors, themes, variables
+      let styles = "";
+      try {
+        for (const sheet of Array.from(document.styleSheets)) {
+          try {
+            const rules = Array.from(sheet.cssRules);
+            styles += rules.map(rule => rule.cssText).join("\n");
+          } catch (e) {
+            // ignore cross-origin stylesheet access restriction
+          }
+        }
+      } catch (e) {
+        console.error("Failed to read stylesheets:", e);
+      }
+      
+      source = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+  <style>
+    ${styles}
+  </style>
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;">
+      ${htmlContent}
+    </div>
+  </foreignObject>
+</svg>
+      `.trim();
+    }
+    
     try {
-      const serializer = new XMLSerializer();
-      let source = serializer.serializeToString(svgEl);
-      
-      if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-      }
-      if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-      }
-      
       const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
       const svgUrl = URL.createObjectURL(svgBlob);
       const downloadLink = document.createElement("a");
@@ -154,7 +194,7 @@ export default function VisualCanvas({
       URL.revokeObjectURL(svgUrl);
     } catch (err) {
       console.error("Failed to export SVG:", err);
-      alert("Failed to export SVG visualization.");
+      alert("Failed to export visualization.");
     }
   };
 
@@ -280,7 +320,7 @@ export default function VisualCanvas({
           )}
         </div>
 
-        {activeTab === "visualizer" && step && supportsSVGExport && (
+        {activeTab === "visualizer" && step && (
           <button
             onClick={handleExportSVG}
             style={{

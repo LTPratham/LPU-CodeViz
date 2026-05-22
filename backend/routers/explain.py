@@ -29,7 +29,8 @@ Each item must have exactly these fields:
   "code": "<the exact code on that line, trimmed, excluding the line number prefix>",
   "explain": "<1-2 sentence plain English explanation for a beginner>",
   "concept": "<one CS concept tag, e.g. Loop, Recursion, Stack Push, Comparison, Assignment, Function Call, Return, Declaration, SQL Insert, etc.>",
-  "category": "<one of: core | structure | io | logic | db>"
+  "category": "<one of: core | structure | io | logic | db>",
+  "why": "<detailed breakdown of syntax, symbols, variables, and operations on this line for an absolute beginner with no prior coding knowledge (e.g., explaining keys, values, dictionary/list symbols like braces/brackets/commas, parameters, return values, etc. in plain, step-by-step detail)>"
 }}
 
 If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}} instead of an array.

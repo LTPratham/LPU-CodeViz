@@ -168,6 +168,7 @@ export interface ExplainLine {
   explain: string;
   concept: string;
   category: ExplainCategory;
+  why?: string;
 }
 
 export type ExplainResponse = ExplainLine[];

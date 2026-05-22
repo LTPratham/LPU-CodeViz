@@ -440,23 +440,31 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
             {expandedWhy === currentExplain.line && (
               <div style={{
                 marginTop: 6,
-                padding: "10px",
+                padding: "12px",
                 background: "rgba(59,130,246,0.06)",
                 border: "1px solid rgba(59,130,246,0.2)",
                 borderRadius: 6,
                 fontSize: 12,
-                color: "#94A3B8",
+                color: "#E2E8F0",
                 lineHeight: 1.7,
               }}>
-                This is a <strong style={{ color: "#60A5FA" }}>{currentExplain.concept}</strong> operation.{" "}
-                {currentExplain.category === "structure"
-                  ? "Data structures help organize and manage data efficiently. "
-                  : currentExplain.category === "logic"
-                  ? "Control flow decides which code runs based on conditions. "
-                  : currentExplain.category === "core"
-                  ? "This is a fundamental programming operation. "
-                  : ""}
-                Understanding this pattern is essential for your exams.
+                <div style={{ marginBottom: 8 }}>
+                  This is a <strong style={{ color: "#60A5FA" }}>{currentExplain.concept}</strong> operation.
+                </div>
+                <div style={{ color: "#94A3B8", fontSize: "11.5px", whiteSpace: "pre-line" }}>
+                  {currentExplain.why || (
+                    <>
+                      {currentExplain.category === "structure"
+                        ? "Data structures help organize and manage data efficiently. "
+                        : currentExplain.category === "logic"
+                        ? "Control flow decides which code runs based on conditions. "
+                        : currentExplain.category === "core"
+                        ? "This is a fundamental programming operation. "
+                        : ""}
+                      Understanding this pattern is essential for your exams.
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>

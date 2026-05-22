@@ -163,7 +163,8 @@ function VisualizeContent() {
           code: lineText,
           explain: lineText.trim() ? "Executed client-side." : "",
           concept: "Local Execution",
-          category: "core"
+          category: "core",
+          why: "This line is simulated locally in your browser. Use the cloud 'Visualize' option to fetch detailed AI concept breakdowns."
         }));
         setExplanations(fallbackExplains);
       }

@@ -3,6 +3,7 @@ import type { TraceStep, VisualizationState } from "@/lib/types";
 import dynamic from "next/dynamic";
 import { useState, useRef } from "react";
 import ComplexityProfiler from "./visualizers/ComplexityProfiler";
+import { exportAllStepsAsSVG } from "@/lib/exportAllSteps";
 import GraphBuilder from "./visualizers/GraphBuilder";
 
 // Lazy-load all visualizers (they use Framer Motion / SVG)
@@ -123,6 +124,11 @@ export default function VisualCanvas({
   const ds = dataStructure.toLowerCase();
   const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
   const handleExportSVG = () => {
+    exportAllStepsAsSVG(steps, dataStructure, code, language);
+  };
+
+  // Legacy single-step capture (kept but no longer called)
+  const _captureCurrentStep = () => {
     if (!canvasRef.current) return;
     
     // Check if there is an active SVG element
@@ -345,28 +351,34 @@ export default function VisualCanvas({
           )}
         </div>
 
-        {activeTab === "visualizer" && step && (
+        {activeTab === "visualizer" && steps.length > 0 && (
           <button
             onClick={handleExportSVG}
+            title={`Export all ${steps.length} steps as a single SVG`}
             style={{
               background: "rgba(29,158,117,0.1)",
               border: "1px solid rgba(29,158,117,0.3)",
               color: "var(--primary-light)",
-              padding: "4px 10px",
+              padding: "4px 12px",
               borderRadius: 6,
               fontSize: 11,
               fontWeight: 600,
               cursor: "pointer",
               transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(29,158,117,0.2)";
+              e.currentTarget.style.background = "rgba(29,158,117,0.25)";
+              e.currentTarget.style.borderColor = "rgba(29,158,117,0.6)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "rgba(29,158,117,0.1)";
+              e.currentTarget.style.borderColor = "rgba(29,158,117,0.3)";
             }}
           >
-            📥 Export SVG
+            📥 Export All {steps.length} Steps
           </button>
         )}
       </div>

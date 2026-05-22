@@ -122,6 +122,8 @@ export default function VisualCanvas({
 
   const ds = dataStructure.toLowerCase();
   const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
+  const state = step ? step.state : null;
+  const supportsSVGExport = state && (state.type === "graph" || state.type === "binarytree");
 
   const handleExportSVG = () => {
     if (!canvasRef.current) return;
@@ -278,7 +280,7 @@ export default function VisualCanvas({
           )}
         </div>
 
-        {activeTab === "visualizer" && step && (
+        {activeTab === "visualizer" && step && supportsSVGExport && (
           <button
             onClick={handleExportSVG}
             style={{

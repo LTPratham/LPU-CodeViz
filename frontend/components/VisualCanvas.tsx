@@ -168,15 +168,42 @@ export default function VisualCanvas({
         console.error("Failed to read stylesheets:", e);
       }
       
+      // Parse the HTML string and serialize it to valid XHTML (escaping raw ampersands/entities)
+      let xhtmlContent = "";
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        
+        // XMLSerializer will correctly escape characters like ampersands & and self-close non-closing tags like img/br
+        const serializer = new XMLSerializer();
+        const wrapperDiv = doc.createElement("div");
+        wrapperDiv.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+        wrapperDiv.setAttribute("style", "width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;");
+        
+        while (doc.body.firstChild) {
+          wrapperDiv.appendChild(doc.body.firstChild);
+        }
+        
+        xhtmlContent = serializer.serializeToString(wrapperDiv);
+      } catch (err) {
+        console.error("Failed to serialize HTML content to XHTML:", err);
+        // Safe fallback escaping basic ampersands
+        xhtmlContent = `
+    <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;">
+      ${htmlContent.replace(/&/g, "&amp;")}
+    </div>
+        `.trim();
+      }
+      
       source = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <style>
+  <style type="text/css">
+    /* <![CDATA[ */
     ${styles}
+    /* ]]> */
   </style>
   <foreignObject width="100%" height="100%">
-    <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;">
-      ${htmlContent}
-    </div>
+    ${xhtmlContent}
   </foreignObject>
 </svg>
       `.trim();

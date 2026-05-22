@@ -59,7 +59,8 @@ function VisualizeContent() {
   // Fetch user session
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then((res: any) => {
+      const data = res?.data;
       if (data?.user) {
         setUserEmail(data.user.email || data.user.phone || "User");
       }

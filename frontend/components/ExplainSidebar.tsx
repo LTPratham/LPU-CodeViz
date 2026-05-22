@@ -422,59 +422,89 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
               </div>
             )}
 
-            {/* "Why does this work?" expandable */}
-            <button
-              onClick={() => setExpandedWhy(expandedWhy === currentExplain.line ? null : currentExplain.line)}
-              style={{
-                marginTop: 10,
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: 6,
-                padding: "5px 10px",
-                fontSize: 11,
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                width: "100%",
-                textAlign: "left",
-                transition: "all 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span>{expandedWhy === currentExplain.line ? "▼" : "▶"}</span>
-              Why does this work?
-            </button>
-            {expandedWhy === currentExplain.line && (
+            {/* Active Variables Display */}
+            {currentStep && currentStep.variables && typeof currentStep.variables === "object" && Object.keys(currentStep.variables).length > 0 && (
               <div style={{
-                marginTop: 6,
-                padding: "12px",
-                background: "rgba(59,130,246,0.06)",
-                border: "1px solid rgba(59,130,246,0.2)",
-                borderRadius: 6,
-                fontSize: 12,
-                color: "#E2E8F0",
-                lineHeight: 1.7,
+                marginTop: 12,
+                background: "rgba(255, 255, 255, 0.02)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                padding: "10px 12px",
               }}>
-                <div style={{ marginBottom: 8 }}>
-                  This is a <strong style={{ color: "#60A5FA" }}>{renderSafeVal(currentExplain.concept)}</strong> operation.
+                <div style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4
+                }}>
+                  <span>📊</span> Active Variables on this Step
                 </div>
-                <div style={{ color: "#94A3B8", fontSize: "11.5px", whiteSpace: "pre-line" }}>
-                  {renderSafeVal(currentExplain.why) || (
-                    <>
-                      {currentExplain.category === "structure"
-                        ? "Data structures help organize and manage data efficiently. "
-                        : currentExplain.category === "logic"
-                        ? "Control flow decides which code runs based on conditions. "
-                        : currentExplain.category === "core"
-                        ? "This is a fundamental programming operation. "
-                        : ""}
-                      Understanding this pattern is essential for your exams.
-                    </>
-                  )}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {Object.entries(currentStep.variables).map(([name, val]) => (
+                    <div key={name} style={{
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 6,
+                      padding: "4px 8px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 11.5,
+                      fontFamily: "var(--font-mono)",
+                    }}>
+                      <span style={{ color: "var(--primary-light)", fontWeight: 600 }}>{name}</span>
+                      <span style={{ color: "var(--text-muted)" }}>=</span>
+                      <span style={{ color: "#E2E8F0" }}>{renderSafeVal(val)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
+
+            {/* Syntax & Logic Breakdown */}
+            <div style={{
+              marginTop: 12,
+              padding: "12px",
+              background: "rgba(59,130,246,0.06)",
+              border: "1px solid rgba(59,130,246,0.2)",
+              borderRadius: 8,
+              fontSize: 12.5,
+              color: "#E2E8F0",
+              lineHeight: 1.7,
+            }}>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#60A5FA",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}>
+                <span>🔍</span> Syntax & Logic Breakdown
+              </div>
+              <div style={{ color: "#94A3B8", fontSize: "12px", whiteSpace: "pre-line" }}>
+                {renderSafeVal(currentExplain.why) || (
+                  <>
+                    {currentExplain.category === "structure"
+                      ? "Data structures help organize and manage data efficiently. "
+                      : currentExplain.category === "logic"
+                      ? "Control flow decides which code runs based on conditions. "
+                      : currentExplain.category === "core"
+                      ? "This is a fundamental programming operation. "
+                      : ""}
+                    Understanding this pattern is essential for writing correct algorithms.
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         ) : (
           <div style={{

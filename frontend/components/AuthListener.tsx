@@ -9,7 +9,7 @@ export function AuthListener() {
 
   useEffect(() => {
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event === "PASSWORD_RECOVERY") {
         router.push("/reset-password");
       }

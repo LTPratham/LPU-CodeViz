@@ -197,11 +197,9 @@ export default function VisualCanvas({
       
       source = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <style type="text/css">
-    /* <![CDATA[ */
+  <style type="text/css"><![CDATA[
     ${styles}
-    /* ]]> */
-  </style>
+  ]]></style>
   <foreignObject width="100%" height="100%">
     ${xhtmlContent}
   </foreignObject>

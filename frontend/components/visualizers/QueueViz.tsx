@@ -15,6 +15,14 @@ const STATUS_STYLES = {
 };
 
 export default function QueueViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.elements)) {
+    return (
+      <div style={{ width: "100%", padding: "32px 16px", display: "flex", flexDirection: "column", alignItems: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Queue Visualization: No valid queue data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
 
   return (

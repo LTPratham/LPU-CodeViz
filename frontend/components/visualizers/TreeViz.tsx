@@ -44,6 +44,14 @@ function buildLayout(nodes: TreeNode[]): LayoutNode[] {
 }
 
 export default function TreeViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.nodes)) {
+    return (
+      <div style={{ width: "100%", padding: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Tree Visualization: No valid tree data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
   const layout = useMemo(() => buildLayout(state.nodes), [state.nodes]);
   const nodeMap = useMemo(() => new Map(layout.map((n) => [n.id, n])), [layout]);

@@ -23,6 +23,14 @@ const EDGE_STATUS_STYLES: Record<string, { stroke: string; strokeWidth: number; 
 };
 
 export default function GraphViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.nodes) || !Array.isArray(state.edges)) {
+    return (
+      <div style={{ width: "100%", height: "100%", padding: 16, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Graph Visualization: No valid graph data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
 
   // Sort nodes by ID to guarantee consistent position index assignment

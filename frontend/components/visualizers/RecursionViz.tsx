@@ -14,6 +14,14 @@ const STATUS_STYLES = {
 };
 
 export default function RecursionViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.frames)) {
+    return (
+      <div style={{ width: "100%", padding: "24px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Recursion Visualization: No valid recursion data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
   const frames = [...state.frames].reverse(); // Top of stack first
 

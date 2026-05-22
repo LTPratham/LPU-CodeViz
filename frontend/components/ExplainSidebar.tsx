@@ -28,6 +28,12 @@ const CONCEPT_COLORS: Record<string, string> = {
   "Condition":   "#F59E0B",
 };
 
+const renderSafeVal = (val: any): string => {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "string") return val;
+  return JSON.stringify(val);
+};
+
 export default function ExplainSidebar({ explanations, currentStep, currentLine }: Props) {
   const [expandedWhy, setExpandedWhy] = useState<number | null>(null);
 
@@ -40,8 +46,9 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
   const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [showSpeechControls, setShowSpeechControls] = useState(true);
 
-  const currentExplain = explanations.find((e) => e.line === currentLine);
-  const prevExplains = explanations.filter((e) => e.line < currentLine).slice(-4).reverse();
+  const safeExplanations = Array.isArray(explanations) ? explanations : [];
+  const currentExplain = safeExplanations.find((e) => e?.line === currentLine);
+  const prevExplains = safeExplanations.filter((e) => e && e.line < currentLine).slice(-4).reverse();
 
   // Load voices dynamically
   useEffect(() => {
@@ -76,14 +83,15 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
   }, [voices, selectedVoice]);
 
   // Speech controls
-  const speak = (text: string) => {
+  const speak = (text: any) => {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
     synth.cancel();
 
-    if (!text) return;
+    const textStr = renderSafeVal(text);
+    if (!textStr) return;
 
-    const cleanText = text.replace(/[`*#_]/g, "");
+    const cleanText = textStr.replace(/[`*#_]/g, "");
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = speed;
@@ -355,11 +363,11 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
               <span style={{
                 fontSize: 10,
                 fontWeight: 700,
-                color: CATEGORY_COLORS[currentExplain.category] || "#64748B",
+                color: CATEGORY_COLORS[String(currentExplain.category)] || "#64748B",
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
               }}>
-                {currentExplain.category}
+                {renderSafeVal(currentExplain.category)}
               </span>
             </div>
 
@@ -375,12 +383,12 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
               whiteSpace: "pre-wrap",
               wordBreak: "break-all",
             }}>
-              {currentExplain.code}
+              {renderSafeVal(currentExplain.code)}
             </div>
 
             {/* Explanation text */}
             <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 10 }}>
-              {currentExplain.explain}
+              {renderSafeVal(currentExplain.explain)}
             </p>
 
             {/* Concept badge */}
@@ -390,11 +398,11 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 fontWeight: 700,
                 padding: "3px 10px",
                 borderRadius: 20,
-                background: `${CONCEPT_COLORS[currentExplain.concept] || "#64748B"}20`,
-                border: `1px solid ${CONCEPT_COLORS[currentExplain.concept] || "#64748B"}40`,
-                color: CONCEPT_COLORS[currentExplain.concept] || "#94A3B8",
+                background: `${CONCEPT_COLORS[String(currentExplain.concept)] || "#64748B"}20`,
+                border: `1px solid ${CONCEPT_COLORS[String(currentExplain.concept)] || "#64748B"}40`,
+                color: CONCEPT_COLORS[String(currentExplain.concept)] || "#94A3B8",
               }}>
-                {currentExplain.concept}
+                {renderSafeVal(currentExplain.concept)}
               </span>
             </div>
 
@@ -410,7 +418,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 color: "#F59E0B",
                 lineHeight: 1.6,
               }}>
-                {currentStep.description}
+                {typeof currentStep.description === "string" ? currentStep.description : JSON.stringify(currentStep.description)}
               </div>
             )}
 
@@ -449,10 +457,10 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 lineHeight: 1.7,
               }}>
                 <div style={{ marginBottom: 8 }}>
-                  This is a <strong style={{ color: "#60A5FA" }}>{currentExplain.concept}</strong> operation.
+                  This is a <strong style={{ color: "#60A5FA" }}>{renderSafeVal(currentExplain.concept)}</strong> operation.
                 </div>
                 <div style={{ color: "#94A3B8", fontSize: "11.5px", whiteSpace: "pre-line" }}>
-                  {currentExplain.why || (
+                  {renderSafeVal(currentExplain.why) || (
                     <>
                       {currentExplain.category === "structure"
                         ? "Data structures help organize and manage data efficiently. "
@@ -475,7 +483,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
             color: "var(--text-muted)",
             fontSize: 13,
           }}>
-            {explanations.length > 0
+            {safeExplanations.length > 0
               ? "Navigate to a step to see the explanation"
               : "Click Visualize to generate explanations"}
           </div>
@@ -510,9 +518,9 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 }}>
                   <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 3, fontFamily: "var(--font-mono)" }}>
                     Line {e.line}
-                    <span style={{ color: CATEGORY_COLORS[e.category], marginLeft: 6 }}>{e.concept}</span>
+                    <span style={{ color: CATEGORY_COLORS[String(e.category)], marginLeft: 6 }}>{renderSafeVal(e.concept)}</span>
                   </div>
-                  <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{e.explain}</p>
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{renderSafeVal(e.explain)}</p>
                 </div>
               ))}
             </div>

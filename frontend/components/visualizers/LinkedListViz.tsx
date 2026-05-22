@@ -16,6 +16,14 @@ const STATUS_STYLES = {
 };
 
 export default function LinkedListViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.nodes)) {
+    return (
+      <div style={{ width: "100%", padding: "32px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Linked List Visualization: No valid linked list data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
   const nodes = state.nodes;
 

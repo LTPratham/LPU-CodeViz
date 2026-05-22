@@ -19,6 +19,14 @@ const STATUS_STYLES: Record<string, { bg: string; border: string; color: string;
 export default function ArrayViz({ state, speed = 1 }: Props) {
   const duration = 0.4 / speed;
 
+  if (!state || !Array.isArray(state.elements)) {
+    return (
+      <div style={{ width: "100%", padding: "32px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Array Visualization: No valid array data available.
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: "100%", padding: "32px 16px" }}>
       {/* Label */}

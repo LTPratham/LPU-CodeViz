@@ -20,6 +20,14 @@ const STATUS_STYLES: Record<string, { bg: string; border: string; color: string;
 };
 
 export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 0 }: Props) {
+  if (!state || !Array.isArray(state.elements)) {
+    return (
+      <div style={{ width: "100%", padding: "24px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Sorting Visualization: No valid sorting data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
   const maxVal = Math.max(...state.elements.map((e) => Number(e.value) || 1), 1);
 

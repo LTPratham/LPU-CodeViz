@@ -14,6 +14,14 @@ const STATUS_STYLES = {
 };
 
 export default function StackViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.elements)) {
+    return (
+      <div style={{ width: "100%", padding: "32px 16px", display: "flex", flexDirection: "column", alignItems: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Stack Visualization: No valid stack data available.
+      </div>
+    );
+  }
+
   const duration = 0.4 / speed;
   const elements = [...state.elements].reverse(); // top first for display
 

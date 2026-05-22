@@ -26,31 +26,31 @@ export default function ComplexityProfiler({ steps, currentStepIdx }: Props) {
       if (state) {
         switch (state.type) {
           case "array":
-            spaceCost = state.elements.length;
+            spaceCost = Array.isArray(state.elements) ? state.elements.length : 0;
             break;
           case "stack":
-            spaceCost = state.elements.length;
+            spaceCost = Array.isArray(state.elements) ? state.elements.length : 0;
             break;
           case "queue":
-            spaceCost = state.elements.length;
+            spaceCost = Array.isArray(state.elements) ? state.elements.length : 0;
             break;
           case "linkedlist":
-            spaceCost = state.nodes.length;
+            spaceCost = Array.isArray(state.nodes) ? state.nodes.length : 0;
             break;
           case "binarytree":
-            spaceCost = state.nodes.length;
+            spaceCost = Array.isArray(state.nodes) ? state.nodes.length : 0;
             break;
           case "recursion":
-            spaceCost = state.frames.length; // Peak stack frame depth
+            spaceCost = Array.isArray(state.frames) ? state.frames.length : 0;
             break;
           case "sqltable":
-            spaceCost = state.rows.length;
+            spaceCost = Array.isArray(state.rows) ? state.rows.length : 0;
             break;
           case "graph":
-            spaceCost = state.nodes.length + state.edges.length;
+            spaceCost = (Array.isArray(state.nodes) ? state.nodes.length : 0) + (Array.isArray(state.edges) ? state.edges.length : 0);
             break;
           case "variables":
-            spaceCost = state.variables.length;
+            spaceCost = Array.isArray(state.variables) ? state.variables.length : 0;
             break;
         }
       }

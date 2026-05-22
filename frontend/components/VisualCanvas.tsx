@@ -384,7 +384,7 @@ export default function VisualCanvas({
           minHeight: 40,
         }}>
           <span style={{ color: "var(--text-muted)", marginRight: 6 }}>Step {step.stepNum}:</span>
-          {step.description}
+          {typeof step.description === "string" ? step.description : JSON.stringify(step.description)}
         </div>
       )}
 

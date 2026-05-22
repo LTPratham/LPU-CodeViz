@@ -16,6 +16,14 @@ const ROW_STATUS_STYLES = {
 };
 
 function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label?: string }) {
+  if (!state || !Array.isArray(state.columns) || !Array.isArray(state.rows)) {
+    return (
+      <div style={{ flex: 1, padding: 24, textAlign: "center", color: "var(--text-muted)", fontSize: 13, border: "1px dashed var(--border)", borderRadius: 8 }}>
+        Table: No valid columns or rows structure.
+      </div>
+    );
+  }
+
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       {label && (
@@ -104,6 +112,14 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
 }
 
 export default function SqlTableViz({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.columns) || !Array.isArray(state.rows)) {
+    return (
+      <div style={{ width: "100%", padding: "24px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        SQL Table Visualization: No valid table structure available.
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: "100%", padding: "24px 16px" }}>
       <div style={{ textAlign: "center", marginBottom: 20, fontSize: 12, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>

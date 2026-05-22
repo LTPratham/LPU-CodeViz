@@ -14,6 +14,14 @@ const STATUS_STYLES = {
 };
 
 export default function VariableBoard({ state, speed = 1 }: Props) {
+  if (!state || !Array.isArray(state.variables)) {
+    return (
+      <div style={{ width: "100%", padding: "24px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Memory Board: No valid variable data available.
+      </div>
+    );
+  }
+
   const duration = 0.35 / speed;
 
   return (

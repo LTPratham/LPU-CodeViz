@@ -1,6 +1,9 @@
 "use client";
 import type { TraceStep, VisualizationState } from "@/lib/types";
 import dynamic from "next/dynamic";
+import { useState, useRef } from "react";
+import ComplexityProfiler from "./visualizers/ComplexityProfiler";
+import GraphBuilder from "./visualizers/GraphBuilder";
 
 // Lazy-load all visualizers (they use Framer Motion / SVG)
 const ArrayViz     = dynamic(() => import("./visualizers/ArrayViz"),     { ssr: false });
@@ -24,6 +27,9 @@ interface Props {
   code?: string;
   language?: string;
   isLastStep?: boolean;
+  steps?: TraceStep[];
+  currentStepIdx?: number;
+  onGenerateCode?: (code: string) => void;
 }
 
 function EmptyCanvas({ message }: { message: string }) {
@@ -95,14 +101,73 @@ function isSortingCode(ds: string): boolean {
   );
 }
 
-export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading = false, comparisons = 0, swaps = 0, code, language, isLastStep }: Props) {
+export default function VisualCanvas({
+  step,
+  dataStructure,
+  speed = 1,
+  isLoading = false,
+  comparisons = 0,
+  swaps = 0,
+  code,
+  language,
+  isLastStep,
+  steps = [],
+  currentStepIdx = 0,
+  onGenerateCode,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<"visualizer" | "complexity" | "builder">("visualizer");
+  const canvasRef = useRef<HTMLDivElement>(null);
+
   if (isLoading) return <LoadingCanvas />;
-  if (!step) return <EmptyCanvas message="No visualization yet" />;
 
-  const state = step.state as VisualizationState;
   const ds = dataStructure.toLowerCase();
+  const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
 
-  const renderViz = () => {
+  const handleExportSVG = () => {
+    if (!canvasRef.current) return;
+    const svgEl = canvasRef.current.querySelector("svg");
+    if (!svgEl) {
+      alert("No active visualization SVG found to export!");
+      return;
+    }
+    try {
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svgEl);
+      
+      if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+      }
+      
+      const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = svgUrl;
+      downloadLink.download = `codeviz_${dataStructure || "visualization"}.svg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(svgUrl);
+    } catch (err) {
+      console.error("Failed to export SVG:", err);
+      alert("Failed to export SVG visualization.");
+    }
+  };
+
+  const renderContent = () => {
+    if (activeTab === "builder") {
+      return <GraphBuilder onGenerateCode={onGenerateCode || (() => {})} />;
+    }
+
+    if (activeTab === "complexity") {
+      return <ComplexityProfiler steps={steps} currentStepIdx={currentStepIdx} />;
+    }
+
+    // Default Visualizer
+    if (!step) return <EmptyCanvas message="No visualization yet" />;
+    const state = step.state as VisualizationState;
     if (!state) return <EmptyCanvas message="No state data" />;
 
     // Route to correct visualizer based on dataStructure type
@@ -149,24 +214,119 @@ export default function VisualCanvas({ step, dataStructure, speed = 1, isLoading
 
   return (
     <div style={{ width: "100%", height: "100%", overflow: "auto", display: "flex", flexDirection: "column" }}>
-      {/* Step description banner */}
+      {/* Tabs Header bar */}
       <div style={{
-        padding: "10px 16px",
-        background: "rgba(29,158,117,0.08)",
-        borderBottom: "1px solid rgba(29,158,117,0.2)",
-        fontSize: 13,
-        color: "var(--primary-light)",
-        fontWeight: 500,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottom: "1px solid var(--border)",
+        background: "rgba(255,255,255,0.02)",
+        padding: "0 16px",
+        height: 40,
         flexShrink: 0,
-        minHeight: 40,
       }}>
-        <span style={{ color: "var(--text-muted)", marginRight: 6 }}>Step {step.stepNum}:</span>
-        {step.description}
+        <div style={{ display: "flex", gap: 4, height: "100%", alignItems: "center" }}>
+          <button
+            onClick={() => setActiveTab("visualizer")}
+            style={{
+              padding: "0 12px",
+              height: "100%",
+              border: "none",
+              background: activeTab === "visualizer" ? "rgba(29,158,117,0.15)" : "transparent",
+              color: activeTab === "visualizer" ? "var(--primary-light)" : "var(--text-muted)",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              borderBottom: activeTab === "visualizer" ? "2px solid var(--primary)" : "none",
+            }}
+          >
+            👁️ Visualizer
+          </button>
+          <button
+            onClick={() => setActiveTab("complexity")}
+            style={{
+              padding: "0 12px",
+              height: "100%",
+              border: "none",
+              background: activeTab === "complexity" ? "rgba(29,158,117,0.15)" : "transparent",
+              color: activeTab === "complexity" ? "var(--primary-light)" : "var(--text-muted)",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              borderBottom: activeTab === "complexity" ? "2px solid var(--primary)" : "none",
+            }}
+          >
+            📈 Complexity
+          </button>
+          {isGraph && (
+            <button
+              onClick={() => setActiveTab("builder")}
+              style={{
+                padding: "0 12px",
+                height: "100%",
+                border: "none",
+                background: activeTab === "builder" ? "rgba(29,158,117,0.15)" : "transparent",
+                color: activeTab === "builder" ? "var(--primary-light)" : "var(--text-muted)",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+                borderBottom: activeTab === "builder" ? "2px solid var(--primary)" : "none",
+              }}
+            >
+              ✏️ Graph Builder
+            </button>
+          )}
+        </div>
+
+        {activeTab === "visualizer" && step && (
+          <button
+            onClick={handleExportSVG}
+            style={{
+              background: "rgba(29,158,117,0.1)",
+              border: "1px solid rgba(29,158,117,0.3)",
+              color: "var(--primary-light)",
+              padding: "4px 10px",
+              borderRadius: 6,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(29,158,117,0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(29,158,117,0.1)";
+            }}
+          >
+            📥 Export SVG
+          </button>
+        )}
       </div>
 
-      {/* Visualizer */}
-      <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
-        {renderViz()}
+      {/* Step description banner (only shown for visualizer step contexts) */}
+      {activeTab === "visualizer" && step && (
+        <div style={{
+          padding: "10px 16px",
+          background: "rgba(29,158,117,0.08)",
+          borderBottom: "1px solid rgba(29,158,117,0.2)",
+          fontSize: 13,
+          color: "var(--primary-light)",
+          fontWeight: 500,
+          flexShrink: 0,
+          minHeight: 40,
+        }}>
+          <span style={{ color: "var(--text-muted)", marginRight: 6 }}>Step {step.stepNum}:</span>
+          {step.description}
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div
+        ref={canvasRef}
+        style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center" }}
+      >
+        {renderContent()}
       </div>
     </div>
   );

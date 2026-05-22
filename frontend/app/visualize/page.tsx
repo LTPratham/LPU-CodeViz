@@ -195,6 +195,11 @@ function VisualizeContent() {
     handleVisualize(selectedCode, selectedLang);
   }, [handleVisualize]);
 
+  const handleGenerateCode = useCallback((generatedCode: string) => {
+    setCode(generatedCode);
+    handleVisualize(generatedCode, language);
+  }, [language, handleVisualize]);
+
   const handleToggleChallengeMode = () => {
     setIsChallengeMode((v) => {
       const newVal = !v;
@@ -477,6 +482,9 @@ function VisualizeContent() {
               code={code}
               language={language}
               isLastStep={steps.length > 0 && currentStepIdx === steps.length - 1}
+              steps={steps}
+              currentStepIdx={currentStepIdx}
+              onGenerateCode={handleGenerateCode}
             />
           </div>
 

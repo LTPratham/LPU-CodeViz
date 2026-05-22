@@ -26,4 +26,5 @@ env/
 # Project specific
 backend/venv/
 backend/.env
+project_history/
 

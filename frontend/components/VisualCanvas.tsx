@@ -119,117 +119,18 @@ export default function VisualCanvas({
   const [activeTab, setActiveTab] = useState<"visualizer" | "complexity" | "builder">("visualizer");
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  if (isLoading) return <LoadingCanvas />;
-
+  // All hooks must be called before any conditional returns.
+  // isLoading guard is handled inside renderContent below.
   const ds = dataStructure.toLowerCase();
   const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
+
   const handleExportSVG = () => {
     exportAllStepsAsSVG(steps, dataStructure, code, language);
   };
 
-  // Legacy single-step capture (kept but no longer called)
-  const _captureCurrentStep = () => {
-    if (!canvasRef.current) return;
-    
-    // Check if there is an active SVG element
-    const svgEl = canvasRef.current.querySelector("svg");
-    
-    let source = "";
-    
-    if (svgEl) {
-      // Direct SVG Export
-      try {
-        const serializer = new XMLSerializer();
-        source = serializer.serializeToString(svgEl);
-        
-        if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-          source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-        }
-        if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
-          source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-        }
-      } catch (err) {
-        console.error("Failed to serialize SVG:", err);
-      }
-    }
-    
-    // Fallback to HTML foreignObject wrapper if no direct SVG found or serialization failed
-    if (!source) {
-      const htmlContent = canvasRef.current.innerHTML;
-      const width = canvasRef.current.offsetWidth || 800;
-      const height = canvasRef.current.offsetHeight || 600;
-      
-      // Grab all active CSS rules to preserve colors, themes, variables
-      let styles = "";
-      try {
-        for (const sheet of Array.from(document.styleSheets)) {
-          try {
-            const rules = Array.from(sheet.cssRules);
-            styles += rules.map(rule => rule.cssText).join("\n");
-          } catch (e) {
-            // ignore cross-origin stylesheet access restriction
-          }
-        }
-      } catch (e) {
-        console.error("Failed to read stylesheets:", e);
-      }
-      
-      // Parse the HTML string and serialize it to valid XHTML (escaping raw ampersands/entities)
-      let xhtmlContent = "";
-      try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlContent, "text/html");
-        
-        // XMLSerializer will correctly escape characters like ampersands & and self-close non-closing tags like img/br
-        const serializer = new XMLSerializer();
-        const wrapperDiv = doc.createElement("div");
-        wrapperDiv.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-        wrapperDiv.setAttribute("style", "width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;");
-        
-        while (doc.body.firstChild) {
-          wrapperDiv.appendChild(doc.body.firstChild);
-        }
-        
-        xhtmlContent = serializer.serializeToString(wrapperDiv);
-      } catch (err) {
-        console.error("Failed to serialize HTML content to XHTML:", err);
-        // Safe fallback escaping basic ampersands
-        xhtmlContent = `
-    <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; color: var(--text); background: var(--bg); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 10px;">
-      ${htmlContent.replace(/&/g, "&amp;")}
-    </div>
-        `.trim();
-      }
-      
-      source = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-  <style type="text/css"><![CDATA[
-    ${styles}
-  ]]></style>
-  <foreignObject width="100%" height="100%">
-    ${xhtmlContent}
-  </foreignObject>
-</svg>
-      `.trim();
-    }
-    
-    try {
-      const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const downloadLink = document.createElement("a");
-      downloadLink.href = svgUrl;
-      downloadLink.download = `codeviz_${dataStructure || "visualization"}.svg`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(svgUrl);
-    } catch (err) {
-      console.error("Failed to export SVG:", err);
-      alert("Failed to export visualization.");
-    }
-  };
-
   const renderContent = () => {
+    if (isLoading) return <LoadingCanvas />;
+
     if (activeTab === "builder") {
       return <GraphBuilder onGenerateCode={onGenerateCode || (() => {})} />;
     }
@@ -265,7 +166,7 @@ export default function VisualCanvas({
         </div>
       );
     }
-    
+
     if (ds.includes("sort") || isSortingCode(ds)) {
       if (state.type === "array") {
         return <SortingViz state={state} speed={speed} comparisons={comparisons} swaps={swaps} />;

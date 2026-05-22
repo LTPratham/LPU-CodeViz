@@ -48,11 +48,14 @@ The frontend receives this array of snapshots and feeds it into the `StepControl
 
 ## 🚀 Features
 
-- **9 Animated Visualizers:** Arrays, Sorting, Stacks, Queues, Linked Lists, Binary Trees, Recursion Call Stacks, SQL Tables, and Variable Boards.
-- **Syllabus Aligned:** Pre-loaded with 20+ examples perfectly mapped to Computer Science courses (C, Python, DBMS, Java, HTML).
-- **Start from Zero:** Designed for absolute beginners with examples starting from basic variable initialization and loops.
-- **AI Tutor Chat:** Stuck on a concept? Just ask the built-in AI Tutor for help directly in the interface.
-- **One-Click Sharing:** Instantly share your code with classmates using base64-encoded URL sharing.
+- **10 Animated Visualizers:** Arrays, Sorting, Stacks, Queues, Linked Lists, Binary Trees, Graphs, Recursion Call Stacks, SQL Tables, and Variable Boards.
+- **Interactive Graph Creator**: Click to draw vertices and drag to connect edges visually, auto-generating Python graph adjacency lists.
+- **Live Complexity Profiler**: View real-time SVG charts graphing operations count (time complexity) and stack memory depth (space complexity) as code executes.
+- **Vector SVG Export**: Export any visual canvas state as a lossless, high-definition vector `.svg` file.
+- **Syllabus Aligned**: Pre-loaded with 20+ examples perfectly mapped to LPU Computer Science courses (C, Python, DBMS, Java, HTML).
+- **Start from Zero**: Designed for absolute beginners with examples starting from basic variable initialization and loops.
+- **AI Tutor Chat**: Stuck on a concept? Just ask the built-in AI Tutor for help directly in the interface.
+- **One-Click Sharing**: Instantly share your code with classmates using base64-encoded URL sharing.
 
 ## 🛠️ Tech Stack
 

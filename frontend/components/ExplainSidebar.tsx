@@ -86,57 +86,72 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
   const speak = (text: any) => {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
-    synth.cancel();
+    try {
+      synth.cancel();
+    } catch (e) {}
 
     const textStr = renderSafeVal(text);
     if (!textStr) return;
 
     const cleanText = textStr.replace(/[`*#_]/g, "");
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = speed;
-    utterance.pitch = 1.0;
+    try {
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = speed;
+      utterance.pitch = 1.0;
 
-    if (selectedVoice) {
-      const voice = voices.find(v => v.name === selectedVoice);
-      if (voice) utterance.voice = voice;
+      if (selectedVoice) {
+        const voice = voices.find(v => v.name === selectedVoice);
+        if (voice) utterance.voice = voice;
+      }
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+
+      setIsSpeaking(true);
+      setIsPaused(false);
+      synth.speak(utterance);
+    } catch (e) {
+      console.error("[SpeechSynthesis] speak error:", e);
+      setIsSpeaking(false);
+      setIsPaused(false);
     }
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
-
-    setIsSpeaking(true);
-    setIsPaused(false);
-    synth.speak(utterance);
   };
 
   const togglePause = () => {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
-    if (synth.speaking) {
-      if (synth.paused) {
-        synth.resume();
-        setIsPaused(false);
-      } else {
-        synth.pause();
-        setIsPaused(true);
+    try {
+      if (synth.speaking) {
+        if (synth.paused) {
+          synth.resume();
+          setIsPaused(false);
+        } else {
+          synth.pause();
+          setIsPaused(true);
+        }
       }
+    } catch (e) {
+      console.error("[SpeechSynthesis] togglePause error:", e);
     }
   };
 
   const stop = () => {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
-    synth.cancel();
+    try {
+      synth.cancel();
+    } catch (e) {}
     setIsSpeaking(false);
     setIsPaused(false);
   };
+
 
   // Sync automatic play on line changes
   useEffect(() => {

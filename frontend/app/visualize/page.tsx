@@ -48,11 +48,14 @@ function VisualizeContent() {
   const [activeChallenge, setActiveChallenge] = useState<PredictionChallenge | null>(null);
   const [userAnswer, setUserAnswer] = useState<string | null>(null);
   const [challengeState, setChallengeState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
+  // Increments on every Visualize click — used as key on error boundary so it fully resets
+  const [visualizeRunId, setVisualizeRunId] = useState(0);
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentStep = steps[currentStepIdx] ?? null;
-  const currentLine = currentStep?.line ?? -1;
+  // Use 0 (not -1) so Monaco never gets a negative line number
+  const currentLine = currentStep?.line ?? 0;
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -135,6 +138,8 @@ function VisualizeContent() {
     const activeCode = typeof overrideCode === "string" ? overrideCode : code;
     const activeLang = typeof overrideLang === "string" ? overrideLang : language;
     if (!activeCode.trim()) return;
+    // Increment run ID so error boundaries fully remount and reset
+    setVisualizeRunId((id) => id + 1);
     setIsLoading(true);
     setError(null);
     setSteps([]);
@@ -477,6 +482,7 @@ function VisualizeContent() {
           </div>
           <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
             <VisualCanvas
+              key={visualizeRunId}
               step={currentStep}
               dataStructure={dataStructure}
               speed={speed}
@@ -865,11 +871,9 @@ function VisualizeContent() {
 
 export default function VisualizePage() {
   return (
-    <VisualizerErrorBoundary fallbackMessage="The visualizer encountered an unexpected error">
-      <Suspense fallback={<div style={{ padding: 20, color: "var(--text)" }}>Loading...</div>}>
-        <VisualizeContent />
-      </Suspense>
-    </VisualizerErrorBoundary>
+    <Suspense fallback={<div style={{ padding: 20, color: "var(--text)" }}>Loading...</div>}>
+      <VisualizeContent />
+    </Suspense>
   );
 }
 

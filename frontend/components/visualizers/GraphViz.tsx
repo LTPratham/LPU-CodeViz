@@ -23,28 +23,10 @@ const EDGE_STATUS_STYLES: Record<string, { stroke: string; strokeWidth: number; 
 };
 
 export default function GraphViz({ state, speed = 1 }: Props) {
-  if (!state || !Array.isArray(state.nodes) || !Array.isArray(state.edges)) {
-    return (
-      <div style={{ width: "100%", height: "100%", padding: 16, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-        Graph Visualization: No valid graph data available.
-      </div>
-    );
-  }
+  const validNodes = state && Array.isArray(state.nodes) ? state.nodes : [];
+  const validEdges = state && Array.isArray(state.edges) ? state.edges : [];
 
   const duration = 0.4 / speed;
-
-  // Sort nodes by ID to guarantee consistent position index assignment
-  const sortedNodes = useMemo(() => {
-    return [...state.nodes].sort((a, b) => a.id.localeCompare(b.id));
-  }, [state.nodes]);
-
-  const [offsets, setOffsets] = useState<Record<string, { x: number; y: number }>>({});
-
-  // Reset offsets when layout structure changes (e.g., node list changes)
-  const layoutHash = useMemo(() => sortedNodes.map((n) => n.id).join(","), [sortedNodes]);
-  useEffect(() => {
-    setOffsets({});
-  }, [layoutHash]);
 
   // SVG parameters
   const width = 600;
@@ -53,6 +35,20 @@ export default function GraphViz({ state, speed = 1 }: Props) {
   const cy = height / 2;
   const radius = 120; // Radius of circular layout
   const nodeRadius = 22;
+
+  // Sort nodes by ID to guarantee consistent position index assignment
+  const sortedNodes = useMemo(() => {
+    return [...validNodes].sort((a, b) => a.id.localeCompare(b.id));
+  }, [validNodes]);
+
+  const [offsets, setOffsets] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Reset offsets when layout structure changes (e.g., node list changes)
+  const layoutHash = useMemo(() => sortedNodes.map((n) => n.id).join(","), [sortedNodes]);
+  
+  useEffect(() => {
+    setOffsets({});
+  }, [layoutHash]);
 
   // Compute node coordinates map
   const coordMap = useMemo(() => {
@@ -74,7 +70,7 @@ export default function GraphViz({ state, speed = 1 }: Props) {
 
   // Adjust edge lines so they don't intersect the circle boundary, and directed arrowheads point perfectly at boundary
   const edges = useMemo(() => {
-    return state.edges.map((edge) => {
+    return validEdges.map((edge) => {
       const fromNode = coordMap[edge.from];
       const toNode = coordMap[edge.to];
       if (!fromNode || !toNode) return null;
@@ -90,7 +86,7 @@ export default function GraphViz({ state, speed = 1 }: Props) {
       const x1 = fromNode.x + Math.cos(angle) * nodeRadius;
       const y1 = fromNode.y + Math.sin(angle) * nodeRadius;
       // End line at boundary of toNode. If directed, add extra offset for marker
-      const isDirected = edge.directed ?? state.directed ?? false;
+      const isDirected = edge.directed ?? state?.directed ?? false;
       const arrowPadding = isDirected ? 6 : 0;
       const x2 = toNode.x - Math.cos(angle) * (nodeRadius + arrowPadding);
       const y2 = toNode.y - Math.sin(angle) * (nodeRadius + arrowPadding);
@@ -112,7 +108,15 @@ export default function GraphViz({ state, speed = 1 }: Props) {
         isDirected,
       };
     }).filter(Boolean);
-  }, [state.edges, state.directed, coordMap]);
+  }, [validEdges, state?.directed, coordMap]);
+
+  if (!state || !Array.isArray(state.nodes) || !Array.isArray(state.edges)) {
+    return (
+      <div style={{ width: "100%", height: "100%", padding: 16, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Graph Visualization: No valid graph data available.
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "100%", height: "100%", padding: 16, display: "flex", flexDirection: "column", alignItems: "center" }}>

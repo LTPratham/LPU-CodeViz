@@ -44,22 +44,18 @@ function buildLayout(nodes: TreeNode[]): LayoutNode[] {
 }
 
 export default function TreeViz({ state, speed = 1 }: Props) {
-  if (!state || !Array.isArray(state.nodes)) {
-    return (
-      <div style={{ width: "100%", padding: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-        Tree Visualization: No valid tree data available.
-      </div>
-    );
-  }
-
   const duration = 0.4 / speed;
-  const layout = useMemo(() => buildLayout(state.nodes), [state.nodes]);
+
+  const validNodes = state && Array.isArray(state.nodes) ? state.nodes : [];
+
+  const layout = useMemo(() => buildLayout(validNodes), [validNodes]);
   const nodeMap = useMemo(() => new Map(layout.map((n) => [n.id, n])), [layout]);
 
   const [offsets, setOffsets] = useState<Record<string, { x: number; y: number }>>({});
 
   // Reset offsets when layout structure changes (e.g. node additions/deletions)
-  const layoutHash = useMemo(() => state.nodes.map((n) => n.id).join(","), [state.nodes]);
+  const layoutHash = useMemo(() => validNodes.map((n) => n.id).join(","), [validNodes]);
+  
   useEffect(() => {
     setOffsets({});
   }, [layoutHash]);
@@ -84,6 +80,14 @@ export default function TreeViz({ state, speed = 1 }: Props) {
       }, 0) + 40
     );
   }, [layout, offsets]);
+
+  if (!state || !Array.isArray(state.nodes)) {
+    return (
+      <div style={{ width: "100%", padding: "16px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+        Tree Visualization: No valid tree data available.
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "100%", padding: "16px" }}>

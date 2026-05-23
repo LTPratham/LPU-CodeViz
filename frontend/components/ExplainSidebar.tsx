@@ -55,18 +55,28 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
     const updateVoices = () => {
-      const allVoices = synth.getVoices();
-      const engVoices = allVoices.filter(v => v.lang.toLowerCase().startsWith("en"));
-      setVoices(engVoices.length > 0 ? engVoices : allVoices);
+      try {
+        const allVoices = synth.getVoices();
+        const engVoices = allVoices.filter(v => v.lang.toLowerCase().startsWith("en"));
+        setVoices(engVoices.length > 0 ? engVoices : allVoices);
+      } catch (e) {
+        console.error("[SpeechSynthesis] getVoices error:", e);
+      }
     };
-    updateVoices();
-    if (synth.onvoiceschanged !== undefined) {
-      synth.onvoiceschanged = updateVoices;
+    try {
+      updateVoices();
+      if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = updateVoices;
+      }
+    } catch (e) {
+      console.error("[SpeechSynthesis] init error:", e);
     }
     return () => {
-      if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = null;
-      }
+      try {
+        if (synth.onvoiceschanged !== undefined) {
+          synth.onvoiceschanged = null;
+        }
+      } catch (e) {}
     };
   }, []);
 
@@ -157,16 +167,26 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
-    synth.cancel();
+    try {
+      synth.cancel();
+    } catch (e) {
+      console.warn("[SpeechSynthesis] cancel error in line sync:", e);
+    }
     setIsSpeaking(false);
     setIsPaused(false);
 
+    let timer: NodeJS.Timeout;
     if (autoPlay && currentExplain) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         speak(currentExplain.explain);
       }, 50);
-      return () => clearTimeout(timer);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+      try {
+        synth.cancel();
+      } catch (e) {}
+    };
   }, [currentLine, autoPlay]);
 
   return (

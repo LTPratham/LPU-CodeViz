@@ -5,6 +5,7 @@ import { useState, useRef } from "react";
 import ComplexityProfiler from "./visualizers/ComplexityProfiler";
 import { exportAllStepsAsSVG } from "@/lib/exportAllSteps";
 import GraphBuilder from "./visualizers/GraphBuilder";
+import VisualizerErrorBoundary from "./VisualizerErrorBoundary";
 
 // Lazy-load all visualizers (they use Framer Motion / SVG)
 const ArrayViz     = dynamic(() => import("./visualizers/ArrayViz"),     { ssr: false });
@@ -306,7 +307,9 @@ export default function VisualCanvas({
         ref={canvasRef}
         style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center" }}
       >
-        {renderContent()}
+        <VisualizerErrorBoundary key={`${dataStructure}-${currentStepIdx}`}>
+          {renderContent()}
+        </VisualizerErrorBoundary>
       </div>
     </div>
   );

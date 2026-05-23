@@ -13,6 +13,7 @@ import ExplainSidebar from "@/components/ExplainSidebar";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "../login/actions";
 import { generateChallenge, shuffleArray } from "@/lib/challenge";
+import VisualizerErrorBoundary from "@/components/VisualizerErrorBoundary";
 
 // Client-only components
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
@@ -864,9 +865,11 @@ function VisualizeContent() {
 
 export default function VisualizePage() {
   return (
-    <Suspense fallback={<div style={{ padding: 20, color: "var(--text)" }}>Loading...</div>}>
-      <VisualizeContent />
-    </Suspense>
+    <VisualizerErrorBoundary fallbackMessage="The visualizer encountered an unexpected error">
+      <Suspense fallback={<div style={{ padding: 20, color: "var(--text)" }}>Loading...</div>}>
+        <VisualizeContent />
+      </Suspense>
+    </VisualizerErrorBoundary>
   );
 }
 

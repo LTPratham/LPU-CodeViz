@@ -3,8 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   // Redirect PKCE auth codes to the callback route
+  // We exclude "/visualize" because it uses "code" as a query parameter for sharing code snippets.
   const code = request.nextUrl.searchParams.get("code");
-  if (code && !request.nextUrl.pathname.startsWith("/auth/")) {
+  if (
+    code &&
+    !request.nextUrl.pathname.startsWith("/auth/") &&
+    !request.nextUrl.pathname.startsWith("/visualize")
+  ) {
     const callbackUrl = new URL("/auth/callback", request.url);
     callbackUrl.search = request.nextUrl.search;
     return NextResponse.redirect(callbackUrl);

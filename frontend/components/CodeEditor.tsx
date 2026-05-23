@@ -52,7 +52,9 @@ export default function CodeEditor({
   useEffect(() => {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
-    if (!editor || !monaco || !currentLine || currentLine <= 0) {
+    // Coerce to integer — API may return line as a string; Monaco requires a number
+    const lineNum = typeof currentLine === "string" ? parseInt(currentLine as string, 10) : (currentLine ?? 0);
+    if (!editor || !monaco || !lineNum || lineNum <= 0 || !isFinite(lineNum)) {
       if (editor) {
         decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
       }
@@ -61,7 +63,7 @@ export default function CodeEditor({
 
     decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
       {
-        range: new monaco.Range(currentLine, 1, currentLine, 1),
+        range: new monaco.Range(lineNum, 1, lineNum, 1),
         options: {
           isWholeLine: true,
           className: "monaco-current-line",
@@ -70,7 +72,7 @@ export default function CodeEditor({
       },
     ]);
 
-    editor.revealLineInCenter(currentLine);
+    editor.revealLineInCenter(lineNum);
   }, [currentLine]);
 
   // Clean up completion providers on unmount

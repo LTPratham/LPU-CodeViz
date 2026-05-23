@@ -37,8 +37,10 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
   const [expandedWhy, setExpandedWhy] = useState<number | null>(null);
 
   const safeExplanations = Array.isArray(explanations) ? explanations : [];
-  const currentExplain = safeExplanations.find((e) => e?.line === currentLine);
-  const prevExplains = safeExplanations.filter((e) => e && e.line < currentLine).slice(-4).reverse();
+  // Coerce to number on both sides — API returns line as string, currentLine is number
+  const currentLineNum = Number(currentLine) || 0;
+  const currentExplain = safeExplanations.find((e) => Number(e?.line) === currentLineNum);
+  const prevExplains = safeExplanations.filter((e) => e && Number(e.line) < currentLineNum).slice(-4).reverse();
 
   return (
     <div style={{

@@ -54,8 +54,8 @@ function VisualizeContent() {
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentStep = steps[currentStepIdx] ?? null;
-  // Use 0 (not -1) so Monaco never gets a negative line number
-  const currentLine = currentStep?.line ?? 0;
+  // Force to number — the API returns line as a string ("3") but Monaco needs an integer
+  const currentLine = currentStep ? (Number(currentStep.line) || 0) : 0;
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);

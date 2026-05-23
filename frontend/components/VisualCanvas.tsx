@@ -307,7 +307,7 @@ export default function VisualCanvas({
         ref={canvasRef}
         style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center" }}
       >
-        <VisualizerErrorBoundary key={`${dataStructure}-${currentStepIdx}`}>
+        <VisualizerErrorBoundary key={dataStructure}>
           {renderContent()}
         </VisualizerErrorBoundary>
       </div>

@@ -52,7 +52,7 @@ export default function CodeEditor({
   useEffect(() => {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
-    if (!editor || !monaco || !currentLine) {
+    if (!editor || !monaco || !currentLine || currentLine <= 0) {
       if (editor) {
         decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
       }

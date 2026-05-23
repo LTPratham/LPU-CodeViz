@@ -24,6 +24,7 @@ export default function QueueViz({ state, speed = 1 }: Props) {
   }
 
   const duration = 0.4 / speed;
+  const elements = state.elements.filter(e => e && e.value !== undefined);
 
   return (
     <div style={{ width: "100%", padding: "32px 16px", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -62,7 +63,7 @@ export default function QueueViz({ state, speed = 1 }: Props) {
 
         {/* Queue elements */}
         <AnimatePresence mode="popLayout">
-          {state.elements.map((el, i) => {
+          {elements.map((el, i) => {
             const style = STATUS_STYLES[el.status] || STATUS_STYLES.default;
             return (
               <motion.div

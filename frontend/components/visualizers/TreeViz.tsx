@@ -46,7 +46,7 @@ function buildLayout(nodes: TreeNode[]): LayoutNode[] {
 export default function TreeViz({ state, speed = 1 }: Props) {
   const duration = 0.4 / speed;
 
-  const validNodes = state && Array.isArray(state.nodes) ? state.nodes : [];
+  const validNodes = state && Array.isArray(state.nodes) ? state.nodes.filter(n => n && typeof n.id === 'string') : [];
 
   const layout = useMemo(() => buildLayout(validNodes), [validNodes]);
   const nodeMap = useMemo(() => new Map(layout.map((n) => [n.id, n])), [layout]);

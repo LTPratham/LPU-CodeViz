@@ -25,7 +25,7 @@ export default function LinkedListViz({ state, speed = 1 }: Props) {
   }
 
   const duration = 0.4 / speed;
-  const nodes = state.nodes;
+  const nodes = state.nodes.filter(n => n && n.id !== undefined && n.value !== undefined);
 
   return (
     <div style={{ width: "100%", padding: "32px 16px" }}>

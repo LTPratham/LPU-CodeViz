@@ -23,8 +23,8 @@ const EDGE_STATUS_STYLES: Record<string, { stroke: string; strokeWidth: number; 
 };
 
 export default function GraphViz({ state, speed = 1 }: Props) {
-  const validNodes = state && Array.isArray(state.nodes) ? state.nodes : [];
-  const validEdges = state && Array.isArray(state.edges) ? state.edges : [];
+  const validNodes = state && Array.isArray(state.nodes) ? state.nodes.filter(n => n && typeof n.id === 'string') : [];
+  const validEdges = state && Array.isArray(state.edges) ? state.edges.filter(e => e && typeof e.from === 'string' && typeof e.to === 'string') : [];
 
   const duration = 0.4 / speed;
 

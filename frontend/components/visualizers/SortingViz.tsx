@@ -29,7 +29,8 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
   }
 
   const duration = 0.4 / speed;
-  const maxVal = Math.max(...state.elements.map((e) => Number(e.value) || 1), 1);
+  const elements = state.elements.filter(e => e && e.index !== undefined && e.value !== undefined);
+  const maxVal = Math.max(...elements.map((e) => Number(e.value) || 1), 1);
 
   return (
     <div style={{ width: "100%", padding: "24px 16px" }}>
@@ -60,7 +61,7 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
         marginBottom: 16,
       }}>
         <AnimatePresence mode="popLayout">
-          {state.elements.map((el) => {
+          {elements.map((el) => {
             const s = STATUS_STYLES[el.status] || STATUS_STYLES.default;
             const heightPct = (Number(el.value) / maxVal) * 100;
             return (
@@ -113,7 +114,7 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
         flexWrap: "wrap",
         marginBottom: 8,
       }}>
-        {state.elements.map((el) => {
+        {elements.map((el) => {
           const s = STATUS_STYLES[el.status] || STATUS_STYLES.default;
           return (
             <motion.div
@@ -158,7 +159,7 @@ export default function SortingViz({ state, speed = 1, comparisons = 0, swaps = 
 
       {/* Index labels */}
       <div style={{ display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
-        {state.elements.map((el) => (
+        {elements.map((el) => (
           <div key={el.index} style={{
             width: 40, textAlign: "center", fontSize: 10,
             color: "var(--text-muted)", fontFamily: "var(--font-mono)"

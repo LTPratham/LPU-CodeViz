@@ -27,6 +27,8 @@ export default function ArrayViz({ state, speed = 1 }: Props) {
     );
   }
 
+  const elements = state.elements.filter(e => e && e.index !== undefined && e.value !== undefined);
+
   return (
     <div style={{ width: "100%", padding: "32px 16px" }}>
       {/* Label */}
@@ -56,7 +58,7 @@ export default function ArrayViz({ state, speed = 1 }: Props) {
         }}
       >
         <AnimatePresence mode="popLayout">
-          {state.elements.map((el) => {
+          {elements.map((el) => {
             const style = STATUS_STYLES[el.status] || STATUS_STYLES.default;
             return (
               <motion.div

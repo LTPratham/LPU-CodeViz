@@ -23,6 +23,7 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
   }
 
   const duration = 0.35 / speed;
+  const variables = state.variables.filter(v => v && v.name !== undefined);
 
   return (
     <div style={{ width: "100%", padding: "24px 16px" }}>
@@ -39,7 +40,7 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
         margin: "0 auto",
       }}>
         <AnimatePresence>
-          {state.variables.map((v) => {
+          {variables.map((v) => {
             const style = STATUS_STYLES[v.status] || STATUS_STYLES.default;
             return (
               <motion.div

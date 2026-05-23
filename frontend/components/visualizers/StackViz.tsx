@@ -23,7 +23,7 @@ export default function StackViz({ state, speed = 1 }: Props) {
   }
 
   const duration = 0.4 / speed;
-  const elements = [...state.elements].reverse(); // top first for display
+  const elements = [...state.elements].filter(e => e && e.value !== undefined).reverse(); // top first for display
 
   return (
     <div style={{ width: "100%", padding: "32px 16px", display: "flex", flexDirection: "column", alignItems: "center" }}>

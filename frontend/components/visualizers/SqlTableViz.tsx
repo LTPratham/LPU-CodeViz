@@ -24,6 +24,8 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
     );
   }
 
+  const rows = state.rows.filter(r => r && Array.isArray(r.values));
+
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       {label && (
@@ -60,7 +62,7 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
 
         {/* Data rows */}
         <AnimatePresence>
-          {state.rows.map((row, ri) => {
+          {rows.map((row, ri) => {
             const s = ROW_STATUS_STYLES[row.status] || ROW_STATUS_STYLES.default;
             const isFiltered = row.status === "filtered";
             return (
@@ -78,7 +80,7 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
                 style={{
                   display: "grid",
                   gridTemplateColumns: `repeat(${state.columns.length}, 1fr)`,
-                  borderBottom: ri < state.rows.length - 1 ? "1px solid var(--border)" : "none",
+                  borderBottom: ri < rows.length - 1 ? "1px solid var(--border)" : "none",
                   borderLeft: `3px solid ${s.border}`,
                 }}
               >
@@ -96,7 +98,7 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
         </AnimatePresence>
 
         {/* Empty state */}
-        {state.rows.length === 0 && (
+        {rows.length === 0 && (
           <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
             No rows yet
           </div>
@@ -105,7 +107,7 @@ function TableView({ state, label }: { state: Omit<SqlTableState, "type">; label
 
       {/* Row count */}
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, textAlign: "right" }}>
-        {state.rows.filter((r) => r.status !== "filtered").length} row(s)
+        {rows.filter((r) => r.status !== "filtered").length} row(s)
       </div>
     </div>
   );

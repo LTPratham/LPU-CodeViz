@@ -23,7 +23,7 @@ export default function RecursionViz({ state, speed = 1 }: Props) {
   }
 
   const duration = 0.4 / speed;
-  const frames = [...state.frames].reverse(); // Top of stack first
+  const frames = [...state.frames].filter(f => f && f.id !== undefined).reverse(); // Top of stack first
 
   return (
     <div style={{ width: "100%", padding: "24px 16px", display: "flex", flexDirection: "column", alignItems: "center" }}>

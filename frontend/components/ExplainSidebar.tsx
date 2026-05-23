@@ -1,7 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import type { ExplainLine, TraceStep } from "@/lib/types";
-import { Play, Pause, Square, Volume2 } from "lucide-react";
 
 interface Props {
   explanations: ExplainLine[];
@@ -37,157 +36,9 @@ const renderSafeVal = (val: any): string => {
 export default function ExplainSidebar({ explanations, currentStep, currentLine }: Props) {
   const [expandedWhy, setExpandedWhy] = useState<number | null>(null);
 
-  // Speech states
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string>("");
-  const [showSpeechControls, setShowSpeechControls] = useState(true);
-
   const safeExplanations = Array.isArray(explanations) ? explanations : [];
   const currentExplain = safeExplanations.find((e) => e?.line === currentLine);
   const prevExplains = safeExplanations.filter((e) => e && e.line < currentLine).slice(-4).reverse();
-
-  // Load voices dynamically
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const synth = window.speechSynthesis;
-    const updateVoices = () => {
-      try {
-        const allVoices = synth.getVoices();
-        const engVoices = allVoices.filter(v => v.lang.toLowerCase().startsWith("en"));
-        setVoices(engVoices.length > 0 ? engVoices : allVoices);
-      } catch (e) {
-        console.error("[SpeechSynthesis] getVoices error:", e);
-      }
-    };
-    try {
-      updateVoices();
-      if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = updateVoices;
-      }
-    } catch (e) {
-      console.error("[SpeechSynthesis] init error:", e);
-    }
-    return () => {
-      try {
-        if (synth.onvoiceschanged !== undefined) {
-          synth.onvoiceschanged = null;
-        }
-      } catch (e) {}
-    };
-  }, []);
-
-  // Set default voice
-  useEffect(() => {
-    if (voices.length > 0 && !selectedVoice) {
-      const defaultVoice = voices.find(v => v.lang.toLowerCase().startsWith("en") && v.name.toLowerCase().includes("google"))
-        || voices.find(v => v.lang.toLowerCase().startsWith("en"))
-        || voices[0];
-      if (defaultVoice) {
-        setSelectedVoice(defaultVoice.name);
-      }
-    }
-  }, [voices, selectedVoice]);
-
-  // Speech controls
-  const speak = (text: any) => {
-    if (typeof window === "undefined") return;
-    const synth = window.speechSynthesis;
-    try {
-      synth.cancel();
-    } catch (e) {}
-
-    const textStr = renderSafeVal(text);
-    if (!textStr) return;
-
-    const cleanText = textStr.replace(/[`*#_]/g, "");
-
-    try {
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = speed;
-      utterance.pitch = 1.0;
-
-      if (selectedVoice) {
-        const voice = voices.find(v => v.name === selectedVoice);
-        if (voice) utterance.voice = voice;
-      }
-
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        setIsPaused(false);
-      };
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        setIsPaused(false);
-      };
-
-      setIsSpeaking(true);
-      setIsPaused(false);
-      synth.speak(utterance);
-    } catch (e) {
-      console.error("[SpeechSynthesis] speak error:", e);
-      setIsSpeaking(false);
-      setIsPaused(false);
-    }
-  };
-
-  const togglePause = () => {
-    if (typeof window === "undefined") return;
-    const synth = window.speechSynthesis;
-    try {
-      if (synth.speaking) {
-        if (synth.paused) {
-          synth.resume();
-          setIsPaused(false);
-        } else {
-          synth.pause();
-          setIsPaused(true);
-        }
-      }
-    } catch (e) {
-      console.error("[SpeechSynthesis] togglePause error:", e);
-    }
-  };
-
-  const stop = () => {
-    if (typeof window === "undefined") return;
-    const synth = window.speechSynthesis;
-    try {
-      synth.cancel();
-    } catch (e) {}
-    setIsSpeaking(false);
-    setIsPaused(false);
-  };
-
-
-  // Sync automatic play on line changes
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const synth = window.speechSynthesis;
-    try {
-      synth.cancel();
-    } catch (e) {
-      console.warn("[SpeechSynthesis] cancel error in line sync:", e);
-    }
-    setIsSpeaking(false);
-    setIsPaused(false);
-
-    let timer: NodeJS.Timeout;
-    if (autoPlay && currentExplain) {
-      timer = setTimeout(() => {
-        speak(currentExplain.explain);
-      }, 50);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-      try {
-        synth.cancel();
-      } catch (e) {}
-    };
-  }, [currentLine, autoPlay]);
 
   return (
     <div style={{
@@ -200,176 +51,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
       {/* Header */}
       <div className="panel-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span>Explanation</span>
-        <button
-          onClick={() => setShowSpeechControls(!showSpeechControls)}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: showSpeechControls ? "var(--primary)" : "var(--text-muted)",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 4,
-            borderRadius: 6,
-            transition: "all 0.2s",
-          }}
-          title="Toggle AI Voice Tutor Controls"
-        >
-          <Volume2 size={16} />
-        </button>
       </div>
-
-      {/* Voice Tutor Control Bar */}
-      {showSpeechControls && (
-        <div style={{
-          background: "rgba(255,255,255,0.015)",
-          borderBottom: "1px solid var(--border)",
-          padding: "10px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}>
-          {/* Row 1: Playback Controls */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button
-                onClick={isSpeaking ? togglePause : () => speak(currentExplain?.explain || "")}
-                disabled={!currentExplain}
-                className="speech-btn"
-                title={isSpeaking ? (isPaused ? "Resume" : "Pause") : "Speak Explanation"}
-                style={{
-                  background: isSpeaking && !isPaused ? "var(--primary)" : "rgba(255,255,255,0.05)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 8,
-                  width: 32,
-                  height: 32,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: currentExplain ? "pointer" : "not-allowed",
-                  color: isSpeaking && !isPaused ? "white" : "var(--text-secondary)",
-                  transition: "all 0.2s",
-                }}
-              >
-                {isSpeaking && !isPaused ? <Pause size={14} /> : <Play size={14} />}
-              </button>
-
-              {isSpeaking && (
-                <button
-                  onClick={stop}
-                  className="speech-btn"
-                  title="Stop Speech"
-                  style={{
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: 8,
-                    width: 32,
-                    height: 32,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: "#EF4444",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  <Square size={14} />
-                </button>
-              )}
-
-              {/* Sound Wave Animation */}
-              {isSpeaking && !isPaused && (
-                <div style={{ display: "flex", gap: 3, alignItems: "center", height: 12, marginLeft: 6 }}>
-                  <div style={{ width: 2, height: 12, background: "var(--primary)", transformOrigin: "bottom", animation: "speech-wave 0.6s ease-in-out infinite alternate" }} />
-                  <div style={{ width: 2, height: 8, background: "var(--primary)", transformOrigin: "bottom", animation: "speech-wave 0.6s ease-in-out infinite alternate 0.15s" }} />
-                  <div style={{ width: 2, height: 14, background: "var(--primary)", transformOrigin: "bottom", animation: "speech-wave 0.6s ease-in-out infinite alternate 0.3s" }} />
-                  <div style={{ width: 2, height: 10, background: "var(--primary)", transformOrigin: "bottom", animation: "speech-wave 0.6s ease-in-out infinite alternate 0.45s" }} />
-                </div>
-              )}
-            </div>
-
-            {/* Auto Read Toggle */}
-            <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12, color: "var(--text-secondary)" }}>
-              <input
-                type="checkbox"
-                checked={autoPlay}
-                onChange={(e) => setAutoPlay(e.target.checked)}
-                style={{
-                  cursor: "pointer",
-                  accentColor: "var(--primary)",
-                  width: 14,
-                  height: 14,
-                }}
-              />
-              Auto-Read
-            </label>
-          </div>
-
-          {/* Row 2: Settings (Speed and Voice selection) */}
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {/* Speed slider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
-              <span style={{ fontSize: 10, color: "var(--text-muted)", width: 28 }}>{speed}x</span>
-              <input
-                type="range"
-                min="0.5"
-                max="2.0"
-                step="0.25"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                style={{
-                  flex: 1,
-                  accentColor: "var(--primary)",
-                  height: 4,
-                  borderRadius: 2,
-                  cursor: "pointer",
-                  background: "var(--border)",
-                }}
-              />
-            </div>
-
-            {/* Voice Select */}
-            {voices.length > 0 && (
-              <select
-                value={selectedVoice}
-                onChange={(e) => setSelectedVoice(e.target.value)}
-                style={{
-                  background: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 6,
-                  color: "var(--text-secondary)",
-                  fontSize: 10,
-                  padding: "4px 6px",
-                  outline: "none",
-                  maxWidth: 120,
-                  cursor: "pointer",
-                }}
-              >
-                {voices.map((v) => (
-                  <option key={v.name} value={v.name}>
-                    {v.name.replace(/Microsoft|Google|Apple/g, "").trim().substring(0, 15)}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <style>{`
-            @keyframes speech-wave {
-              0% { transform: scaleY(0.3); }
-              100% { transform: scaleY(1.2); }
-            }
-            .speech-btn:hover {
-              background: rgba(255, 255, 255, 0.1) !important;
-              transform: translateY(-1px);
-            }
-            .speech-btn:active {
-              transform: translateY(0);
-            }
-          `}</style>
-        </div>
-      )}
 
       <div style={{ flex: 1, overflowY: "auto", padding: "12px" }}>
         {/* Current explanation */}
@@ -523,7 +205,7 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
                 alignItems: "center",
                 gap: 4
               }}>
-                <span>🔍</span> Syntax & Logic Breakdown
+                <span>🔍</span> Syntax &amp; Logic Breakdown
               </div>
               <div style={{ color: "#94A3B8", fontSize: "12px", whiteSpace: "pre-line" }}>
                 {renderSafeVal(currentExplain.why) || (
@@ -595,4 +277,3 @@ export default function ExplainSidebar({ explanations, currentStep, currentLine 
     </div>
   );
 }
-

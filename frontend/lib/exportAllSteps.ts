@@ -17,8 +17,8 @@ const PRIMARY   = "#1D9E75";
 const ACCENT    = "#3B82F6";
 const WARN      = "#F59E0B";
 const DANGER    = "#EF4444";
-const MONO      = "\"Fira Mono\", \"Consolas\", monospace";
-const SANS      = "\"Inter\", system-ui, sans-serif";
+const MONO      = "'Fira Mono', 'Consolas', monospace";
+const SANS      = "'Inter', system-ui, sans-serif";
 
 const FRAME_W   = 900;
 const PAD       = 24;
@@ -80,8 +80,8 @@ function drawArray(state: VisualizationState, y0: number): string {
     const x = startX + i * cellW;
     const fill = statusColor(el.status ?? "default");
     out += `<rect x="${x}" y="${cy}" width="${cellW - 2}" height="${cellH}" rx="4" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${x + cellW / 2 - 1}" y="${cy + cellH / 2 + 5}" font-family=${MONO} font-size="13" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
-    out += `<text x="${x + cellW / 2 - 1}" y="${cy + cellH + 14}" font-family=${MONO} font-size="9" fill="${MUTED}" text-anchor="middle">[${el.index}]</text>`;
+    out += `<text x="${x + cellW / 2 - 1}" y="${cy + cellH / 2 + 5}" font-family="${MONO}" font-size="13" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
+    out += `<text x="${x + cellW / 2 - 1}" y="${cy + cellH + 14}" font-family="${MONO}" font-size="9" fill="${MUTED}" text-anchor="middle">[${el.index}]</text>`;
   });
   return out;
 }
@@ -99,8 +99,8 @@ function drawStack(state: VisualizationState, y0: number): string {
     if (y + cellH > y0 + VIZ_H - 10) return;
     const fill = statusColor(el.status ?? "default");
     out += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="4" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 5}" font-family=${MONO} font-size="12" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
-    if (i === 0) out += `<text x="${x + cellW + 6}" y="${y + cellH / 2 + 5}" font-family=${MONO} font-size="9" fill="${PRIMARY}" text-anchor="start">← top</text>`;
+    out += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 5}" font-family="${MONO}" font-size="12" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
+    if (i === 0) out += `<text x="${x + cellW + 6}" y="${y + cellH / 2 + 5}" font-family="${MONO}" font-size="9" fill="${PRIMARY}" text-anchor="start">← top</text>`;
   });
   return out;
 }
@@ -118,12 +118,12 @@ function drawQueue(state: VisualizationState, y0: number): string {
     const x = startX + i * (cellW + 3);
     const fill = statusColor(el.status ?? "default");
     out += `<rect x="${x}" y="${cy}" width="${cellW}" height="${cellH}" rx="4" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${x + cellW / 2}" y="${cy + cellH / 2 + 5}" font-family=${MONO} font-size="12" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
+    out += `<text x="${x + cellW / 2}" y="${cy + cellH / 2 + 5}" font-family="${MONO}" font-size="12" fill="${TEXT}" text-anchor="middle">${esc(String(el.value ?? ""))}</text>`;
   });
   if (els.length > 0) {
-    out += `<text x="${startX}" y="${cy - 8}" font-family=${SANS} font-size="9" fill="${WARN}">FRONT</text>`;
+    out += `<text x="${startX}" y="${cy - 8}" font-family="${SANS}" font-size="9" fill="${WARN}">FRONT</text>`;
     const lastX = startX + (els.length - 1) * (cellW + 3);
-    out += `<text x="${lastX + cellW}" y="${cy - 8}" font-family=${SANS} font-size="9" fill="${PRIMARY}" text-anchor="end">REAR</text>`;
+    out += `<text x="${lastX + cellW}" y="${cy - 8}" font-family="${SANS}" font-size="9" fill="${PRIMARY}" text-anchor="end">REAR</text>`;
   }
   return out;
 }
@@ -141,13 +141,13 @@ function drawLinkedList(state: VisualizationState, y0: number): string {
     const x = startX + i * (nodeW + arrowW);
     const fill = statusColor(nd.status ?? "default");
     out += `<rect x="${x}" y="${cy}" width="${nodeW}" height="${nodeH}" rx="4" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${x + nodeW / 2}" y="${cy + nodeH / 2 + 5}" font-family=${MONO} font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd.value ?? ""))}</text>`;
+    out += `<text x="${x + nodeW / 2}" y="${cy + nodeH / 2 + 5}" font-family="${MONO}" font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd.value ?? ""))}</text>`;
     if (i < nodes.length - 1) {
       const ax = x + nodeW;
       const ay = cy + nodeH / 2;
       out += `<line x1="${ax}" y1="${ay}" x2="${ax + arrowW - 4}" y2="${ay}" stroke="${MUTED}" stroke-width="1.5" marker-end="url(#arrow)"/>`;
     } else {
-      out += `<text x="${x + nodeW + 4}" y="${cy + nodeH / 2 + 5}" font-family=${MONO} font-size="9" fill="${MUTED}">null</text>`;
+      out += `<text x="${x + nodeW + 4}" y="${cy + nodeH / 2 + 5}" font-family="${MONO}" font-size="9" fill="${MUTED}">null</text>`;
     }
   });
   return out;
@@ -200,7 +200,7 @@ function drawTree(state: VisualizationState, y0: number): string {
         out_parts.push(`<line x1="${p.x}" y1="${p.y}" x2="${x}" y2="${y}" stroke="${BORDER}" stroke-width="1.5"/>`);
       }
       out_parts.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`);
-      out_parts.push(`<text x="${x}" y="${y + 5}" font-family=${MONO} font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd?.value ?? ""))}</text>`);
+      out_parts.push(`<text x="${x}" y="${y + 5}" font-family="${MONO}" font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd?.value ?? ""))}</text>`);
     });
   });
 
@@ -220,11 +220,11 @@ function drawRecursion(state: VisualizationState, y0: number): string {
     const x = startX + i * fW;
     const fill = statusColor(fr.status ?? "default");
     out += `<rect x="${x + 2}" y="${cy}" width="${fW - 4}" height="${fH}" rx="4" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${x + fW / 2}" y="${cy + 16}" font-family=${MONO} font-size="10" fill="${PRIMARY}" text-anchor="middle">${esc(fr.funcName ?? "")}</text>`;
+    out += `<text x="${x + fW / 2}" y="${cy + 16}" font-family="${MONO}" font-size="10" fill="${PRIMARY}" text-anchor="middle">${esc(fr.funcName ?? "")}</text>`;
     const argsStr = Object.entries(fr.args ?? {}).map(([k, v]) => `${k}=${v}`).join(", ");
-    out += `<text x="${x + fW / 2}" y="${cy + 30}" font-family=${MONO} font-size="9" fill="${TEXT}" text-anchor="middle">${esc(trunc(argsStr, 20))}</text>`;
+    out += `<text x="${x + fW / 2}" y="${cy + 30}" font-family="${MONO}" font-size="9" fill="${TEXT}" text-anchor="middle">${esc(trunc(argsStr, 20))}</text>`;
     if (fr.returnValue !== undefined) {
-      out += `<text x="${x + fW / 2}" y="${cy + 44}" font-family=${MONO} font-size="9" fill="${WARN}" text-anchor="middle">→ ${esc(String(fr.returnValue))}</text>`;
+      out += `<text x="${x + fW / 2}" y="${cy + 44}" font-family="${MONO}" font-size="9" fill="${WARN}" text-anchor="middle">→ ${esc(String(fr.returnValue))}</text>`;
     }
   });
   return out;
@@ -244,7 +244,7 @@ function drawSQL(state: VisualizationState, y0: number): string {
   cols.forEach((col, i) => {
     const x = startX + i * cellW;
     out += `<rect x="${x}" y="${headerY}" width="${cellW - 2}" height="${cellH}" rx="2" fill="${ACCENT}33" stroke="${ACCENT}" stroke-width="1"/>`;
-    out += `<text x="${x + cellW / 2}" y="${headerY + 15}" font-family=${MONO} font-size="10" fill="${ACCENT}" text-anchor="middle" font-weight="bold">${esc(String(col))}</text>`;
+    out += `<text x="${x + cellW / 2}" y="${headerY + 15}" font-family="${MONO}" font-size="10" fill="${ACCENT}" text-anchor="middle" font-weight="bold">${esc(String(col))}</text>`;
   });
   // rows
   rows.slice(0, 6).forEach((row, ri) => {
@@ -254,7 +254,7 @@ function drawSQL(state: VisualizationState, y0: number): string {
     (row.values ?? []).forEach((val, ci) => {
       const x = startX + ci * cellW;
       out += `<rect x="${x}" y="${y}" width="${cellW - 2}" height="${cellH}" rx="2" fill="${fill}22" stroke="${fill}66" stroke-width="1"/>`;
-      out += `<text x="${x + cellW / 2}" y="${y + 15}" font-family=${MONO} font-size="9" fill="${TEXT}" text-anchor="middle">${esc(String(val ?? ""))}</text>`;
+      out += `<text x="${x + cellW / 2}" y="${y + 15}" font-family="${MONO}" font-size="9" fill="${TEXT}" text-anchor="middle">${esc(String(val ?? ""))}</text>`;
     });
   });
   return out;
@@ -275,13 +275,13 @@ function drawVariables(state: VisualizationState, y0: number): string {
     if (y + rowH > y0 + VIZ_H - 4) return;
     const fill = statusColor(v.status ?? "default");
     out += `<rect x="${x}" y="${y}" width="${colW - 8}" height="${rowH}" rx="4" fill="${fill}22" stroke="${fill}66" stroke-width="1"/>`;
-    out += `<text x="${x + 8}" y="${y + 18}" font-family=${MONO} font-size="10" fill="${PRIMARY}">${esc(v.name ?? "")}</text>`;
-    out += `<text x="${x + 8 + (v.name?.length ?? 4) * 7 + 4}" y="${y + 18}" font-family=${MONO} font-size="10" fill="${MUTED}"> = </text>`;
-    out += `<text x="${x + 8 + (v.name?.length ?? 4) * 7 + 24}" y="${y + 18}" font-family=${MONO} font-size="10" fill="${TEXT}">${esc(trunc(String(v.value ?? ""), 18))}</text>`;
+    out += `<text x="${x + 8}" y="${y + 18}" font-family="${MONO}" font-size="10" fill="${PRIMARY}">${esc(v.name ?? "")}</text>`;
+    out += `<text x="${x + 8 + (v.name?.length ?? 4) * 7 + 4}" y="${y + 18}" font-family="${MONO}" font-size="10" fill="${MUTED}"> = </text>`;
+    out += `<text x="${x + 8 + (v.name?.length ?? 4) * 7 + 24}" y="${y + 18}" font-family="${MONO}" font-size="10" fill="${TEXT}">${esc(trunc(String(v.value ?? ""), 18))}</text>`;
   });
   if (Array.isArray(state.output) && state.output.length > 0) {
     const oy = y0 + VIZ_H - 22;
-    out += `<text x="${PAD}" y="${oy}" font-family=${MONO} font-size="9" fill="${WARN}">Output: ${esc(state.output.join("  "))}</text>`;
+    out += `<text x="${PAD}" y="${oy}" font-family="${MONO}" font-size="9" fill="${WARN}">Output: ${esc(state.output.join("  "))}</text>`;
   }
   return out;
 }
@@ -310,21 +310,21 @@ function drawGraph(state: VisualizationState, y0: number): string {
     out += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${fill}" stroke-width="1.5" ${state.directed ? `marker-end="url(#arrow)"` : ""}/>`;
     if (e.weight !== undefined) {
       const mx = (a.x + b.x) / 2; const my = (a.y + b.y) / 2;
-      out += `<text x="${mx}" y="${my - 4}" font-family=${MONO} font-size="9" fill="${MUTED}" text-anchor="middle">${esc(String(e.weight))}</text>`;
+      out += `<text x="${mx}" y="${my - 4}" font-family="${MONO}" font-size="9" fill="${MUTED}" text-anchor="middle">${esc(String(e.weight))}</text>`;
     }
   });
   gnodes.forEach(nd => {
     const p = posMap[nd.id]; if (!p) return;
     const fill = statusColor(nd.status ?? "default");
     out += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}33" stroke="${fill}" stroke-width="1.5"/>`;
-    out += `<text x="${p.x}" y="${p.y + 5}" font-family=${MONO} font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd.value ?? ""))}</text>`;
+    out += `<text x="${p.x}" y="${p.y + 5}" font-family="${MONO}" font-size="11" fill="${TEXT}" text-anchor="middle">${esc(String(nd.value ?? ""))}</text>`;
   });
   return out;
 }
 
 // ─── Route to correct diagram function ────────────────────────────────────────
 function drawDiagram(state: VisualizationState, y0: number): string {
-  if (!state) return `<text x="${PAD}" y="${y0 + VIZ_H / 2}" font-family=${SANS} font-size="12" fill="${MUTED}">No state data</text>`;
+  if (!state) return `<text x="${PAD}" y="${y0 + VIZ_H / 2}" font-family="${SANS}" font-size="12" fill="${MUTED}">No state data</text>`;
   switch (state.type) {
     case "array":      return drawArray(state, y0);
     case "stack":      return drawStack(state, y0);
@@ -335,7 +335,7 @@ function drawDiagram(state: VisualizationState, y0: number): string {
     case "sqltable":   return drawSQL(state, y0);
     case "variables":  return drawVariables(state, y0);
     case "graph":      return drawGraph(state, y0);
-    default:           return `<text x="${PAD}" y="${y0 + VIZ_H / 2}" font-family=${SANS} font-size="12" fill="${MUTED}">State type: ${esc((state as any).type)}</text>`;
+    default:           return `<text x="${PAD}" y="${y0 + VIZ_H / 2}" font-family="${SANS}" font-size="12" fill="${MUTED}">State type: ${esc((state as any).type)}</text>`;
   }
 }
 
@@ -364,10 +364,10 @@ export function exportAllStepsAsSVG(
   const titleText = esc(`${language?.toUpperCase() ?? "CODE"} Execution Trace — ${dataStructure} — ${steps.length} steps`);
   let titleBar = `
     <rect x="0" y="0" width="${FRAME_W}" height="64" fill="${CARD}"/>
-    <text x="${PAD}" y="26" font-family=${SANS} font-size="16" font-weight="bold" fill="${TEXT}">${titleText}</text>`;
+    <text x="${PAD}" y="26" font-family="${SANS}" font-size="16" font-weight="bold" fill="${TEXT}">${titleText}</text>`;
   if (code) {
     const firstLine = esc(trunc(code.split("\n")[0] ?? "", 80));
-    titleBar += `<text x="${PAD}" y="50" font-family=${MONO} font-size="10" fill="${MUTED}">${firstLine}</text>`;
+    titleBar += `<text x="${PAD}" y="50" font-family="${MONO}" font-size="10" fill="${MUTED}">${firstLine}</text>`;
   }
   titleBar += `<line x1="0" y1="64" x2="${FRAME_W}" y2="64" stroke="${BORDER}" stroke-width="1"/>`;
 
@@ -386,24 +386,24 @@ export function exportAllStepsAsSVG(
 
     // Step number badge
     frames += `<rect x="${PAD}" y="${fy + 12}" width="54" height="22" rx="4" fill="${stepColor}33" stroke="${stepColor}" stroke-width="1"/>`;
-    frames += `<text x="${PAD + 27}" y="${fy + 27}" font-family=${MONO} font-size="10" font-weight="bold" fill="${stepColor}" text-anchor="middle">STEP ${step.stepNum}</text>`;
+    frames += `<text x="${PAD + 27}" y="${fy + 27}" font-family="${MONO}" font-size="10" font-weight="bold" fill="${stepColor}" text-anchor="middle">STEP ${step.stepNum}</text>`;
 
     // Line badge
-    frames += `<text x="${PAD + 62}" y="${fy + 27}" font-family=${MONO} font-size="10" fill="${MUTED}">Line ${step.line}</text>`;
+    frames += `<text x="${PAD + 62}" y="${fy + 27}" font-family="${MONO}" font-size="10" fill="${MUTED}">Line ${step.line}</text>`;
 
     // Action badge
     const actionColor = ACCENT;
     frames += `<rect x="${FRAME_W - PAD - 80}" y="${fy + 12}" width="70" height="22" rx="4" fill="${actionColor}22" stroke="${actionColor}55" stroke-width="1"/>`;
-    frames += `<text x="${FRAME_W - PAD - 45}" y="${fy + 27}" font-family=${MONO} font-size="9" fill="${actionColor}" text-anchor="middle">${esc(step.action ?? "")}</text>`;
+    frames += `<text x="${FRAME_W - PAD - 45}" y="${fy + 27}" font-family="${MONO}" font-size="9" fill="${actionColor}" text-anchor="middle">${esc(step.action ?? "")}</text>`;
 
     // Description
     const desc = typeof step.description === "string" ? step.description : JSON.stringify(step.description ?? "");
-    frames += `<text x="${PAD}" y="${fy + HEADER_H - 10}" font-family=${SANS} font-size="11" fill="${TEXT}">${esc(trunc(desc, 100))}</text>`;
+    frames += `<text x="${PAD}" y="${fy + HEADER_H - 10}" font-family="${SANS}" font-size="11" fill="${TEXT}">${esc(trunc(desc, 100))}</text>`;
 
     // Code snippet bar
     const codeY = fy + HEADER_H + 6;
     frames += `<rect x="${PAD}" y="${codeY}" width="${FRAME_W - PAD * 2}" height="${CODE_H - 4}" rx="4" fill="#000000AA"/>`;
-    frames += `<text x="${PAD + 8}" y="${codeY + 18}" font-family=${MONO} font-size="11" fill="${PRIMARY}">${esc(trunc(step.code ?? "", 110))}</text>`;
+    frames += `<text x="${PAD + 8}" y="${codeY + 18}" font-family="${MONO}" font-size="11" fill="${PRIMARY}">${esc(trunc(step.code ?? "", 110))}</text>`;
 
     // Variables quick bar (top right of frame)
     const varY = codeY + CODE_H;
@@ -415,7 +415,7 @@ export function exportAllStepsAsSVG(
       const bw = label.length * 6.5 + 16;
       if (varX + bw > FRAME_W - PAD) return;
       frames += `<rect x="${varX}" y="${varY + 3}" width="${bw}" height="18" rx="3" fill="${ACCENT}18" stroke="${ACCENT}33" stroke-width="1"/>`;
-      frames += `<text x="${varX + 8}" y="${varY + 15}" font-family=${MONO} font-size="9" fill="${ACCENT}">${esc(label)}</text>`;
+      frames += `<text x="${varX + 8}" y="${varY + 15}" font-family="${MONO}" font-size="9" fill="${ACCENT}">${esc(label)}</text>`;
       varX += bw + 6;
     });
 

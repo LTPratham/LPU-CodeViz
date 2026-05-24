@@ -116,14 +116,14 @@ export default function LandingPage() {
               width: 32,
               height: 32,
               borderRadius: 8,
-              background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+              background: "linear-gradient(135deg, #FF6F00, #FFA000)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 16,
               fontWeight: 800,
               color: "white",
-              boxShadow: "0 0 12px var(--primary-glow)",
+              boxShadow: "0 0 12px rgba(255, 111, 0, 0.4)",
             }}
           >
             ◈
@@ -132,12 +132,23 @@ export default function LandingPage() {
             style={{
               fontWeight: 800,
               fontSize: 18,
-              background: "linear-gradient(135deg, #fff, var(--primary-light))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "var(--text)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8
             }}
           >
             CodeCanvas
+            <span style={{ 
+              fontSize: 9, 
+              background: "rgba(255, 111, 0, 0.12)", 
+              color: "#FF8F00", 
+              padding: "2px 6px", 
+              borderRadius: 4, 
+              border: "1px solid rgba(255, 111, 0, 0.25)",
+              fontWeight: 700,
+              letterSpacing: "0.5px"
+            }}>LPU CSE Edition</span>
           </span>
         </div>
 

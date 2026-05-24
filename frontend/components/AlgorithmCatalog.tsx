@@ -410,17 +410,42 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
                                 marginTop: 8,
                               }}
                             >
-                              <span
-                                style={{
-                                  fontSize: 9,
-                                  color: "var(--primary-light)",
-                                  background: "var(--primary-glow)",
-                                  padding: "1px 6px",
-                                  borderRadius: 4,
-                                }}
-                              >
-                                {sample.topic}
-                              </span>
+                              {(() => {
+                                const topic = sample.topic.toUpperCase();
+                                let bg = "var(--primary-glow)";
+                                let text = "var(--primary-light)";
+                                if (topic.includes("CSE101")) {
+                                  bg = "rgba(249, 115, 22, 0.15)";
+                                  text = "#FB923C"; // Orange for C/CSE101
+                                } else if (topic.includes("CSE202") || topic.includes("CSE205")) {
+                                  bg = "rgba(59, 130, 246, 0.15)";
+                                  text = "#60A5FA"; // Blue for DSA/CSE205
+                                } else if (topic.includes("INT108")) {
+                                  bg = "rgba(234, 179, 8, 0.15)";
+                                  text = "#FACC15"; // Yellow for Python/INT108
+                                } else if (topic.includes("INT306") || topic.includes("CSE310")) {
+                                  bg = "rgba(16, 185, 129, 0.15)";
+                                  text = "#34D399"; // Green for DBMS/CSE310
+                                } else if (topic.includes("CSE380")) {
+                                  bg = "rgba(239, 68, 68, 0.15)";
+                                  text = "#F87171"; // Red for Java
+                                }
+                                return (
+                                  <span
+                                    style={{
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: text,
+                                      background: bg,
+                                      padding: "2px 6px",
+                                      borderRadius: 4,
+                                      border: `1px solid ${text}33`,
+                                    }}
+                                  >
+                                    {topic}
+                                  </span>
+                                );
+                              })()}
                             </div>
                           </div>
                         );

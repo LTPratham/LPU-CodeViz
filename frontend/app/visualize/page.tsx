@@ -325,12 +325,23 @@ function VisualizeContent() {
         }}>
           <div style={{
             width: 28, height: 28, borderRadius: 7,
-            background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+            background: "linear-gradient(135deg, #FF6F00, #FFA000)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 14, fontWeight: 800, color: "white",
           }}>◈</div>
-          <span style={{ fontWeight: 800, fontSize: 16, color: "var(--primary-light)" }}>
+          <span style={{ fontWeight: 800, fontSize: 16, color: "var(--primary-light)", display: "flex", alignItems: "center" }}>
             CodeCanvas
+            <span style={{ 
+              fontSize: 9, 
+              background: "rgba(255, 111, 0, 0.12)", 
+              color: "#FF8F00", 
+              padding: "2px 6px", 
+              borderRadius: 4, 
+              marginLeft: 8, 
+              border: "1px solid rgba(255, 111, 0, 0.25)",
+              fontWeight: 700,
+              letterSpacing: "0.5px"
+            }}>LPU CSE Edition</span>
           </span>
         </Link>
 

@@ -256,7 +256,7 @@ export default function VisualCanvas({
         {activeTab === "visualizer" && steps.length > 0 && (
           <button
             onClick={handleExportSVG}
-            title={`Export all ${steps.length} steps as a single SVG`}
+            title={`Export all ${steps.length} steps as a single SVG file for your lab record`}
             style={{
               background: "rgba(29,158,117,0.1)",
               border: "1px solid rgba(29,158,117,0.3)",
@@ -280,7 +280,7 @@ export default function VisualCanvas({
               e.currentTarget.style.borderColor = "rgba(29,158,117,0.3)";
             }}
           >
-            📥 Export All {steps.length} Steps
+            📥 Download Lab Record SVG
           </button>
         )}
       </div>

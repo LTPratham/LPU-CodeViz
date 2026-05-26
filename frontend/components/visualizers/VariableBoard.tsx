@@ -98,35 +98,6 @@ export default function VariableBoard({ state, speed = 1 }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* Console output */}
-      {state.output && state.output.length > 0 && (
-        <div style={{ marginTop: 28, maxWidth: 600, margin: "28px auto 0" }}>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
-            Console Output
-          </div>
-          <div style={{
-            background: "#0D1117",
-            border: "1px solid var(--border)",
-            borderRadius: 10,
-            padding: "12px 16px",
-            fontFamily: "var(--font-mono)",
-            fontSize: 13,
-            lineHeight: 1.8,
-          }}>
-            {state.output.map((line, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                style={{ color: "#22C55E" }}
-              >
-                <span style={{ color: "#64748B", marginRight: 8 }}>{">"}</span>{line}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

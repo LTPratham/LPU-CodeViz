@@ -21,6 +21,46 @@ const VisualCanvas= dynamic(() => import("@/components/VisualCanvas"),{ ssr: fal
 const TutorChat   = dynamic(() => import("@/components/TutorChat"),   { ssr: false });
 const AlgorithmCatalog = dynamic(() => import("@/components/AlgorithmCatalog"), { ssr: false });
 
+function detectLanguage(code: string, currentLang: Language): { detected: Language; reason: string } | null {
+  const codeTrimmed = code.trim();
+  if (!codeTrimmed) return null;
+
+  const isPythonCode = 
+    codeTrimmed.includes("def ") || 
+    codeTrimmed.includes("elif ") || 
+    codeTrimmed.includes("import pandas") ||
+    codeTrimmed.includes("print_name") ||
+    /^\s*#\s+/m.test(codeTrimmed) ||
+    (codeTrimmed.includes("print(") && !codeTrimmed.includes("printf") && !codeTrimmed.includes("System.out"));
+
+  const isCCppCode = 
+    codeTrimmed.includes("#include") || 
+    codeTrimmed.includes("void ") || 
+    codeTrimmed.includes("int main") || 
+    codeTrimmed.includes("printf(") || 
+    codeTrimmed.includes("std::cout") ||
+    codeTrimmed.includes("using namespace std");
+
+  const isJavaCode = 
+    codeTrimmed.includes("public static void main") ||
+    codeTrimmed.includes("System.out.print") ||
+    (codeTrimmed.includes("class Main") && codeTrimmed.includes("String[] args"));
+
+  if (isPythonCode && currentLang !== "python") {
+    return { detected: "python", reason: "Found Python-specific syntax (e.g. 'def', '#' comment, or 'print')" };
+  }
+  
+  if (isCCppCode && currentLang !== "c" && currentLang !== "cpp") {
+    return { detected: "c", reason: "Found C/C++ specific syntax (e.g. '#include', 'void', 'int main', or 'printf')" };
+  }
+
+  if (isJavaCode && currentLang !== "java") {
+    return { detected: "java", reason: "Found Java-specific syntax (e.g. 'public static void main' or 'System.out.print')" };
+  }
+
+  return null;
+}
+
 function VisualizeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,9 +175,17 @@ function VisualizeContent() {
   }, [currentStepIdx]);
 
   const handleVisualize = useCallback(async (overrideCode?: string, overrideLang?: Language) => {
-    const activeCode = typeof overrideCode === "string" ? overrideCode : code;
-    const activeLang = typeof overrideLang === "string" ? overrideLang : language;
+    let activeCode = typeof overrideCode === "string" ? overrideCode : code;
+    let activeLang = typeof overrideLang === "string" ? overrideLang : language;
     if (!activeCode.trim()) return;
+
+    // Auto-detect language tab mismatch
+    const mismatch = detectLanguage(activeCode, activeLang);
+    if (mismatch) {
+      console.warn(`Language mismatch detected: expected ${activeLang}, detected ${mismatch.detected}. Auto-switching tab.`);
+      setLanguage(mismatch.detected);
+      activeLang = mismatch.detected;
+    }
     // Increment run ID so error boundaries fully remount and reset
     setVisualizeRunId((id) => id + 1);
     setIsLoading(true);

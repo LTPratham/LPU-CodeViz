@@ -14,6 +14,7 @@ export interface ArrayElement {
 export interface ArrayState {
   type: "array";
   elements: ArrayElement[];
+  output?: string[];
 }
 
 export interface StackElement {
@@ -25,6 +26,7 @@ export interface StackState {
   type: "stack";
   elements: StackElement[];
   top: number;
+  output?: string[];
 }
 
 export interface QueueElement {
@@ -37,6 +39,7 @@ export interface QueueState {
   elements: QueueElement[];
   front: number;
   rear: number;
+  output?: string[];
 }
 
 export interface LinkedListNode {
@@ -49,6 +52,7 @@ export interface LinkedListNode {
 export interface LinkedListState {
   type: "linkedlist";
   nodes: LinkedListNode[];
+  output?: string[];
 }
 
 export interface TreeNode {
@@ -62,6 +66,7 @@ export interface TreeNode {
 export interface TreeState {
   type: "binarytree";
   nodes: TreeNode[];
+  output?: string[];
 }
 
 export interface RecursionFrame {
@@ -76,6 +81,7 @@ export interface RecursionState {
   type: "recursion";
   frames: RecursionFrame[];
   depth: number;
+  output?: string[];
 }
 
 export interface VariableEntry {
@@ -102,6 +108,7 @@ export interface SqlTableState {
   columns: string[];
   rows: SqlRow[];
   secondTable?: Omit<SqlTableState, "type">;
+  output?: string[];
 }
 
 export interface GraphNode {
@@ -123,6 +130,7 @@ export interface GraphState {
   nodes: GraphNode[];
   edges: GraphEdge[];
   directed?: boolean;
+  output?: string[];
 }
 
 export type VisualizationState =

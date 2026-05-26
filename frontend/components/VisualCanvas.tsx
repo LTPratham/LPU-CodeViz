@@ -305,11 +305,41 @@ export default function VisualCanvas({
       {/* Main Content Area */}
       <div
         ref={canvasRef}
-        style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center" }}
+        style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column", alignItems: "center", padding: "16px" }}
       >
-        <VisualizerErrorBoundary key={dataStructure}>
-          {renderContent()}
-        </VisualizerErrorBoundary>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center", flex: 1 }}>
+          <VisualizerErrorBoundary key={dataStructure}>
+            {renderContent()}
+          </VisualizerErrorBoundary>
+        </div>
+
+        {/* Global Console Output */}
+        {activeTab === "visualizer" && step && step.state && Array.isArray((step.state as any).output) && (step.state as any).output.length > 0 && (
+          <div style={{ width: "100%", maxWidth: 600, marginTop: 24, flexShrink: 0, alignSelf: "center" }}>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8, textAlign: "left" }}>
+              Console Output
+            </div>
+            <div style={{
+              background: "#0D1117",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              padding: "12px 16px",
+              fontFamily: "var(--font-mono)",
+              fontSize: 13,
+              lineHeight: 1.8,
+              textAlign: "left",
+            }}>
+              {(step.state as any).output.map((line: string, i: number) => (
+                <div
+                  key={i}
+                  style={{ color: "#22C55E" }}
+                >
+                  <span style={{ color: "#64748B", marginRight: 8 }}>{">"}</span>{line}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

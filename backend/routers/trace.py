@@ -42,34 +42,34 @@ Return a JSON object with exactly this shape:
   ]
 }}
 
-STATE FORMATS by dataStructure:
+STATE FORMATS by dataStructure (Note: ALL formats can have an optional "output": ["line 1", "line 2"] containing printed stdout up to that step):
 
 If "array" or "sorting":
-  {{ "type": "array", "elements": [{{"value": <number>, "index": <int>, "status": "default|active|comparing|sorted|pivot|swapping"}}] }}
+  {{ "type": "array", "elements": [{{"value": <number>, "index": <int>, "status": "default|active|comparing|sorted|pivot|swapping"}}], "output": <optional list of stdout strings> }}
 
 If "stack":
-  {{ "type": "stack", "elements": [{{"value": <any>, "status": "active|default|returning"}}], "top": <int> }}
+  {{ "type": "stack", "elements": [{{"value": <any>, "status": "active|default|returning"}}], "top": <int>, "output": <optional list of stdout strings> }}
 
 If "queue":
-  {{ "type": "queue", "elements": [{{"value": <any>, "status": "default|active|enqueuing|dequeuing"}}], "front": <int>, "rear": <int> }}
+  {{ "type": "queue", "elements": [{{"value": <any>, "status": "default|active|enqueuing|dequeuing"}}], "front": <int>, "rear": <int>, "output": <optional list of stdout strings> }}
 
 If "linkedlist":
-  {{ "type": "linkedlist", "nodes": [{{"id": "n1", "value": <any>, "next": "n2_or_null", "status": "active|default|inserting|deleting"}}] }}
+  {{ "type": "linkedlist", "nodes": [{{"id": "n1", "value": <any>, "next": "n2_or_null", "status": "active|default|inserting|deleting"}}], "output": <optional list of stdout strings> }}
 
 If "binarytree":
-  {{ "type": "binarytree", "nodes": [{{"id": "1", "value": <any>, "left": "2_or_null", "right": "3_or_null", "status": "visiting|visited|default|inserting"}}] }}
+  {{ "type": "binarytree", "nodes": [{{"id": "1", "value": <any>, "left": "2_or_null", "right": "3_or_null", "status": "visiting|visited|default|inserting"}}], "output": <optional list of stdout strings> }}
 
 If "recursion":
-  {{ "type": "recursion", "frames": [{{"id": "f1", "funcName": "<name>", "args": {{"n": 5}}, "returnValue": <optional>, "status": "active|returning|completed"}}], "depth": <int> }}
+  {{ "type": "recursion", "frames": [{{"id": "f1", "funcName": "<name>", "args": {{"n": 5}}, "returnValue": <optional>, "status": "active|returning|completed"}}], "depth": <int>, "output": <optional list of stdout strings> }}
 
 If "variables":
   {{ "type": "variables", "variables": [{{"name": "<var>", "value": <any>, "type": "<int|str|bool|float>", "status": "active|default|updated"}}], "output": ["<printed lines>"] }}
 
 If "sqltable":
-  {{ "type": "sqltable", "tableName": "<name>", "columns": ["col1","col2"], "rows": [{{"values": [<v1>,<v2>], "status": "default|inserted|selected|filtered|joining"}}] }}
+  {{ "type": "sqltable", "tableName": "<name>", "columns": ["col1","col2"], "rows": [{{"values": [<v1>,<v2>], "status": "default|inserted|selected|filtered|joining"}}], "output": <optional list of stdout strings> }}
 
 If "graph":
-  {{ "type": "graph", "nodes": [{{"id": "A", "value": "A", "status": "default|visiting|visited|highlighted|shortest_path"}}], "edges": [{{"from": "A", "to": "B", "weight": <optional number>, "directed": <optional bool>, "status": "default|highlighted|shortest_path"}}], "directed": <optional bool> }}
+  {{ "type": "graph", "nodes": [{{"id": "A", "value": "A", "status": "default|visiting|visited|highlighted|shortest_path"}}], "edges": [{{"from": "A", "to": "B", "weight": <optional number>, "directed": <optional bool>, "status": "default|highlighted|shortest_path"}}], "directed": <optional bool>, "output": <optional list of stdout strings> }}
 
 Rules:
 - The total number of steps in the "steps" array must not exceed 25.
@@ -77,7 +77,12 @@ Rules:
 - If the simulation naturally requires more than 25 steps, detailedly simulate the first 15 steps, skip the middle redundant iterations, and show the final 5 steps leading to the final output state.
 - Each step must show the COMPLETE current state (not just the change).
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted".
-- For recursion: push a new frame for each call, pop on return.
+- For recursion call stack sync:
+  * Maintain the full call stack in the "frames" array. The first call (e.g., print_name(5)) is index 0.
+  * When a recursive function is called, push a new frame to the end of the "frames" array.
+  * Active/previous frames MUST remain on the stack at their respective positions and cannot be omitted or dropped as the depth increases.
+  * When a frame returns, mark its status as "returning", show the return value, then in the next step pop it from the stack.
+  * The number of elements in the "frames" array must exactly equal the call "depth" at every step.
 - If the code contains severe syntax errors, is meaningless, or lacks basic structure, return exactly: {{"error": true, "message": "Syntax error description"}}
 - Return ONLY the JSON object. Start with {{ and end with }}"""
 

@@ -93,10 +93,12 @@ async def trace(req: TraceRequest):
 
     user_prompt = TRACE_USER_TEMPLATE.format(lang=req.lang, code=numbered_code)
 
+    last_raw = ""
     last_error = None
     for attempt in range(2):  # Retry once on JSON parse failure
         try:
             raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096)
+            last_raw = raw
             json_str = extract_json_block(raw)
             result = json.loads(json_str)
 
@@ -127,8 +129,22 @@ async def trace(req: TraceRequest):
             logger.error(f"Error in /trace: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    # Find the error char index if possible
+    err_msg = str(last_error)
+    snippet = ""
+    try:
+        import re
+        char_match = re.search(r"char (\d+)", err_msg)
+        if char_match and last_raw:
+            char_idx = int(char_match.group(1))
+            start = max(0, char_idx - 100)
+            end = min(len(last_raw), char_idx + 100)
+            snippet = f"\nError snippet around char {char_idx}:\n... {last_raw[start:end]} ..."
+    except Exception:
+        pass
+
     raise HTTPException(
         status_code=500,
-        detail=f"AI returned invalid trace JSON after 2 attempts: {last_error}"
+        detail=f"AI returned invalid trace JSON after 2 attempts: {last_error}{snippet}"
     )
 

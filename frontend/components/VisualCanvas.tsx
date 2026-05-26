@@ -178,9 +178,9 @@ export default function VisualCanvas({
     if (state.type === "queue")       return <QueueViz state={state} speed={speed} />;
     if (state.type === "linkedlist")  return <LinkedListViz state={state} speed={speed} />;
     if (state.type === "binarytree")  return <TreeViz state={state} speed={speed} />;
-    if (state.type === "recursion")   return <RecursionViz state={state} speed={speed} />;
+    if (state.type === "recursion")   return <RecursionViz state={state} speed={speed} stepDescription={typeof step.description === "string" ? step.description : ""} stepCode={step.code || ""} />;
     if (state.type === "sqltable")    return <SqlTableViz state={state} speed={speed} />;
-    if (state.type === "variables")   return <VariableBoard state={state} speed={speed} />;
+    if (state.type === "variables")   return <VariableBoard state={state} speed={speed} stepAction={step.action} stepDescription={typeof step.description === "string" ? step.description : ""} stepCode={step.code || ""} stepNum={step.stepNum} />;
     if (state.type === "graph")       return <GraphViz state={state} speed={speed} />;
 
     const unknownState = state as unknown as { type: string };

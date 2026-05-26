@@ -17,14 +17,14 @@ class TraceRequest(BaseModel):
 TRACE_SYSTEM = """You are a precise code execution simulator for an educational visualizer.
 You simulate code step-by-step, producing JSON that drives animated visualizations.
 Always return ONLY valid JSON — no markdown, no prose outside JSON.
-CRITICAL: The simulation MUST be highly consolidated and have at most 15 steps. Summarize loops and recursion to fit within 15 steps."""
+CRITICAL: The simulation must be detailed and show every single state change, comparison, and swap step-by-step. For standard school/lab exercises (like sorting an array of 5 elements or recursion up to depth 5), simulate EVERY single step without skipping. Limit the total simulation to at most 50 steps to fit output token budgets."""
 
 TRACE_USER_TEMPLATE = """Language: {lang}
 Code (numbered lines):
 {code}
 
-Task: Simulate this code execution step by step in at most 15 steps. Identify the primary data structure used.
-CRITICAL: The "steps" array must NEVER exceed 15 items. If the code naturally runs longer (e.g. sorting or recursion), group multiple iterations/steps together or skip the middle steps to ensure it fits in at most 15 steps.
+Task: Simulate this code execution step by step in at most 50 steps. Identify the primary data structure used.
+CRITICAL: Show every single comparison, variable assignment, swap, recursion frame push/pop, and state update. Do NOT skip steps or iterations unless the execution exceeds 50 steps.
 
 Return a JSON object with exactly this shape:
 {{
@@ -72,15 +72,13 @@ If "graph":
   {{ "type": "graph", "nodes": [{{"id": "A", "value": "A", "status": "default|visiting|visited|highlighted|shortest_path"}}], "edges": [{{"from": "A", "to": "B", "weight": <optional number>, "directed": <optional bool>, "status": "default|highlighted|shortest_path"}}], "directed": <optional bool> }}
 
 Rules:
-- The total number of steps in the "steps" array must NEVER exceed 15. This is a critical requirement to prevent token limits and response truncation.
-- If the simulation naturally requires more than 15 steps (e.g., sorting algorithms with multiple passes or deep loops):
-  - Detailedly simulate the first 8-10 steps (e.g., showing the first pass of comparisons and swaps).
-  - Skip the middle redundant iterations.
-  - Simulate the last 3-5 steps showing the final steps and the final sorted/completed state.
+- The total number of steps in the "steps" array must not exceed 50.
+- For typical examples (e.g., sorting 4-6 items or recursion with depth 3-5), simulate EVERY single step. Do not skip comparisons, swaps, or iterations.
+- If the simulation naturally requires more than 50 steps, detailedly simulate the first 35 steps, skip the middle redundant iterations, and show the final 15 steps leading to the final output state.
 - Each step must show the COMPLETE current state (not just the change).
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted".
 - For recursion: push a new frame for each call, pop on return.
-- If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}}
+- If the code contains severe syntax errors, is meaningless, or lacks basic structure, return exactly: {{"error": true, "message": "Syntax error description"}}
 - Return ONLY the JSON object. Start with {{ and end with }}"""
 
 

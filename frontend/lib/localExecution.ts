@@ -100,12 +100,10 @@ function simulateBubbleSort(arr: number[]): TraceStep[] {
     vars: { i: n - 1, j: 0, temp: 0 }
   });
 
-  // Consolidate steps if they exceed 14 (leaving space for the initial step)
+  // Consolidate steps if they exceed 100
   let selectedSteps = tempSteps;
-  if (tempSteps.length > 14) {
-    const first8 = tempSteps.slice(0, 8);
-    const last5 = tempSteps.slice(tempSteps.length - 5);
-    selectedSteps = [...first8, ...last5];
+  if (tempSteps.length > 100) {
+    selectedSteps = tempSteps.slice(0, 100);
   }
 
   selectedSteps.forEach((s) => {
@@ -229,10 +227,8 @@ function simulateSelectionSort(arr: number[]): TraceStep[] {
 
   // Consolidate
   let selectedSteps = tempSteps;
-  if (tempSteps.length > 14) {
-    const first8 = tempSteps.slice(0, 8);
-    const last5 = tempSteps.slice(tempSteps.length - 5);
-    selectedSteps = [...first8, ...last5];
+  if (tempSteps.length > 100) {
+    selectedSteps = tempSteps.slice(0, 100);
   }
 
   selectedSteps.forEach((s) => {
@@ -338,10 +334,8 @@ function simulateInsertionSort(arr: number[]): TraceStep[] {
 
   // Consolidate
   let selectedSteps = tempSteps;
-  if (tempSteps.length > 14) {
-    const first8 = tempSteps.slice(0, 8);
-    const last5 = tempSteps.slice(tempSteps.length - 5);
-    selectedSteps = [...first8, ...last5];
+  if (tempSteps.length > 100) {
+    selectedSteps = tempSteps.slice(0, 100);
   }
 
   selectedSteps.forEach((s) => {
@@ -921,10 +915,8 @@ function simulateRecursion(code: string): TraceStep[] {
     traceFact(inputN);
   }
 
-  if (steps.length > 15) {
-    const start = steps.slice(0, 9);
-    const end = steps.slice(steps.length - 6);
-    return [...start, ...end].map((s, idx) => ({ ...s, stepNum: idx + 1 }));
+  if (steps.length > 100) {
+    return steps.slice(0, 100).map((s, idx) => ({ ...s, stepNum: idx + 1 }));
   }
 
   return steps;

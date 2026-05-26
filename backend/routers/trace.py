@@ -97,7 +97,7 @@ async def trace(req: TraceRequest):
     last_error = None
     for attempt in range(2):  # Retry once on JSON parse failure
         try:
-            raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096)
+            raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096, model="llama-3.1-8b-instant")
             last_raw = raw
             json_str = extract_json_block(raw)
             result = json.loads(json_str)

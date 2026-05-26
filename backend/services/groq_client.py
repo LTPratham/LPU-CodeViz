@@ -27,18 +27,25 @@ def get_groq_clients() -> list[AsyncGroq]:
     return _clients
 
 
-async def chat_completion(system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> str:
+async def chat_completion(
+    system_prompt: str,
+    user_prompt: str,
+    max_tokens: int = 4096,
+    model: str = None
+) -> str:
     """Single-turn chat completion with key rotation and fallback models."""
     clients = get_groq_clients()
     indices = list(range(len(clients)))
     random.shuffle(indices)
+
+    target_model = model if model else PRIMARY_MODEL
 
     last_error = None
     for idx in indices:
         client = clients[idx]
         try:
             response = await client.chat.completions.create(
-                model=PRIMARY_MODEL,
+                model=target_model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user",   "content": user_prompt},
@@ -48,10 +55,11 @@ async def chat_completion(system_prompt: str, user_prompt: str, max_tokens: int 
             )
             return response.choices[0].message.content or ""
         except RateLimitError as e:
-            print(f"Rate limit reached for primary model using key index {idx}. Trying fallback model...")
+            fallback = FALLBACK_MODEL if target_model != FALLBACK_MODEL else PRIMARY_MODEL
+            print(f"Rate limit reached for model {target_model} using key index {idx}. Trying fallback model {fallback}...")
             try:
                 response = await client.chat.completions.create(
-                    model=FALLBACK_MODEL,
+                    model=fallback,
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user",   "content": user_prompt},
@@ -72,6 +80,7 @@ async def chat_completion(system_prompt: str, user_prompt: str, max_tokens: int 
     if last_error:
         raise last_error
     raise RuntimeError("All configured Groq API keys failed to process the request.")
+
 
 
 def extract_json_block(text: str) -> str:

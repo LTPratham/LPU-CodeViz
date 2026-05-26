@@ -1053,8 +1053,172 @@ function simulateVariables(code: string): TraceStep[] {
   return steps;
 }
 
-// Main Local Execution Switchboard
-export function tryLocalExecution(lang: string, code: string): TraceResponse | null {
+function alignLocalSteps(steps: TraceStep[], code: string, lang: string, dataStructure: string): TraceStep[] {
+  const lines = code.split("\n").map(l => l.trim());
+  const lowerLines = lines.map(l => l.toLowerCase());
+
+  // Helper to find a line matching criteria
+  const findLineIdx = (includes: string[], excludes: string[] = []): number => {
+    return lowerLines.findIndex(line => 
+      includes.every(p => line.includes(p)) && !excludes.some(p => line.includes(p))
+    );
+  };
+
+  // Find standard line indices
+  let startLineIdx = -1;
+  let compareLineIdx = -1;
+  let swapLineIdx = -1;
+  let innerLoopLineIdx = -1;
+  let outerLoopLineIdx = -1;
+
+  if (dataStructure === "sorting") {
+    // 1. Sorting
+    startLineIdx = findLineIdx(["sort"]);
+    if (startLineIdx === -1) startLineIdx = findLineIdx(["bubble"]) || findLineIdx(["select"]) || findLineIdx(["insert"]);
+    outerLoopLineIdx = findLineIdx(["for", "i"], ["j"]);
+    innerLoopLineIdx = findLineIdx(["for", "j"]);
+    compareLineIdx = findLineIdx(["if", "arr"]);
+    if (compareLineIdx === -1) compareLineIdx = findLineIdx(["if", "key"]);
+    swapLineIdx = findLineIdx(["temp", "="], ["for", "if", "while"]);
+    if (swapLineIdx === -1) swapLineIdx = findLineIdx(["[j]", "="], ["for", "if", "while"]);
+    if (swapLineIdx === -1) swapLineIdx = findLineIdx(["[i]", "="], ["for", "if", "while"]);
+    if (swapLineIdx === -1) swapLineIdx = findLineIdx(["min_idx", "="], ["for", "if", "while", "min_idx = i"]);
+
+    return steps.map(step => {
+      let lineNum = step.line;
+      if (step.action === "compare") {
+        lineNum = compareLineIdx !== -1 ? compareLineIdx + 1 : startLineIdx !== -1 ? startLineIdx + 4 : step.line;
+      } else if (step.action === "swap" || step.action === "insert") {
+        lineNum = swapLineIdx !== -1 ? swapLineIdx + 1 : startLineIdx !== -1 ? startLineIdx + 6 : step.line;
+      } else if (step.action === "sort") {
+        const endIdx = lowerLines.findIndex((line, i) => i > startLineIdx && line.includes("}"));
+        lineNum = endIdx !== -1 ? endIdx + 1 : lines.length;
+      } else if (step.action === "highlight") {
+        if (step.description.toLowerCase().includes("pass") || step.description.toLowerCase().includes("complete")) {
+          lineNum = outerLoopLineIdx !== -1 ? outerLoopLineIdx + 1 : startLineIdx !== -1 ? startLineIdx + 2 : step.line;
+        } else {
+          const mainIdx = findLineIdx(["main"]);
+          const arrIdx = lowerLines.findIndex((line, i) => i >= mainIdx && (line.includes("arr") || line.includes("elements")));
+          lineNum = arrIdx !== -1 ? arrIdx + 1 : startLineIdx !== -1 ? startLineIdx : step.line;
+        }
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  if (dataStructure === "recursion") {
+    // 2. Recursion
+    startLineIdx = findLineIdx(["def "]) || findLineIdx(["int "]) || findLineIdx(["function "]);
+    const baseCaseLineIdx = lowerLines.findIndex(line => line.includes("if") && (line.includes("<= 1") || line.includes("<=1") || line.includes("== 0") || line.includes("== 1")));
+    const recurseLineIdx = lowerLines.findIndex(line => line.includes("return") && (line.includes("fib") || line.includes("fact") || line.includes("+") || line.includes("*")));
+
+    return steps.map(step => {
+      let lineNum = step.line;
+      if (step.action === "call") {
+        lineNum = startLineIdx !== -1 ? startLineIdx + 1 : step.line;
+      } else if (step.action === "return") {
+        if (step.description.toLowerCase().includes("base case")) {
+          lineNum = baseCaseLineIdx !== -1 ? baseCaseLineIdx + 2 : startLineIdx !== -1 ? startLineIdx + 2 : step.line;
+        } else {
+          lineNum = recurseLineIdx !== -1 ? recurseLineIdx + 1 : startLineIdx !== -1 ? startLineIdx + 4 : step.line;
+        }
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  if (dataStructure === "array") {
+    // 3. Search (Binary / Linear)
+    startLineIdx = findLineIdx(["search"]);
+    const loopLineIdx = lowerLines.findIndex(line => line.includes("while") || line.includes("for"));
+    compareLineIdx = lowerLines.findIndex(line => line.includes("if") && (line.includes("==") || line.includes("[") || line.includes("target")));
+    const assignLineIdx = lowerLines.findIndex(line => line.includes("low =") || line.includes("high =") || line.includes("mid =") || line.includes("low=") || line.includes("high=") || line.includes("mid="));
+    const returnLineIdx = lowerLines.findIndex(line => line.includes("return"));
+
+    return steps.map(step => {
+      let lineNum = step.line;
+      if (step.action === "compare") {
+        lineNum = compareLineIdx !== -1 ? compareLineIdx + 1 : step.line;
+      } else if (step.action === "assign") {
+        lineNum = assignLineIdx !== -1 ? assignLineIdx + 1 : step.line;
+      } else if (step.action === "return" || step.action === "select") {
+        lineNum = returnLineIdx !== -1 ? returnLineIdx + 1 : step.line;
+      } else if (step.action === "highlight" || step.action === "traverse") {
+        lineNum = loopLineIdx !== -1 ? loopLineIdx + 1 : step.line;
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  if (dataStructure === "stack") {
+    // 4. Stack
+    const initLineIdx = lowerLines.findIndex(line => line.includes("stack =") || line.includes("stack=") || line.includes("new stack") || line.includes("list()"));
+    const pushLineIdx = lowerLines.findIndex(line => line.includes(".push") || line.includes("push("));
+    const popLineIdx = lowerLines.findIndex(line => line.includes(".pop") || line.includes("pop("));
+
+    return steps.map(step => {
+      let lineNum = step.line;
+      if (step.action === "push") {
+        lineNum = pushLineIdx !== -1 ? pushLineIdx + 1 : step.line;
+      } else if (step.action === "pop") {
+        lineNum = popLineIdx !== -1 ? popLineIdx + 1 : step.line;
+      } else if (step.action === "highlight") {
+        lineNum = initLineIdx !== -1 ? initLineIdx + 1 : step.line;
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  if (dataStructure === "queue") {
+    // 5. Queue
+    const initLineIdx = lowerLines.findIndex(line => line.includes("queue =") || line.includes("queue=") || line.includes("new queue"));
+    const enqueueLineIdx = lowerLines.findIndex(line => line.includes("enqueue") || line.includes(".push") || line.includes(".append") || line.includes("push_back"));
+    const dequeueLineIdx = lowerLines.findIndex(line => line.includes("dequeue") || line.includes("pop") || line.includes("shift"));
+
+    return steps.map(step => {
+      let lineNum = step.line;
+      if (step.action === "enqueue") {
+        lineNum = enqueueLineIdx !== -1 ? enqueueLineIdx + 1 : step.line;
+      } else if (step.action === "dequeue") {
+        lineNum = dequeueLineIdx !== -1 ? dequeueLineIdx + 1 : step.line;
+      } else if (step.action === "highlight") {
+        lineNum = initLineIdx !== -1 ? initLineIdx + 1 : step.line;
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  if (dataStructure === "variables") {
+    // 6. Variables (Basics)
+    return steps.map(step => {
+      let lineNum = step.line;
+      const desc = step.description.toLowerCase();
+      let matchIdx = -1;
+
+      if (desc.includes("a = 10") || desc.includes("a=10") || desc.includes("name =") || desc.includes("initializ")) {
+        matchIdx = lowerLines.findIndex(line => line.includes("a = 10") || line.includes("a=10") || line.includes("name ="));
+      } else if (desc.includes("b = 20") || desc.includes("b=20") || desc.includes("age =")) {
+        matchIdx = lowerLines.findIndex(line => line.includes("b = 20") || line.includes("b=20") || line.includes("age ="));
+      } else if (desc.includes("sum =") || desc.includes("arithmetic") || desc.includes("operation")) {
+        matchIdx = lowerLines.findIndex(line => line.includes("sum =") || line.includes("sum="));
+      } else if (desc.includes("if") || desc.includes("condition") || desc.includes("greater than")) {
+        matchIdx = lowerLines.findIndex(line => line.includes("if"));
+      } else if (desc.includes("loop") || desc.includes("count") || desc.includes("for")) {
+        matchIdx = lowerLines.findIndex(line => line.includes("for"));
+      }
+
+      if (matchIdx !== -1) {
+        lineNum = matchIdx + 1;
+      }
+      return { ...step, line: lineNum };
+    });
+  }
+
+  return steps;
+}
+
+// Raw Local Execution Switchboard (without line alignment)
+function tryLocalExecutionRaw(lang: string, code: string): TraceResponse | null {
   const normalized = code.toLowerCase();
 
   // 1. Basic variables loop template
@@ -1137,4 +1301,13 @@ export function tryLocalExecution(lang: string, code: string): TraceResponse | n
   }
 
   return null;
+}
+
+// Main Local Execution Switchboard with Line Alignment
+export function tryLocalExecution(lang: string, code: string): TraceResponse | null {
+  const res = tryLocalExecutionRaw(lang, code);
+  if (res) {
+    res.steps = alignLocalSteps(res.steps, code, lang, res.dataStructure);
+  }
+  return res;
 }

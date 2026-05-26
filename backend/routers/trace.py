@@ -17,14 +17,14 @@ class TraceRequest(BaseModel):
 TRACE_SYSTEM = """You are a precise code execution simulator for an educational visualizer.
 You simulate code step-by-step, producing JSON that drives animated visualizations.
 Always return ONLY valid JSON — no markdown, no prose outside JSON.
-CRITICAL: The simulation must be detailed and show every single state change, comparison, and swap step-by-step. For standard school/lab exercises (like sorting an array of 5 elements or recursion up to depth 5), simulate EVERY single step without skipping. Limit the total simulation to at most 50 steps to fit output token budgets."""
+CRITICAL: The simulation must be detailed and show every single state change, comparison, and swap step-by-step. For standard school/lab exercises (like sorting an array of 5 elements or recursion up to depth 5), simulate EVERY single step without skipping. Limit the total simulation to at most 25 steps to fit output token budgets."""
 
 TRACE_USER_TEMPLATE = """Language: {lang}
 Code (numbered lines):
 {code}
 
-Task: Simulate this code execution step by step in at most 50 steps. Identify the primary data structure used.
-CRITICAL: Show every single comparison, variable assignment, swap, recursion frame push/pop, and state update. Do NOT skip steps or iterations unless the execution exceeds 50 steps.
+Task: Simulate this code execution step by step in at most 25 steps. Identify the primary data structure used.
+CRITICAL: Show every single comparison, variable assignment, swap, recursion frame push/pop, and state update. Do NOT skip steps or iterations unless the execution exceeds 25 steps.
 
 Return a JSON object with exactly this shape:
 {{
@@ -72,9 +72,9 @@ If "graph":
   {{ "type": "graph", "nodes": [{{"id": "A", "value": "A", "status": "default|visiting|visited|highlighted|shortest_path"}}], "edges": [{{"from": "A", "to": "B", "weight": <optional number>, "directed": <optional bool>, "status": "default|highlighted|shortest_path"}}], "directed": <optional bool> }}
 
 Rules:
-- The total number of steps in the "steps" array must not exceed 50.
+- The total number of steps in the "steps" array must not exceed 25.
 - For typical examples (e.g., sorting 4-6 items or recursion with depth 3-5), simulate EVERY single step. Do not skip comparisons, swaps, or iterations.
-- If the simulation naturally requires more than 50 steps, detailedly simulate the first 35 steps, skip the middle redundant iterations, and show the final 15 steps leading to the final output state.
+- If the simulation naturally requires more than 25 steps, detailedly simulate the first 15 steps, skip the middle redundant iterations, and show the final 5 steps leading to the final output state.
 - Each step must show the COMPLETE current state (not just the change).
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted".
 - For recursion: push a new frame for each call, pop on return.

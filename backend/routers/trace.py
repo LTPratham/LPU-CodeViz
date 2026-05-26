@@ -100,9 +100,12 @@ async def trace(req: TraceRequest):
 
     last_raw = ""
     last_error = None
-    for attempt in range(2):  # Retry once on JSON parse failure
+    # Attempt 1: use the smart 70b model → produces correct JSON
+    # Attempt 2: retry with fast 8b model as fallback on parse failure
+    models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    for attempt, model_name in enumerate(models_to_try):
         try:
-            raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096, model="llama-3.1-8b-instant")
+            raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096, model=model_name)
             last_raw = raw
             json_str = extract_json_block(raw)
             result = json.loads(json_str)
@@ -126,13 +129,14 @@ async def trace(req: TraceRequest):
 
         except (json.JSONDecodeError, ValueError) as e:
             last_error = e
-            logger.warning(f"Attempt {attempt+1} JSON error in /trace: {e}")
+            logger.warning(f"Attempt {attempt+1} ({model_name}) JSON error in /trace: {e}")
             continue
         except HTTPException:
             raise
         except Exception as e:
-            logger.error(f"Error in /trace: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+            logger.error(f"Error in /trace (attempt {attempt+1}, {model_name}): {e}")
+            last_error = e
+            continue
 
     # Find the error char index if possible
     err_msg = str(last_error)

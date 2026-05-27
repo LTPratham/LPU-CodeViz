@@ -114,6 +114,44 @@ async def test_groq():
     }
 
 
+@app.get("/test_trace")
+async def test_trace():
+    import time
+    from services.groq_client import chat_completion
+    from routers.trace import TRACE_SYSTEM, TRACE_USER_TEMPLATE
+    
+    code = """int main() {
+    int x = 5;
+    int y = 10;
+    int sum = x + y;
+}"""
+    numbered_lines = [f"{i+1}: {line}" for i, line in enumerate(code.splitlines())]
+    numbered_code = "\n".join(numbered_lines)
+    user_prompt = TRACE_USER_TEMPLATE.format(lang="c", code=numbered_code)
+    
+    start = time.time()
+    try:
+        raw = await chat_completion(
+            TRACE_SYSTEM, 
+            user_prompt, 
+            max_tokens=4096, 
+            model="llama-3.1-8b-instant",
+            response_format={"type": "json_object"}
+        )
+        elapsed = time.time() - start
+        return {
+            "status": "ok",
+            "time": round(elapsed, 2),
+            "length": len(raw),
+            "raw": raw
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

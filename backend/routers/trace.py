@@ -119,7 +119,7 @@ async def trace(req: TraceRequest):
             if isinstance(result, dict) and result.get("error"):
                 raise HTTPException(status_code=400, detail=result.get("message", "Invalid code or syntax error."))
 
-            # Validate
+            # Validate and normalize
             if "steps" not in result or not isinstance(result.get("steps"), list):
                 raise ValueError("Missing 'steps' array")
             if "dataStructure" not in result:
@@ -128,13 +128,34 @@ async def trace(req: TraceRequest):
             for step in result.get("steps", []):
                 if not isinstance(step, dict):
                     raise ValueError("Step is not a dictionary")
-                for key in ["stepNum", "line", "action", "state", "description", "variables"]:
+                
+                # Check essential keys
+                for key in ["stepNum", "line", "action", "state", "description"]:
                     if key not in step:
                         raise ValueError(f"Step missing required key '{key}'")
+                
                 if not isinstance(step.get("state"), dict):
                     raise ValueError("Step 'state' must be a dictionary")
-                if not isinstance(step.get("variables"), dict):
-                    raise ValueError("Step 'variables' must be a dictionary")
+                
+                # Cast line and stepNum to integers to guarantee type safety
+                try:
+                    step["line"] = int(step.get("line", -1))
+                except (ValueError, TypeError):
+                    step["line"] = -1
+                try:
+                    step["stepNum"] = int(step.get("stepNum", 1))
+                except (ValueError, TypeError):
+                    step["stepNum"] = 1
+
+                # Reconstruct or default 'variables' if missing or not a dict
+                if "variables" not in step or not isinstance(step.get("variables"), dict):
+                    reconstructed = {}
+                    state_obj = step.get("state")
+                    if isinstance(state_obj, dict) and isinstance(state_obj.get("variables"), list):
+                        for var_item in state_obj.get("variables"):
+                            if isinstance(var_item, dict) and "name" in var_item:
+                                reconstructed[var_item["name"]] = var_item.get("value")
+                    step["variables"] = reconstructed
 
             # Align/verify line numbers programmatically to guarantee 100% correctness
             for step in result.get("steps", []):

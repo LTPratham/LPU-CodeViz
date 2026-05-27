@@ -120,10 +120,28 @@ async def test_trace():
     from services.groq_client import chat_completion
     from routers.trace import TRACE_SYSTEM, TRACE_USER_TEMPLATE
     
-    code = """int main() {
-    int x = 5;
-    int y = 10;
-    int sum = x + y;
+    code = """#include <stdio.h>
+
+int main() {
+    // 1. Initialize variables
+    int a = 10;
+    int b = 20;
+    
+    // 2. Perform operations
+    int sum = a + b;
+    int diff = b - a;
+    
+    // 3. Conditional logic
+    if (sum > 25) {
+        printf("Sum %d is greater than 25\\n", sum);
+    } else {
+        printf("Sum is small\\n");
+    }
+    
+    // 4. Simple loop
+    for(int i = 1; i <= 3; i++) {
+        printf("Loop count: %d\\n", i);
+    }
 }"""
     numbered_lines = [f"{i+1}: {line}" for i, line in enumerate(code.splitlines())]
     numbered_code = "\n".join(numbered_lines)

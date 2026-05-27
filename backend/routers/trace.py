@@ -76,6 +76,9 @@ Rules:
 - For typical examples (e.g., sorting 4-6 items or recursion with depth 3-5), simulate EVERY single step. Do not skip comparisons, swaps, or iterations.
 - If the simulation naturally requires more than 15 steps, detailedly simulate the first 10 steps, skip the middle redundant iterations, and show the final 5 steps leading to the final output state.
 - Each step must show the COMPLETE current state (not just the change).
+- **Execution Flow**: Function definition lines (e.g., `def func(...)` or function body comments) are NOT executed step-by-step. The simulation must jump directly from the function definition header to the first active global execution line (e.g., `print(kthSmallest(...))` or global variable assignments). Only when the function is called should the simulation enter the function body and step through its lines.
+- **Heaps & Priority Queues**: If the code uses Python's `heapq` module or list-based heaps, map `dataStructure` to `"variables"` (or `"array"`). Do NOT map them to `"stack"` or `"queue"` to avoid LIFO/FIFO semantic mismatch and underflow/overflow errors.
+- **Variables State Accuracy**: When `dataStructure` is `"variables"`, you MUST include all currently active variables (both global and local to the current scope, like loop variables `num`, arrays `arr`, lists `max_heap`, integers `k`, etc.) in the `state["variables"]` array at each step with their correct types and current values.
 - For sorting: mark compared elements as "comparing", swapped as "swapping", sorted section as "sorted".
 - For recursion call stack sync:
   * Maintain the full call stack in the "frames" array. The first call (e.g., print_name(5)) is index 0.

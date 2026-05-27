@@ -120,32 +120,28 @@ async def test_trace():
     from services.groq_client import chat_completion
     from routers.trace import TRACE_SYSTEM, TRACE_USER_TEMPLATE
     
-    code = """#include <stdio.h>
+    code = """# 1. Initialize variables
+name = "Priya"
+age = 19
+is_student = True
 
-int main() {
-    // 1. Initialize variables
-    int a = 10;
-    int b = 20;
-    
-    // 2. Perform operations
-    int sum = a + b;
-    int diff = b - a;
-    
-    // 3. Conditional logic
-    if (sum > 25) {
-        printf("Sum %d is greater than 25\\n", sum);
-    } else {
-        printf("Sum is small\\n");
-    }
-    
-    // 4. Simple loop
-    for(int i = 1; i <= 3; i++) {
-        printf("Loop count: %d\\n", i);
-    }
-}"""
+# 2. Conditional logic
+if age >= 18:
+    status = "Adult"
+else:
+    status = "Minor"
+
+# 3. Lists and Loops
+subjects = ["Math", "Physics", "Computer Science"]
+total_subjects = len(subjects)
+
+print(f"{name} is an {status} taking {total_subjects} subjects:")
+
+for sub in subjects:
+    print("- " + sub)"""
     numbered_lines = [f"{i+1}: {line}" for i, line in enumerate(code.splitlines())]
     numbered_code = "\n".join(numbered_lines)
-    user_prompt = TRACE_USER_TEMPLATE.format(lang="c", code=numbered_code)
+    user_prompt = TRACE_USER_TEMPLATE.format(lang="python", code=numbered_code)
     
     start = time.time()
     try:

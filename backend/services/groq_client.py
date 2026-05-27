@@ -31,7 +31,8 @@ async def chat_completion(
     system_prompt: str,
     user_prompt: str,
     max_tokens: int = 4096,
-    model: str = None
+    model: str = None,
+    response_format: dict = None
 ) -> str:
     """Single-turn chat completion with key rotation and fallback models."""
     clients = get_groq_clients()
@@ -44,29 +45,37 @@ async def chat_completion(
     for idx in indices:
         client = clients[idx]
         try:
-            response = await client.chat.completions.create(
-                model=target_model,
-                messages=[
+            params = {
+                "model": target_model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user",   "content": user_prompt},
                 ],
-                max_tokens=max_tokens,
-                temperature=0.3,
-            )
+                "max_tokens": max_tokens,
+                "temperature": 0.3,
+            }
+            if response_format:
+                params["response_format"] = response_format
+
+            response = await client.chat.completions.create(**params)
             return response.choices[0].message.content or ""
         except RateLimitError as e:
             fallback = FALLBACK_MODEL if target_model != FALLBACK_MODEL else PRIMARY_MODEL
             print(f"Rate limit reached for model {target_model} using key index {idx}. Trying fallback model {fallback}...")
             try:
-                response = await client.chat.completions.create(
-                    model=fallback,
-                    messages=[
+                fallback_params = {
+                    "model": fallback,
+                    "messages": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user",   "content": user_prompt},
                     ],
-                    max_tokens=max_tokens,
-                    temperature=0.3,
-                )
+                    "max_tokens": max_tokens,
+                    "temperature": 0.3,
+                }
+                if response_format:
+                    fallback_params["response_format"] = response_format
+
+                response = await client.chat.completions.create(**fallback_params)
                 return response.choices[0].message.content or ""
             except Exception as fe:
                 print(f"Fallback model failed for key index {idx}: {fe}. Trying next key...")

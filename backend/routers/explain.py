@@ -22,8 +22,8 @@ EXPLAIN_USER_TEMPLATE = """Language: {lang}
 Code (numbered lines):
 {code}
 
-Task: Return a JSON array. Each item explains one meaningful line (skip blank lines and closing braces alone).
-Each item must have exactly these fields:
+Task: Return a JSON object with a single key "explanations" containing an array of objects. Each object explains one meaningful line (skip blank lines and closing braces alone).
+Each object in the "explanations" array must have exactly these fields:
 {{
   "line": <the exact line number from the code prefix above as integer>,
   "code": "<the exact code on that line, trimmed, excluding the line number prefix>",
@@ -33,9 +33,13 @@ Each item must have exactly these fields:
   "why": "<detailed breakdown of syntax, symbols, variables, and operations on this line for an absolute beginner with no prior coding knowledge (e.g., explaining keys, values, dictionary/list symbols like braces/brackets/commas, parameters, return values, etc. in plain, step-by-step detail)>"
 }}
 
-If the code contains severe syntax errors, is meaningless, or lacks basic structure (e.g. plain text instead of HTML tags), return exactly: {{"error": true, "message": "Syntax error description"}} instead of an array.
+If the code contains severe syntax errors, is meaningless, or lacks basic structure, return exactly:
+{{
+  "error": true,
+  "message": "Syntax error description"
+}}
 
-Return ONLY the JSON array (or error object). Start with [ or {{ and end with ] or }}."""
+Return ONLY the JSON object. Start with {{ and end with }}."""
 
 
 @router.post("/explain")
@@ -51,28 +55,57 @@ async def explain(req: ExplainRequest):
 
     user_prompt = EXPLAIN_USER_TEMPLATE.format(lang=req.lang, code=numbered_code)
 
-    try:
-        raw = await chat_completion(EXPLAIN_SYSTEM, user_prompt, max_tokens=3000)
-        json_str = extract_json_block(raw)
-        result = json.loads(json_str)
-        if isinstance(result, dict) and result.get("error"):
-            raise HTTPException(status_code=400, detail=result.get("message", "Invalid code or syntax error."))
-        if not isinstance(result, list):
-            raise ValueError("Expected JSON array")
-        
-        # Align/verify line numbers programmatically to guarantee 100% correctness
-        for item in result:
-            code_trimmed = (item.get("code") or "").strip()
-            predicted_line = item.get("line", -1)
-            item["line"] = align_line_number(req.code, predicted_line, code_trimmed)
+    last_raw = ""
+    last_error = None
+    models_to_try = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
+    for attempt, model_name in enumerate(models_to_try):
+        try:
+            raw = await chat_completion(
+                EXPLAIN_SYSTEM,
+                user_prompt,
+                max_tokens=3000,
+                model=model_name,
+                response_format={"type": "json_object"}
+            )
+            last_raw = raw
+            json_str = extract_json_block(raw)
+            parsed = json.loads(json_str)
+
+            if isinstance(parsed, dict) and parsed.get("error"):
+                raise HTTPException(status_code=400, detail=parsed.get("message", "Invalid code or syntax error."))
+
+            explanations = parsed.get("explanations")
+            if not isinstance(explanations, list):
+                raise ValueError("Expected 'explanations' array in JSON object")
+
+            # Validate each item in the explanations array
+            for item in explanations:
+                if not isinstance(item, dict):
+                    raise ValueError("Explanation item is not a dictionary")
+                for key in ["line", "code", "explain", "concept", "category", "why"]:
+                    if key not in item:
+                        raise ValueError(f"Explanation item missing required key '{key}'")
+
+            # Align/verify line numbers programmatically to guarantee 100% correctness
+            for item in explanations:
+                code_trimmed = (item.get("code") or "").strip()
+                predicted_line = item.get("line", -1)
+                item["line"] = align_line_number(req.code, predicted_line, code_trimmed)
                         
-        return result
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON parse error in /explain: {e}\nRaw: {raw[:500]}")
-        raise HTTPException(status_code=500, detail="AI returned invalid JSON. Try again.")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in /explain: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+            return explanations
+        except json.JSONDecodeError as e:
+            last_error = e
+            logger.warning(f"Attempt {attempt+1} ({model_name}) JSON error in /explain: {e}")
+            continue
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error in /explain (attempt {attempt+1}, {model_name}): {e}")
+            last_error = e
+            continue
+
+    raise HTTPException(
+        status_code=500,
+        detail=f"AI returned invalid explanation JSON after 2 attempts: {last_error}"
+    )
 

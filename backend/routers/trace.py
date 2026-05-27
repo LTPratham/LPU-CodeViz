@@ -100,12 +100,18 @@ async def trace(req: TraceRequest):
 
     last_raw = ""
     last_error = None
-    # Attempt 1: use the smart 70b model → produces correct JSON
-    # Attempt 2: retry with fast 8b model as fallback on parse failure
-    models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    # Attempt 1: use the fast 8b model first with JSON mode (extremely low latency, guaranteed JSON structure)
+    # Attempt 2: retry with the smart 70b model as fallback if validation or parsing fails
+    models_to_try = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
     for attempt, model_name in enumerate(models_to_try):
         try:
-            raw = await chat_completion(TRACE_SYSTEM, user_prompt, max_tokens=4096, model=model_name)
+            raw = await chat_completion(
+                TRACE_SYSTEM, 
+                user_prompt, 
+                max_tokens=4096, 
+                model=model_name,
+                response_format={"type": "json_object"}
+            )
             last_raw = raw
             json_str = extract_json_block(raw)
             result = json.loads(json_str)
@@ -118,6 +124,17 @@ async def trace(req: TraceRequest):
                 raise ValueError("Missing 'steps' array")
             if "dataStructure" not in result:
                 result["dataStructure"] = "variables"
+
+            for step in result.get("steps", []):
+                if not isinstance(step, dict):
+                    raise ValueError("Step is not a dictionary")
+                for key in ["stepNum", "line", "action", "state", "description", "variables"]:
+                    if key not in step:
+                        raise ValueError(f"Step missing required key '{key}'")
+                if not isinstance(step.get("state"), dict):
+                    raise ValueError("Step 'state' must be a dictionary")
+                if not isinstance(step.get("variables"), dict):
+                    raise ValueError("Step 'variables' must be a dictionary")
 
             # Align/verify line numbers programmatically to guarantee 100% correctness
             for step in result.get("steps", []):

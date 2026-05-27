@@ -53,7 +53,7 @@ async def ask(req: AskRequest):
     )
 
     try:
-        answer = await chat_completion(ASK_SYSTEM, user_prompt, max_tokens=512)
+        answer = await chat_completion(ASK_SYSTEM, user_prompt, max_tokens=512, model="llama-3.1-8b-instant")
         return {"answer": answer.strip()}
     except Exception as e:
         logger.error(f"Error in /ask: {e}")

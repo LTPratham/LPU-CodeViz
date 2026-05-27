@@ -4,11 +4,17 @@
   "framework": "nextjs",
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://lpu-codeviz-production.up.railway.app"
+      "NEXT_PUBLIC_API_URL": "/api"
     }
   },
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://lpu-codeviz-production.up.railway.app"
-  }
+    "NEXT_PUBLIC_API_URL": "/api"
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://lpu-codeviz-production.up.railway.app/:path*"
+    }
+  ]
 }
 

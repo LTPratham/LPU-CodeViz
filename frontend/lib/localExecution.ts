@@ -1277,7 +1277,7 @@ function tryLocalExecutionRaw(lang: string, code: string): TraceResponse | null 
   }
 
   // 4. Stack templates
-  if (normalized.includes("stack") || (normalized.includes("push") && normalized.includes("pop") && !normalized.includes("tree") && !normalized.includes("node"))) {
+  if (normalized.includes("stack") || (/\bpush\b/.test(normalized) && /\bpop\b/.test(normalized) && !normalized.includes("tree") && !normalized.includes("node"))) {
     return {
       dataStructure: "stack",
       steps: simulateStack(code)

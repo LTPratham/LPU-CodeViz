@@ -3,6 +3,42 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { VariableState } from "@/lib/types";
 import { useRef, useEffect } from "react";
 
+function parseArrayValue(val: any): any[] | null {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const formatted = trimmed.replace(/'/g, '"');
+        const parsed = JSON.parse(formatted);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        const content = trimmed.slice(1, -1).trim();
+        if (!content) return [];
+        return content.split(",").map(s => s.trim().replace(/^["']|["']$/g, ''));
+      }
+    }
+  }
+  return null;
+}
+
+function parseDictValue(val: any): Record<string, any> | null {
+  if (val && typeof val === "object" && !Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        const formatted = trimmed.replace(/'/g, '"');
+        const parsed = JSON.parse(formatted);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 interface Props {
   state: VariableState;
   speed?: number;
@@ -101,6 +137,25 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
   }
 
   const variables = state.variables.filter(v => v && v.name !== undefined);
+
+  const arrayVariables: any[] = [];
+  const dictVariables: any[] = [];
+  const scalarVariables: any[] = [];
+
+  variables.forEach((v) => {
+    const arr = parseArrayValue(v.value);
+    if (arr !== null) {
+      arrayVariables.push({ ...v, parsedValue: arr });
+      return;
+    }
+    const dict = parseDictValue(v.value);
+    if (dict !== null) {
+      dictVariables.push({ ...v, parsedValue: dict });
+      return;
+    }
+    scalarVariables.push(v);
+  });
+
   const actionCfg = ACTION_CONFIG[stepAction] || ACTION_CONFIG.default;
   const flow = detectFlowType(stepDescription, stepCode, stepAction);
   const flowCfg = FLOW_CONFIG[flow.type] || FLOW_CONFIG.generic;
@@ -202,8 +257,224 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Variables Memory Panel ── */}
-      {variables.length > 0 && (
+      {/* ── Lists & Arrays Panel (if any exist) ── */}
+      {arrayVariables.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
+            color: "var(--text-muted)", textTransform: "uppercase",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <span style={{
+              display: "inline-block", width: 8, height: 8,
+              borderRadius: "50%", background: "#F59E0B"
+            }} />
+            MEMORY — Lists & Arrays
+          </div>
+          {arrayVariables.map((arrVar) => (
+            <div
+              key={arrVar.name}
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                padding: "16px 16px 24px 16px",
+                position: "relative"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "#E2E8F0", fontSize: 14 }}>{arrVar.name}</span>
+                  <span style={{ fontSize: 10, color: "var(--primary-light)", fontFamily: "var(--font-mono)", marginLeft: 8, background: "rgba(29,158,117,0.15)", padding: "2px 6px", borderRadius: 4 }}>{arrVar.type || "list"}</span>
+                </div>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>len: {arrVar.parsedValue.length}</span>
+              </div>
+
+              <div style={{
+                display: "flex",
+                gap: 10,
+                overflowX: "auto",
+                padding: "8px 4px 28px 4px",
+                alignItems: "flex-start"
+              }}>
+                {arrVar.parsedValue.map((item: any, idx: number) => {
+                  const pointers = scalarVariables.filter(s => {
+                    if (s.value === null || s.value === undefined) return false;
+                    const isIndexLike = ["i", "j", "k", "idx", "index", "ptr", "pointer", "step", "count"].includes(s.name.toLowerCase()) || s.name.toLowerCase().endsWith("index");
+                    if (isIndexLike && Number(s.value) === idx) return true;
+                    return String(s.value) === String(item);
+                  });
+
+                  const hasActivePointer = pointers.some(p => p.status === "active" || p.status === "updated");
+                  const elementBorder = hasActivePointer ? "#F59E0B" : "rgba(255,255,255,0.08)";
+                  const elementBg = hasActivePointer ? "rgba(245,158,11,0.12)" : "rgba(255,255,255,0.02)";
+                  const elementGlow = hasActivePointer ? "0 0 10px rgba(245,158,11,0.25)" : "none";
+
+                  return (
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60, position: "relative" }}>
+                      <motion.div
+                        layout
+                        animate={{ borderColor: elementBorder, background: elementBg, boxShadow: elementGlow }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                          width: 54,
+                          height: 54,
+                          borderRadius: 8,
+                          border: "2px solid",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          color: "#E2E8F0",
+                          fontFamily: "var(--font-mono)",
+                        }}
+                      >
+                        {typeof item === "string" ? `"${item}"` : typeof item === "object" && item !== null ? JSON.stringify(item) : String(item)}
+                      </motion.div>
+
+                      <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginTop: 5 }}>
+                        [{idx}]
+                      </span>
+
+                      {pointers.length > 0 && (
+                        <div style={{
+                          position: "absolute",
+                          top: 78,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 2,
+                          zIndex: 5
+                        }}>
+                          {pointers.map(p => (
+                            <motion.div
+                              key={p.name}
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 800,
+                                color: p.status === "active" || p.status === "updated" ? "#F59E0B" : "#94A3B8",
+                                fontFamily: "var(--font-mono)",
+                                whiteSpace: "nowrap",
+                                background: p.status === "active" || p.status === "updated" ? "rgba(245,158,11,0.12)" : "rgba(255,255,255,0.05)",
+                                border: `1px solid ${p.status === "active" || p.status === "updated" ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.1)"}`,
+                                padding: "1px 4px",
+                                borderRadius: 3
+                              }}
+                            >
+                              ▲ {p.name}
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Dictionaries Panel (if any exist) ── */}
+      {dictVariables.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
+            color: "var(--text-muted)", textTransform: "uppercase",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <span style={{
+              display: "inline-block", width: 8, height: 8,
+              borderRadius: "50%", background: "#A78BFA"
+            }} />
+            MEMORY — Objects / Dictionaries
+          </div>
+          {dictVariables.map((dictVar) => (
+            <div
+              key={dictVar.name}
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid var(--border)",
+                borderRadius: 12,
+                padding: "16px",
+                position: "relative"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "#E2E8F0", fontSize: 14 }}>{dictVar.name}</span>
+                  <span style={{ fontSize: 10, color: "var(--primary-light)", fontFamily: "var(--font-mono)", marginLeft: 8, background: "rgba(29,158,117,0.15)", padding: "2px 6px", borderRadius: 4 }}>{dictVar.type || "dict"}</span>
+                </div>
+              </div>
+
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                gap: 10
+              }}>
+                {Object.entries(dictVar.parsedValue).map(([key, val]: [string, any]) => {
+                  const pointers = scalarVariables.filter(s => {
+                    if (s.value === null || s.value === undefined) return false;
+                    return String(s.value) === String(val);
+                  });
+
+                  const hasActivePointer = pointers.some(p => p.status === "active" || p.status === "updated");
+                  const border = hasActivePointer ? "#F59E0B" : "rgba(255,255,255,0.08)";
+                  const bg = hasActivePointer ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.01)";
+
+                  return (
+                    <div
+                      key={key}
+                      style={{
+                        background: bg,
+                        border: `1.5px solid ${border}`,
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                        fontFamily: "var(--font-mono)",
+                        position: "relative"
+                      }}
+                    >
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>
+                        {key}:
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+                        {typeof val === "string" ? `"${val}"` : typeof val === "object" && val !== null ? JSON.stringify(val) : String(val)}
+                      </div>
+
+                      {pointers.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+                          {pointers.map(p => (
+                            <span
+                              key={p.name}
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 800,
+                                color: p.status === "active" || p.status === "updated" ? "#F59E0B" : "#94A3B8",
+                                background: p.status === "active" || p.status === "updated" ? "rgba(245,158,11,0.12)" : "rgba(255,255,255,0.05)",
+                                padding: "0px 4px",
+                                borderRadius: 3,
+                                border: `1px solid ${p.status === "active" || p.status === "updated" ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.1)"}`
+                              }}
+                            >
+                              ▲ {p.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Scalar Variables Panel ── */}
+      {scalarVariables.length > 0 && (
         <div>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
@@ -223,8 +494,8 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
             gap: 10,
           }}>
             <AnimatePresence>
-              {variables.map((v) => {
-                const s = VAR_STATUS_STYLES[v.status] || VAR_STATUS_STYLES.default;
+              {scalarVariables.map((v) => {
+                const s = VAR_STATUS_STYLES[v.status as keyof typeof VAR_STATUS_STYLES] || VAR_STATUS_STYLES.default;
                 return (
                   <motion.div
                     key={v.name}
@@ -243,7 +514,6 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
                       overflow: "hidden",
                     }}
                   >
-                    {/* Memory address style decoration */}
                     <div style={{
                       position: "absolute", top: 0, right: 0,
                       width: 0, height: 0,
@@ -253,7 +523,6 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
                       opacity: 0.5,
                     }} />
 
-                    {/* Type label */}
                     <div style={{
                       fontSize: 9, color: "var(--primary)",
                       fontFamily: "var(--font-mono)", marginBottom: 2,
@@ -262,7 +531,6 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
                       {v.type}
                     </div>
 
-                    {/* Variable name */}
                     <div style={{
                       fontSize: 12, color: s.labelColor,
                       fontFamily: "var(--font-mono)", marginBottom: 6,
@@ -271,7 +539,6 @@ export default function VariableBoard({ state, speed = 1, stepAction = "highligh
                       {v.name}
                     </div>
 
-                    {/* Value — animated on change */}
                     <motion.div
                       key={`${v.name}-${String(v.value)}`}
                       initial={{ scale: 1.4, color: "#FFFFFF" }}

@@ -155,22 +155,8 @@ async def trace(req: TraceRequest):
             last_error = e
             continue
 
-    # Find the error char index if possible
-    err_msg = str(last_error)
-    snippet = ""
-    try:
-        import re
-        char_match = re.search(r"char (\d+)", err_msg)
-        if char_match and last_raw:
-            char_idx = int(char_match.group(1))
-            start = max(0, char_idx - 100)
-            end = min(len(last_raw), char_idx + 100)
-            snippet = f"\nError snippet around char {char_idx}:\n... {last_raw[start:end]} ..."
-    except Exception:
-        pass
-
     raise HTTPException(
         status_code=500,
-        detail=f"AI returned invalid trace JSON after 2 attempts: {last_error}{snippet}"
+        detail=f"AI returned invalid trace JSON after 2 attempts. Error: {last_error}. Raw output was: {last_raw}"
     )
 

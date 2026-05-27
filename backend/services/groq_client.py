@@ -21,7 +21,7 @@ def get_groq_clients() -> list[AsyncGroq]:
                 "Create a backend/.env file with GROQ_API_KEY=your_key_here"
             )
         keys = [k.strip() for k in api_keys_str.split(",") if k.strip()]
-        _clients = [AsyncGroq(api_key=key) for key in keys]
+        _clients = [AsyncGroq(api_key=key, max_retries=0) for key in keys]
         if not _clients:
             raise RuntimeError("No valid Groq API keys found in GROQ_API_KEY")
     return _clients
@@ -59,30 +59,8 @@ async def chat_completion(
 
             response = await client.chat.completions.create(**params)
             return response.choices[0].message.content or ""
-        except RateLimitError as e:
-            fallback = FALLBACK_MODEL if target_model != FALLBACK_MODEL else PRIMARY_MODEL
-            print(f"Rate limit reached for model {target_model} using key index {idx}. Trying fallback model {fallback}...")
-            try:
-                fallback_params = {
-                    "model": fallback,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user",   "content": user_prompt},
-                    ],
-                    "max_tokens": max_tokens,
-                    "temperature": 0.3,
-                }
-                if response_format:
-                    fallback_params["response_format"] = response_format
-
-                response = await client.chat.completions.create(**fallback_params)
-                return response.choices[0].message.content or ""
-            except Exception as fe:
-                print(f"Fallback model failed for key index {idx}: {fe}. Trying next key...")
-                last_error = fe
-                continue
         except Exception as e:
-            print(f"API key index {idx} failed: {e}. Trying next key...")
+            print(f"API key index {idx} failed (model: {target_model}): {e}. Trying next key...")
             last_error = e
             continue
 

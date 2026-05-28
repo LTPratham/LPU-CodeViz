@@ -185,150 +185,164 @@ function LandingPageContent() {
             </div>
           ))}
 
-        {/* Institution Badge */}
-        <div
-          className="badge animate-fade-in"
-          style={{
-            marginBottom: 28,
-            fontSize: 12,
-            padding: "8px 20px",
-            background: `${activeColor}15`,
-            color: activeColor,
-            border: `1px solid ${activeColor}30`,
-            borderRadius: "999px",
-            fontWeight: 700,
-            letterSpacing: "0.5px"
-          }}
-        >
-          🎓 Customized Portal for LPU {schoolConfig.name}
-        </div>
-
-        {/* Dynamic Headline */}
-        <h1
-          className="animate-fade-up"
-          style={{
-            fontSize: "clamp(38px, 6vw, 76px)",
-            fontWeight: 900,
-            textAlign: "center",
-            lineHeight: 1.15,
-            maxWidth: 1000,
-            marginBottom: 24,
-            letterSpacing: "-1.5px"
-          }}
-        >
-          {schoolConfig.heroTitlePrefix}
-          <span style={{
-            background: `linear-gradient(135deg, ${activeColor}, #9F58FF)`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text"
-          }}>{schoolConfig.heroTitleHighlight}</span>
-        </h1>
-
-        {/* Sub headline */}
-        <p
-          className="animate-fade-up"
-          style={{
-            fontSize: "clamp(16px, 2.2vw, 21px)",
-            color: "var(--text-secondary)",
-            textAlign: "center",
-            maxWidth: 760,
-            marginBottom: 44,
-            lineHeight: 1.7,
-          }}
-        >
-          {schoolConfig.heroSub}
-        </p>
-
-        {/* CTA buttons */}
-        <div
-          className="animate-fade-up"
-          style={{
-            display: "flex",
-            gap: 16,
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          <Link
-            href={`/visualize?school=${schoolConfig.id}`}
-            className="btn btn-primary"
-            style={{ 
-              padding: "16px 40px", 
-              fontSize: 16, 
-              borderRadius: 14, 
-              background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})`,
-              boxShadow: `0 8px 24px ${activeColor}40`,
-            }}
-          >
-            Start Visualizing Free
-          </Link>
-          <a
-            href="#pricing"
-            className="btn btn-ghost"
-            style={{ padding: "16px 40px", fontSize: 16, borderRadius: 14 }}
-          >
-            View Student Plans
-          </a>
-        </div>
-
-        {/* Syllabus / Subject list strip */}
-        <div
-          className="animate-fade-up"
-          style={{
-            display: "flex",
-            gap: 12,
-            marginTop: 56,
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          {schoolConfig.subjects.map((s) => (
+        <div style={{
+          width: "100%",
+          maxWidth: "1200px",
+          display: "grid",
+          gridTemplateColumns: "1.1fr 0.9fr",
+          gap: "48px",
+          alignItems: "center",
+          zIndex: 10,
+          position: "relative"
+        }} className="hero-grid">
+          
+          {/* Left Column: Copy & Actions */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+            {/* Institution Badge */}
             <div
-              key={s.code}
+              className="badge animate-fade-in"
               style={{
-                background: "rgba(17, 22, 37, 0.4)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                padding: "8px 18px",
-                fontSize: 13,
-                color: "var(--text-secondary)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+                marginBottom: 20,
+                fontSize: 11,
+                padding: "6px 16px",
+                background: `${activeColor}15`,
+                color: activeColor,
+                border: `1px solid ${activeColor}30`,
+                borderRadius: "999px",
+                fontWeight: 700,
+                letterSpacing: "0.5px"
               }}
             >
-              <span style={{ color: activeColor, fontWeight: 800, marginRight: 6 }}>{s.code}</span>{" "}
-              {s.name}
+              🎓 Customized Portal for LPU {schoolConfig.name}
             </div>
-          ))}
-        </div>
 
-        {/* Showcase Image */}
-        <div
-          className="animate-fade-up"
-          style={{
-            marginTop: 64,
-            width: "100%",
-            maxWidth: 1000,
-            background: "rgba(17, 22, 37, 0.4)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            borderRadius: 24,
-            overflow: "hidden",
-            boxShadow: `0 24px 80px rgba(0,0,0,0.6), 0 0 40px ${activeColor}15`,
-            padding: "8px"
-          }}
-        >
-          <img
-            src="/codecanvas_hero.png"
-            alt="CodeCanvas Dashboard Visualizer"
+            {/* Dynamic Headline */}
+            <h1
+              className="animate-fade-up"
+              style={{
+                fontSize: "clamp(32px, 3.8vw, 56px)",
+                fontWeight: 900,
+                textAlign: "left",
+                lineHeight: 1.15,
+                marginBottom: 20,
+                letterSpacing: "-1.5px"
+              }}
+            >
+              {schoolConfig.heroTitlePrefix}
+              <span style={{
+                background: `linear-gradient(135deg, ${activeColor}, #9F58FF)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
+              }}>{schoolConfig.heroTitleHighlight}</span>
+            </h1>
+
+            {/* Sub headline */}
+            <p
+              className="animate-fade-up"
+              style={{
+                fontSize: "clamp(15px, 1.8vw, 18px)",
+                color: "var(--text-secondary)",
+                textAlign: "left",
+                maxWidth: 600,
+                marginBottom: 32,
+                lineHeight: 1.6,
+              }}
+            >
+              {schoolConfig.heroSub}
+            </p>
+
+            {/* CTA buttons */}
+            <div
+              className="animate-fade-up"
+              style={{
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                marginBottom: 40
+              }}
+            >
+              <Link
+                href={`/visualize?school=${schoolConfig.id}`}
+                className="btn btn-primary"
+                style={{ 
+                  padding: "14px 32px", 
+                  fontSize: 15, 
+                  borderRadius: 12, 
+                  background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})`,
+                  boxShadow: `0 8px 24px ${activeColor}30`,
+                }}
+              >
+                Start Visualizing Free
+              </Link>
+              <a
+                href="#pricing"
+                className="btn btn-ghost"
+                style={{ padding: "14px 32px", fontSize: 15, borderRadius: 12 }}
+              >
+                View Plans
+              </a>
+            </div>
+
+            {/* Syllabus / Subject list strip */}
+            <div
+              className="animate-fade-up"
+              style={{
+                display: "flex",
+                gap: 10,
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+              }}
+            >
+              {schoolConfig.subjects.map((s) => (
+                <div
+                  key={s.code}
+                  style={{
+                    background: "rgba(17, 22, 37, 0.4)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    padding: "6px 14px",
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                  }}
+                >
+                  <span style={{ color: activeColor, fontWeight: 800, marginRight: 4 }}>{s.code}</span>{" "}
+                  {s.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Hero Image Showcase */}
+          <div
+            className="animate-fade-up"
             style={{
               width: "100%",
-              height: "auto",
-              borderRadius: 18,
-              border: "1px solid rgba(255, 255, 255, 0.04)"
+              background: "rgba(17, 22, 37, 0.3)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow: `0 24px 80px rgba(0,0,0,0.6), 0 0 40px ${activeColor}15`,
+              padding: "6px",
+              transform: "perspective(1000px) rotateY(-5deg) rotateX(5deg)",
+              transition: "transform 0.5s ease"
             }}
-          />
+          >
+            <img
+              src="/codecanvas_hero.png"
+              alt="CodeCanvas Dashboard Visualizer"
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: 14,
+                border: "1px solid rgba(255, 255, 255, 0.03)"
+              }}
+            />
+          </div>
+
         </div>
       </section>
 
@@ -494,6 +508,33 @@ function LandingPageContent() {
       <footer style={{ padding: "48px 24px", borderTop: "1px solid var(--border)", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
         <p>© 2026 CodeCanvas LPU Portal. Built by Prathamesh Sawarkar.</p>
       </footer>
+      <style jsx global>{`
+        @media (max-width: 968px) {
+          .hero-grid {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+            text-align: center !important;
+          }
+          .hero-grid > div:first-child {
+            align-items: center !important;
+          }
+          .hero-grid h1 {
+            text-align: center !important;
+          }
+          .hero-grid p {
+            text-align: center !important;
+            margin: 0 auto 32px !important;
+          }
+          .hero-grid > div:first-child > div:last-child {
+            justify-content: center !important;
+          }
+          .hero-grid > div:last-child {
+            transform: none !important;
+            max-width: 600px !important;
+            margin: 0 auto !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

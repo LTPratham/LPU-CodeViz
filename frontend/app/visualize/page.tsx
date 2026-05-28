@@ -119,6 +119,19 @@ function VisualizeContent() {
     });
   }, []);
 
+  const handleSignOut = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    localStorage.removeItem("user_subscription");
+    setUserEmail(null);
+    try {
+      await signout();
+    } catch (e) {
+      console.warn("Server-side signout redirect handled client-side:", e);
+    }
+    router.push("/login");
+  }, [router]);
+
   const currentStepIdxRef = useRef(currentStepIdx);
   useEffect(() => {
     currentStepIdxRef.current = currentStepIdx;
@@ -498,7 +511,7 @@ function VisualizeContent() {
                 {userEmail.charAt(0) === "+" ? "U" : userEmail.charAt(0).toUpperCase()}
               </div>
               <button 
-                onClick={() => signout()}
+                onClick={handleSignOut}
                 style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 12, cursor: "pointer" }}
               >
                 Sign out

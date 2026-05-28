@@ -1,69 +1,70 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ─── CodeCanvas Design System ─── */
+/* ─── CodeCanvas Premium Dark/Neon Design System ─── */
 :root {
-  --primary:        #1D9E75;
-  --primary-light:  #24C28F;
-  --primary-dark:   #157A5A;
-  --primary-glow:   rgba(29, 158, 117, 0.25);
+  --primary:        #00F2FE;
+  --primary-light:  #4EECD6;
+  --primary-dark:   #097A8C;
+  --primary-glow:   rgba(0, 242, 254, 0.15);
 
-  --bg:             #0F172A;
-  --bg-secondary:   #111827;
-  --card:           #1E293B;
-  --card-hover:     #243248;
-  --border:         #2D3E56;
-  --border-light:   #374151;
+  --bg:             #060913;
+  --bg-secondary:   #0B0E17;
+  --card:           #111625;
+  --card-hover:     #161D30;
+  --border:         rgba(255, 255, 255, 0.06);
+  --border-light:   rgba(255, 255, 255, 0.09);
 
-  --highlight:      #F59E0B;
-  --highlight-dim:  rgba(245, 158, 11, 0.15);
-  --success:        #22C55E;
-  --success-dim:    rgba(34, 197, 94, 0.15);
-  --danger:         #EF4444;
-  --danger-dim:     rgba(239, 68, 68, 0.15);
-  --info:           #3B82F6;
-  --info-dim:       rgba(59, 130, 246, 0.15);
+  --highlight:      #FFB020;
+  --highlight-dim:  rgba(255, 176, 32, 0.12);
+  --success:        #00E676;
+  --success-dim:    rgba(0, 230, 118, 0.12);
+  --danger:         #FF3366;
+  --danger-dim:     rgba(255, 51, 102, 0.12);
+  --info:           #8A2BE2;
+  --info-dim:       rgba(138, 43, 226, 0.12);
 
-  --muted:          #64748B;
-  --text:           #F8FAFC;
-  --text-secondary: #CBD5E1;
-  --text-muted:     #94A3B8;
+  --muted:          #4B5563;
+  --text:           #F3F4F6;
+  --text-secondary: #D1D5DB;
+  --text-muted:     #9CA3AF;
 
-  --font-ui:        'Inter', system-ui, sans-serif;
+  --font-ui:        'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
 
-  --radius-sm:      6px;
-  --radius:         10px;
-  --radius-lg:      16px;
-  --radius-xl:      24px;
+  --radius-sm:      8px;
+  --radius:         12px;
+  --radius-lg:      18px;
+  --radius-xl:      28px;
   --radius-full:    9999px;
 
-  --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
-  --shadow:         0 4px 16px rgba(0,0,0,0.4);
-  --shadow-lg:      0 8px 40px rgba(0,0,0,0.6);
-  --shadow-glow:    0 0 30px var(--primary-glow);
+  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow:         0 8px 32px rgba(0, 0, 0, 0.7);
+  --shadow-lg:      0 16px 48px rgba(0, 0, 0, 0.8);
+  --shadow-glow:    0 0 24px var(--primary-glow);
 }
 
 .light {
-  --primary:        #16A34A;
-  --primary-light:  #22C55E;
-  --primary-dark:   #15803D;
-  --primary-glow:   rgba(22, 163, 74, 0.15);
+  /* Keep support for light fallback but with matching clean slate */
+  --primary:        #097A8C;
+  --primary-light:  #00F2FE;
+  --primary-dark:   #054C57;
+  --primary-glow:   rgba(9, 122, 140, 0.12);
 
-  --bg:             #F8FAFC;
-  --bg-secondary:   #F1F5F9;
+  --bg:             #F9FAFB;
+  --bg-secondary:   #F3F4F6;
   --card:           #FFFFFF;
-  --card-hover:     #F8FAFC;
-  --border:         #E2E8F0;
-  --border-light:   #CBD5E1;
+  --card-hover:     #F3F4F6;
+  --border:         #E5E7EB;
+  --border-light:   #D1D5DB;
 
-  --text:           #0F172A;
-  --text-secondary: #334155;
-  --text-muted:     #64748B;
+  --text:           #111827;
+  --text-secondary: #374151;
+  --text-muted:     #6B7280;
 
   --shadow-sm:      0 1px 2px rgba(0,0,0,0.05);
-  --shadow:         0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg:      0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow:         0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg:      0 10px 25px rgba(0,0,0,0.12);
   --shadow-glow:    0 0 15px var(--primary-glow);
 }
 

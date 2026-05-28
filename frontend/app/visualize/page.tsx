@@ -15,6 +15,8 @@ import { createClient } from "@/utils/supabase/client";
 import { signout } from "../login/actions";
 import { generateChallenge, shuffleArray } from "@/lib/challenge";
 import VisualizerErrorBoundary from "@/components/VisualizerErrorBoundary";
+import { getSchoolConfig } from "@/lib/schools";
+
 
 // Client-only components
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
@@ -66,6 +68,11 @@ function VisualizeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { theme, setTheme } = useTheme();
+
+  const schoolParam = searchParams.get("school");
+  const schoolConfig = getSchoolConfig(schoolParam);
+  const activeColor = schoolConfig.primaryColor;
+
 
   const [language, setLanguage] = useState<Language>("c");
   const [code, setCode] = useState("");
@@ -398,23 +405,24 @@ function VisualizeContent() {
         }}>
           <div style={{
             width: 28, height: 28, borderRadius: 7,
-            background: "linear-gradient(135deg, #FF6F00, #FFA000)",
+            background: `linear-gradient(135deg, ${activeColor}, #9A4BFF)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 14, fontWeight: 800, color: "white",
+            boxShadow: `0 0 10px ${activeColor}30`
           }}>◈</div>
-          <span style={{ fontWeight: 800, fontSize: 16, color: "var(--primary-light)", display: "flex", alignItems: "center" }}>
+          <span style={{ fontWeight: 800, fontSize: 16, color: activeColor, display: "flex", alignItems: "center" }}>
             CodeCanvas
             <span style={{ 
               fontSize: 9, 
-              background: "rgba(255, 111, 0, 0.12)", 
-              color: "#FF8F00", 
+              background: `${activeColor}15`, 
+              color: activeColor, 
               padding: "2px 6px", 
               borderRadius: 4, 
               marginLeft: 8, 
-              border: "1px solid rgba(255, 111, 0, 0.25)",
+              border: `1px solid ${activeColor}30`,
               fontWeight: 700,
               letterSpacing: "0.5px"
-            }}>LPU CSE Edition</span>
+            }}>LPU {schoolConfig.shortName}</span>
           </span>
         </Link>
 

@@ -1062,7 +1062,7 @@ function simulateVariables(code: string): TraceStep[] {
         { name: "a", value: a, type: "int", status: "default" },
         { name: "b", value: b, type: "int", status: "default" },
         { name: "sum", value: sum, type: "int", status: "active" },
-        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : [])
+        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" as const }] : [])
       ],
       output: [...currentOutput]
     },
@@ -1082,7 +1082,7 @@ function simulateVariables(code: string): TraceStep[] {
         { name: "a", value: a, type: "int", status: "default" },
         { name: "b", value: b, type: "int", status: "default" },
         { name: "sum", value: sum, type: "int", status: "default" },
-        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : [])
+        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" as const }] : [])
       ],
       output: [...currentOutput]
     },
@@ -1102,8 +1102,8 @@ function simulateVariables(code: string): TraceStep[] {
           { name: "a", value: a, type: "int", status: "default" },
           { name: "b", value: b, type: "int", status: "default" },
           { name: "sum", value: sum, type: "int", status: "default" },
-          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : []),
-          { name: "i", value: i, type: "int", status: "active" }
+          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" as const }] : []),
+          { name: "i", value: i, type: "int", status: "active" as const }
         ],
         output: [...currentOutput]
       },
@@ -1122,8 +1122,8 @@ function simulateVariables(code: string): TraceStep[] {
           { name: "a", value: a, type: "int", status: "default" },
           { name: "b", value: b, type: "int", status: "default" },
           { name: "sum", value: sum, type: "int", status: "default" },
-          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : []),
-          { name: "i", value: i, type: "int", status: "default" }
+          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" as const }] : []),
+          { name: "i", value: i, type: "int", status: "default" as const }
         ],
         output: [...currentOutput]
       },

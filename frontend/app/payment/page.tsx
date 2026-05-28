@@ -136,11 +136,11 @@ function PaymentPageContent() {
           </div>
 
           <div style={{ marginTop: "32px" }}>
-            <div style={{ display: "flex", gap: "12px", alignItems: "center", background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)", marginBottom: "12px" }}>
-              <span style={{ fontSize: "20px" }}>🛡️</span>
+            <div style={{ display: "flex", gap: "16px", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border)", marginBottom: "12px" }}>
+              <img src="/secure_payment.png" alt="Secure Shield" style={{ width: "40px", height: "40px" }} />
               <div style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                <strong>Secure Payment Gateway</strong><br/>
-                Industry standard 256-bit encryption. Your details are safe with us.
+                <strong>Secure SSL Encryption</strong><br/>
+                Your financial transactions are fully secure and protected by enterprise security standards.
               </div>
             </div>
           </div>

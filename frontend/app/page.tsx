@@ -302,6 +302,34 @@ function LandingPageContent() {
             </div>
           ))}
         </div>
+
+        {/* Showcase Image */}
+        <div
+          className="animate-fade-up"
+          style={{
+            marginTop: 64,
+            width: "100%",
+            maxWidth: 1000,
+            background: "rgba(17, 22, 37, 0.4)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: 24,
+            overflow: "hidden",
+            boxShadow: `0 24px 80px rgba(0,0,0,0.6), 0 0 40px ${activeColor}15`,
+            padding: "8px"
+          }}
+        >
+          <img
+            src="/codecanvas_hero.png"
+            alt="CodeCanvas Dashboard Visualizer"
+            style={{
+              width: "100%",
+              height: "auto",
+              borderRadius: 18,
+              border: "1px solid rgba(255, 255, 255, 0.04)"
+            }}
+          />
+        </div>
       </section>
 
       {/* ── Features Custom Visualizers Grid ── */}

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import type { Language, TraceStep, ExplainLine, PredictionChallenge } from "@/lib/types";
 import { traceCode, explainCode } from "@/lib/api";
 import { tryLocalExecution } from "@/lib/localExecution";
+import { checkCache, saveToCache } from "@/lib/cacheService";
 import { getDefaultSample } from "@/lib/sampleCodes";
 import StepController from "@/components/StepController";
 import ExplainSidebar from "@/components/ExplainSidebar";
@@ -202,18 +203,34 @@ function VisualizeContent() {
     setUserAnswer(null);
     setChallengeState("unanswered");
 
-    // Check for client-side local execution fallback
+    // 1. Check Supabase cache (exact and structural parameter matching)
+    try {
+      const cached = await checkCache(activeLang, activeCode);
+      if (cached) {
+        setSteps(cached.trace_data.steps);
+        setDataStructure(cached.trace_data.dataStructure);
+        setExplanations(cached.explain_data);
+        setIsLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn("Visualizer cache check failed:", err);
+    }
+
+    // 2. Check for client-side local execution fallback
     const localTrace = await tryLocalExecution(activeLang, activeCode);
     if (localTrace) {
       setSteps(localTrace.steps);
       setDataStructure(localTrace.dataStructure);
+      let finalExplains: ExplainLine[] = [];
       try {
         const explainRes = await explainCode({ lang: activeLang, code: activeCode });
+        finalExplains = explainRes;
         setExplanations(explainRes);
       } catch (err: unknown) {
         console.warn("Failed to fetch explanations from backend, using client-side fallback", err);
         const lines = activeCode.split("\n");
-        const fallbackExplains: ExplainLine[] = lines.map((lineText, idx) => ({
+        finalExplains = lines.map((lineText, idx) => ({
           line: idx + 1,
           code: lineText,
           explain: lineText.trim() ? "Executed client-side." : "",
@@ -221,12 +238,16 @@ function VisualizeContent() {
           category: "core",
           why: "This line is simulated locally in your browser. Use the cloud 'Visualize' option to fetch detailed AI concept breakdowns."
         }));
-        setExplanations(fallbackExplains);
+        setExplanations(finalExplains);
       }
+      
+      // Save local run to cache
+      saveToCache(activeLang, activeCode, localTrace, finalExplains);
       setIsLoading(false);
       return;
     }
 
+    // 3. Cloud LLM Backend execution
     try {
       const [traceRes, explainRes] = await Promise.all([
         traceCode({ lang: activeLang, code: activeCode }),
@@ -236,6 +257,9 @@ function VisualizeContent() {
       setSteps(traceRes.steps);
       setDataStructure(traceRes.dataStructure);
       setExplanations(explainRes);
+      
+      // Save cloud run to cache
+      saveToCache(activeLang, activeCode, traceRes, explainRes);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setError(msg.includes("fetch") ? "Cannot connect to backend. Is the FastAPI server running? (localhost:8000)" : msg);

@@ -93,7 +93,7 @@ function adaptCachedData(
 }
 
 /**
- * Checks the Supabase cache for an exact match or a structural match.
+ * Checks the Supabase cache for an exact match.
  */
 export async function checkCache(lang: Language, code: string): Promise<CachedItem | null> {
   const supabase = createClient();
@@ -104,7 +104,7 @@ export async function checkCache(lang: Language, code: string): Promise<CachedIt
   const hash = await sha256(trimmed);
 
   try {
-    // 1. Try to find an exact match
+    // Try to find an exact match
     const { data: exactMatch, error: exactError } = await supabase
       .from("visualizer_cache")
       .select("trace_data, explain_data")
@@ -115,21 +115,6 @@ export async function checkCache(lang: Language, code: string): Promise<CachedIt
     if (exactMatch && !exactError) {
       console.log("Visualizer Cache: Exact match found!");
       return exactMatch as CachedItem;
-    }
-
-    // 2. Try to find a structural match
-    const normalized = normalizeCode(trimmed);
-    const { data: structuralMatch, error: structError } = await supabase
-      .from("visualizer_cache")
-      .select("original_code, trace_data, explain_data")
-      .eq("language", lang)
-      .eq("normalized_code", normalized)
-      .limit(1)
-      .maybeSingle();
-
-    if (structuralMatch && !structError) {
-      console.log("Visualizer Cache: Structural match found! Adapting values...");
-      return adaptCachedData(structuralMatch, trimmed);
     }
   } catch (err) {
     console.warn("Visualizer Cache lookup failed:", err);

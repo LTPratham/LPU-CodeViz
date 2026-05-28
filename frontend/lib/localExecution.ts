@@ -926,149 +926,213 @@ function simulateRecursion(code: string): TraceStep[] {
 // 9. Basic Variables Loop Simulation Tracer
 // Parses actual values from the code so changing a, b, or threshold produces correct output.
 function simulateVariables(code: string): TraceStep[] {
-  const steps: TraceStep[] = [];\r
-  let stepNum = 1;\r
-\r
-  // --- Parse actual variable values from code ---\r
-  const aMatch = code.match(/\bint\s+a\s*=\s*(-?\d+)/);\r
-  const bMatch = code.match(/\bint\s+b\s*=\s*(-?\d+)/);\r
-  // For loop upper bound (e.g. i <= 3)\r
-  const loopMatch = code.match(/i\s*<=\s*(\d+)/);\r
-  // Threshold in the if condition (e.g. sum > 25)\r
-  const threshMatch = code.match(/sum\s*>\s*(-?\d+)/);\r
-  // diff variable: diff = b - a\r
-  const hasDiff = /\bint\s+diff\b/.test(code);\r
-  // detect printf("diff ...) or similar custom printf before condition\r
-  const hasDiffPrintf = /printf\s*\(\s*"[^"]*diff[^"]*"\s*,\s*diff\s*\)/.test(code) ||\r
-                        /printf\s*\(\s*"diff/.test(code);\r
-\r
-  const a = aMatch ? parseInt(aMatch[1]) : 10;\r
-  const b = bMatch ? parseInt(bMatch[1]) : 20;\r
-  const sum = a + b;\r
-  const diff = b - a;\r
-  const loopMax = loopMatch ? parseInt(loopMatch[1]) : 3;\r
-  const threshold = threshMatch ? parseInt(threshMatch[1]) : 25;\r
-  const conditionTrue = sum > threshold;\r
-\r
-  // Running console output — carried forward through each step\r
-  let currentOutput: string[] = [];\r
-\r
-  // Build the sum/condition message\r
-  const sumMsg = conditionTrue\r
-    ? `Sum ${sum} is greater than ${threshold}`\r
-    : `Sum is small`;\r
-\r
-  // Helper: current variable state snapshot\r
-  const makeVars = (active: string | null, includeSum = false, includeDiff = false, loopI?: number) => {\r
-    const vars: any[] = [\r
-      { name: "a", value: a, type: "int", status: active === "a" ? "active" : "default" },\r
-      { name: "b", value: b, type: "int", status: active === "b" ? "active" : "default" },\r
-    ];\r
-    if (includeSum) vars.push({ name: "sum", value: sum, type: "int", status: active === "sum" ? "active" : "default" });\r
-    if (includeDiff && hasDiff) vars.push({ name: "diff", value: diff, type: "int", status: active === "diff" ? "active" : "default" });\r
-    if (loopI !== undefined) vars.push({ name: "i", value: loopI, type: "int", status: active === "i" ? "active" : "default" });\r
-    return vars;\r
-  };\r
-\r
-  // Step 1: assign a\r
-  steps.push({\r
-    stepNum: stepNum++,\r
-    line: 15,\r
-    action: "assign",\r
-    state: { type: "variables", variables: makeVars("a"), output: [...currentOutput] },\r
-    description: `Initializing variables: a = ${a}`,\r
-    variables: { a }\r
-  });\r
-\r
-  // Step 2: assign b\r
-  steps.push({\r
-    stepNum: stepNum++,\r
-    line: 16,\r
-    action: "assign",\r
-    state: { type: "variables", variables: makeVars("b"), output: [...currentOutput] },\r
-    description: `Initializing variables: b = ${b}`,\r
-    variables: { a, b }\r
-  });\r
-\r
-  // Step 3: calculate sum\r
-  steps.push({\r
-    stepNum: stepNum++,\r
-    line: 19,\r
-    action: "assign",\r
-    state: { type: "variables", variables: makeVars("sum", true), output: [...currentOutput] },\r
-    description: `Calculating sum = a + b = ${sum}`,\r
-    variables: { a, b, sum }\r
-  });\r
-\r
-  // Step 4 (optional): calculate diff\r
-  if (hasDiff) {\r
-    steps.push({\r
-      stepNum: stepNum++,\r
-      line: 20,\r
-      action: "assign",\r
-      state: { type: "variables", variables: makeVars("diff", true, true), output: [...currentOutput] },\r
-      description: `Calculating diff = b - a = ${diff}`,\r
-      variables: { a, b, sum, diff }\r
-    });\r
-  }\r
-\r
-  // Step 5 (optional): printf diff\r
-  if (hasDiff && hasDiffPrintf) {\r
-    currentOutput = [...currentOutput, `diff ${diff}`];\r
-    steps.push({\r
-      stepNum: stepNum++,\r
-      line: 21,\r
-      action: "highlight",\r
-      state: { type: "variables", variables: makeVars(null, true, true), output: [...currentOutput] },\r
-      description: `Printing output to console: 'diff ${diff}'`,\r
-      variables: { a, b, sum, diff }\r
-    });\r
-  }\r
-\r
-  // Step 6: evaluate condition\r
-  steps.push({\r
-    stepNum: stepNum++,\r
-    line: 23,\r
-    action: "compare",\r
-    state: { type: "variables", variables: makeVars("sum", true, hasDiff), output: [...currentOutput] },\r
-    description: `Evaluating condition (sum > ${threshold}) which is ${conditionTrue ? "True" : "False"}`,\r
-    variables: { a, b, sum, ...(hasDiff ? { diff } : {}) }\r
-  });\r
-\r
-  // Step 7: print if/else result\r
-  currentOutput = [...currentOutput, sumMsg];\r
-  steps.push({\r
-    stepNum: stepNum++,\r
-    line: conditionTrue ? 24 : 26,\r
-    action: "highlight",\r
-    state: { type: "variables", variables: makeVars(null, true, hasDiff), output: [...currentOutput] },\r
-    description: `Printing output to console: '${sumMsg}'`,\r
-    variables: { a, b, sum, ...(hasDiff ? { diff } : {}) }\r
-  });\r
-\r
-  // Step 8+: loop iterations\r
-  for (let i = 1; i <= loopMax; i++) {\r
-    steps.push({\r
-      stepNum: stepNum++,\r
-      line: 30,\r
-      action: "assign",\r
-      state: { type: "variables", variables: makeVars("i", true, hasDiff, i), output: [...currentOutput] },\r
-      description: `Loop iteration: i = ${i}`,\r
-      variables: { a, b, sum, ...(hasDiff ? { diff } : {}), i }\r
-    });\r
-\r
-    currentOutput = [...currentOutput, `Loop count: ${i}`];\r
-    steps.push({\r
-      stepNum: stepNum++,\r
-      line: 31,\r
-      action: "highlight",\r
-      state: { type: "variables", variables: makeVars(null, true, hasDiff, i), output: [...currentOutput] },\r
-      description: `Printing loop value: 'Loop count: ${i}'`,\r
-      variables: { a, b, sum, ...(hasDiff ? { diff } : {}), i }\r
-    });\r
-  }\r
-\r
-  return steps;\r
+  const steps: TraceStep[] = [];
+  let stepNum = 1;
+
+  // --- Parse actual variable values from code ---
+  const aMatch = code.match(/\bint\s+a\s*=\s*(-?\d+)/);
+  const bMatch = code.match(/\bint\s+b\s*=\s*(-?\d+)/);
+  // For loop upper bound (e.g. i <= 3)
+  const loopMatch = code.match(/i\s*<=\s*(\d+)/);
+  // Threshold in the if condition (e.g. sum > 25)
+  const threshMatch = code.match(/sum\s*>\s*(-?\d+)/);
+  // diff: detect int diff and its printf
+  const hasDiff = /\bint\s+diff\b/.test(code);
+  const hasDiffPrintf = /printf\s*\(.*diff.*\)/.test(code);
+
+  const a = aMatch ? parseInt(aMatch[1]) : 10;
+  const b = bMatch ? parseInt(bMatch[1]) : 20;
+  const sum = a + b;
+  const diff = b - a;
+  const loopMax = loopMatch ? parseInt(loopMatch[1]) : 3;
+  const threshold = threshMatch ? parseInt(threshMatch[1]) : 25;
+  const conditionTrue = sum > threshold;
+
+  // Running output — carried forward
+  let currentOutput: string[] = [];
+
+  // Build the output message based on actual values
+  const sumMsg = conditionTrue
+    ? `Sum ${sum} is greater than ${threshold}`
+    : `Sum is small`;
+
+  // Step 1: assign a
+  steps.push({
+    stepNum: stepNum++,
+    line: 15,
+    action: "assign",
+    state: {
+      type: "variables",
+      variables: [
+        { name: "a", value: a, type: "int", status: "active" },
+        { name: "b", value: null, type: "int", status: "default" }
+      ],
+      output: []
+    },
+    description: `Initializing variables: a = ${a}`,
+    variables: { a }
+  });
+
+  // Step 2: assign b
+  steps.push({
+    stepNum: stepNum++,
+    line: 16,
+    action: "assign",
+    state: {
+      type: "variables",
+      variables: [
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "active" }
+      ],
+      output: []
+    },
+    description: `Initializing variables: b = ${b}`,
+    variables: { a, b }
+  });
+
+  // Step 3: calculate sum
+  steps.push({
+    stepNum: stepNum++,
+    line: 19,
+    action: "assign",
+    state: {
+      type: "variables",
+      variables: [
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "active" }
+      ],
+      output: []
+    },
+    description: `Calculating sum = a + b = ${sum}`,
+    variables: { a, b, sum }
+  });
+
+  // Step 3b: calculate diff (if present)
+  if (hasDiff) {
+    steps.push({
+      stepNum: stepNum++,
+      line: 20,
+      action: "assign",
+      state: {
+        type: "variables",
+        variables: [
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
+          { name: "diff", value: diff, type: "int", status: "active" }
+        ],
+        output: [...currentOutput]
+      },
+      description: `Calculating diff = b - a = ${diff}`,
+      variables: { a, b, sum, diff }
+    });
+  }
+
+  // Step 3c: printf diff (if present)
+  if (hasDiff && hasDiffPrintf) {
+    currentOutput = [...currentOutput, `diff ${diff}`];
+    steps.push({
+      stepNum: stepNum++,
+      line: 21,
+      action: "highlight",
+      state: {
+        type: "variables",
+        variables: [
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
+          { name: "diff", value: diff, type: "int", status: "default" }
+        ],
+        output: [...currentOutput]
+      },
+      description: `Printing output to console: 'diff ${diff}'`,
+      variables: { a, b, sum, diff }
+    });
+  }
+
+  // Step 4: evaluate condition
+  steps.push({
+    stepNum: stepNum++,
+    line: 23,
+    action: "compare",
+    state: {
+      type: "variables",
+      variables: [
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "active" },
+        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : [])
+      ],
+      output: [...currentOutput]
+    },
+    description: `Evaluating condition (sum > ${threshold}) which is ${conditionTrue ? "True" : "False"}`,
+    variables: { a, b, sum, ...(hasDiff ? { diff } : {}) }
+  });
+
+  // Step 5: print result of if/else
+  currentOutput = [...currentOutput, sumMsg];
+  steps.push({
+    stepNum: stepNum++,
+    line: conditionTrue ? 24 : 26,
+    action: "highlight",
+    state: {
+      type: "variables",
+      variables: [
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "default" },
+        ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : [])
+      ],
+      output: [...currentOutput]
+    },
+    description: `Printing output to console: '${sumMsg}'`,
+    variables: { a, b, sum, ...(hasDiff ? { diff } : {}) }
+  });
+
+  // Step 6+: loop iterations
+  for (let i = 1; i <= loopMax; i++) {
+    steps.push({
+      stepNum: stepNum++,
+      line: 30,
+      action: "assign",
+      state: {
+        type: "variables",
+        variables: [
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
+          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : []),
+          { name: "i", value: i, type: "int", status: "active" }
+        ],
+        output: [...currentOutput]
+      },
+      description: `Loop iteration: i = ${i}`,
+      variables: { a, b, sum, ...(hasDiff ? { diff } : {}), i }
+    });
+
+    currentOutput = [...currentOutput, `Loop count: ${i}`];
+    steps.push({
+      stepNum: stepNum++,
+      line: 31,
+      action: "highlight",
+      state: {
+        type: "variables",
+        variables: [
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
+          ...(hasDiff ? [{ name: "diff", value: diff, type: "int", status: "default" }] : []),
+          { name: "i", value: i, type: "int", status: "default" }
+        ],
+        output: [...currentOutput]
+      },
+      description: `Printing loop value: 'Loop count: ${i}'`,
+      variables: { a, b, sum, ...(hasDiff ? { diff } : {}), i }
+    });
+  }
+
+  return steps;
 }
 
 function alignLocalSteps(steps: TraceStep[], code: string, lang: string, dataStructure: string): TraceStep[] {

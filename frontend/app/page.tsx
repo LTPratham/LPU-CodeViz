@@ -16,10 +16,20 @@ function LandingPageContent() {
   const searchParams = useSearchParams();
   const schoolParam = searchParams.get("school");
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState("pricing");
+  const [scrollPercentage, setScrollPercentage] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+    
+    const handleScroll = () => {
+      const scrolled = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const percent = maxScroll > 0 ? scrolled / maxScroll : 0;
+      setScrollPercentage(percent);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Retrieve dynamic school config
@@ -315,32 +325,133 @@ function LandingPageContent() {
             </div>
           </div>
 
-          {/* Right Column: Hero Image Showcase */}
+          {/* Right Column: MacBook Mockup with Parallax Scroll Display */}
           <div
             className="animate-fade-up"
             style={{
               width: "100%",
-              background: "rgba(17, 22, 37, 0.3)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: 20,
-              overflow: "hidden",
-              boxShadow: `0 24px 80px rgba(0,0,0,0.6), 0 0 40px ${activeColor}15`,
-              padding: "6px",
-              transform: "perspective(1000px) rotateY(-5deg) rotateX(5deg)",
-              transition: "transform 0.5s ease"
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              position: "relative",
+              transform: "perspective(1200px) rotateY(-8deg) rotateX(4deg)",
+              transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              zIndex: 5
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1.03)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "perspective(1200px) rotateY(-8deg) rotateX(4deg)";
             }}
           >
-            <img
-              src="/codecanvas_hero.png"
-              alt="CodeCanvas Dashboard Visualizer"
-              style={{
+            {/* Laptop Screen Body */}
+            <div style={{
+              width: "100%",
+              background: "linear-gradient(135deg, #161A26 0%, #0A0C12 100%)",
+              padding: "12px 12px 14px",
+              borderRadius: "20px 20px 4px 4px",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow: `0 20px 50px rgba(0,0,0,0.8), 0 0 30px ${activeColor}10`,
+              position: "relative"
+            }}>
+              {/* Webcam Notch / Camera Dot */}
+              <div style={{
+                position: "absolute",
+                top: "4px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: "#050608",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
+                <div style={{
+                  width: "2px",
+                  height: "2px",
+                  borderRadius: "50%",
+                  background: "#4EECD6",
+                  opacity: 0.8
+                }} />
+              </div>
+
+              {/* Display Screen */}
+              <div style={{
                 width: "100%",
-                height: "auto",
-                borderRadius: 14,
-                border: "1px solid rgba(255, 255, 255, 0.03)"
-              }}
-            />
+                aspectRatio: "16/10",
+                background: "#05070F",
+                borderRadius: "10px",
+                overflow: "hidden",
+                position: "relative",
+                border: "1px solid rgba(0,0,0,0.5)"
+              }}>
+                {/* Scrollable Display Content (Image) */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(-${scrollPercentage * 42}%)`,
+                  transition: "transform 0.15s cubic-bezier(0.1, 0.8, 0.3, 1)",
+                  willChange: "transform"
+                }}>
+                  <img
+                    src="/codecanvas_hero.png"
+                    alt="CodeCanvas Dashboard Visualizer"
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "block"
+                    }}
+                  />
+                </div>
+
+                {/* Glass Sheen / Reflection Overlay */}
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 45%, transparent 46%, transparent 100%)",
+                  pointerEvents: "none",
+                  zIndex: 2
+                }} />
+              </div>
+            </div>
+
+            {/* Laptop Base Plate */}
+            <div style={{
+              width: "106%",
+              height: "10px",
+              background: "linear-gradient(to bottom, #252B3E 0%, #11141E 50%, #07090D 100%)",
+              borderRadius: "0 0 16px 16px",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
+              position: "relative",
+              zIndex: 6
+            }}>
+              {/* Display Opening Notch */}
+              <div style={{
+                width: "50px",
+                height: "3px",
+                background: "#07090D",
+                margin: "0 auto",
+                borderRadius: "0 0 4px 4px"
+              }} />
+            </div>
+
+            {/* Ambient Shadow underneath Base */}
+            <div style={{
+              width: "90%",
+              height: "12px",
+              background: "radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 80%)",
+              position: "absolute",
+              bottom: "-12px",
+              zIndex: 1,
+              pointerEvents: "none"
+            }} />
+
           </div>
 
         </div>

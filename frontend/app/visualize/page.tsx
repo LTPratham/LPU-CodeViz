@@ -203,21 +203,8 @@ function VisualizeContent() {
     setUserAnswer(null);
     setChallengeState("unanswered");
 
-    // 1. Check Supabase cache (exact and structural parameter matching)
-    try {
-      const cached = await checkCache(activeLang, activeCode);
-      if (cached) {
-        setSteps(cached.trace_data.steps);
-        setDataStructure(cached.trace_data.dataStructure);
-        setExplanations(cached.explain_data);
-        setIsLoading(false);
-        return;
-      }
-    } catch (err) {
-      console.warn("Visualizer cache check failed:", err);
-    }
-
-    // 2. Check for client-side local execution fallback
+    // 1. Try client-side local execution FIRST — always fresh, no stale cache risk
+    // Cache is only consulted when local execution cannot handle the code pattern.
     const localTrace = await tryLocalExecution(activeLang, activeCode);
     if (localTrace) {
       setSteps(localTrace.steps);
@@ -240,11 +227,25 @@ function VisualizeContent() {
         }));
         setExplanations(finalExplains);
       }
-      
-      // Save local run to cache
+
+      // Save fresh local result to cache (overwrites any stale entry)
       saveToCache(activeLang, activeCode, localTrace, finalExplains);
       setIsLoading(false);
       return;
+    }
+
+    // 2. Check Supabase cache — only reached when local execution can't handle the code
+    try {
+      const cached = await checkCache(activeLang, activeCode);
+      if (cached) {
+        setSteps(cached.trace_data.steps);
+        setDataStructure(cached.trace_data.dataStructure);
+        setExplanations(cached.explain_data);
+        setIsLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn("Visualizer cache check failed:", err);
     }
 
     // 3. Cloud LLM Backend execution

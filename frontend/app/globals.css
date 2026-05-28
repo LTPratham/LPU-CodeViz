@@ -1,46 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ─── CodeCanvas Premium Dark/Neon Design System ─── */
+/* ─── CodeCanvas Premium Dark/Neon Design System (Bondz Finance Theme) ─── */
 :root {
-  --primary:        #00F2FE;
-  --primary-light:  #4EECD6;
-  --primary-dark:   #097A8C;
-  --primary-glow:   rgba(0, 242, 254, 0.15);
+  --primary:        #05DF72;
+  --primary-light:  #39FF14;
+  --primary-dark:   #048745;
+  --primary-glow:   rgba(5, 223, 114, 0.15);
 
-  --bg:             #060913;
-  --bg-secondary:   #0B0E17;
-  --card:           #111625;
-  --card-hover:     #161D30;
+  --bg:             #000000;
+  --bg-secondary:   #08090C;
+  --card:           rgba(255, 255, 255, 0.03);
+  --card-hover:     rgba(255, 255, 255, 0.06);
   --border:         rgba(255, 255, 255, 0.06);
   --border-light:   rgba(255, 255, 255, 0.09);
 
-  --highlight:      #FFB020;
-  --highlight-dim:  rgba(255, 176, 32, 0.12);
-  --success:        #00E676;
-  --success-dim:    rgba(0, 230, 118, 0.12);
-  --danger:         #FF3366;
-  --danger-dim:     rgba(255, 51, 102, 0.12);
-  --info:           #8A2BE2;
-  --info-dim:       rgba(138, 43, 226, 0.12);
+  --highlight:      #FDC700;
+  --highlight-dim:  rgba(253, 199, 0, 0.12);
+  --success:        #05DF72;
+  --success-dim:    rgba(5, 223, 114, 0.12);
+  --danger:         #FB64B6;
+  --danger-dim:     rgba(251, 100, 182, 0.12);
+  --info:           #C27AFF;
+  --info-dim:       rgba(194, 122, 255, 0.12);
 
-  --muted:          #4B5563;
-  --text:           #F3F4F6;
-  --text-secondary: #D1D5DB;
-  --text-muted:     #9CA3AF;
+  --muted:          rgba(255, 255, 255, 0.2);
+  --text:           #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted:     rgba(255, 255, 255, 0.45);
 
   --font-ui:        'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:      'JetBrains Mono', 'Fira Code', monospace;
 
   --radius-sm:      8px;
-  --radius:         12px;
-  --radius-lg:      18px;
-  --radius-xl:      28px;
+  --radius:         14px;
+  --radius-lg:      16px;
+  --radius-xl:      20px;
   --radius-full:    9999px;
 
-  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.6);
-  --shadow:         0 8px 32px rgba(0, 0, 0, 0.7);
-  --shadow-lg:      0 16px 48px rgba(0, 0, 0, 0.8);
+  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.8);
+  --shadow:         0 8px 32px rgba(0, 0, 0, 0.9);
+  --shadow-lg:      0 16px 48px rgba(0, 0, 0, 0.95);
   --shadow-glow:    0 0 24px var(--primary-glow);
 }
 

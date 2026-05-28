@@ -215,9 +215,9 @@ function LandingPageContent() {
                 marginBottom: 20,
                 fontSize: 11,
                 padding: "6px 16px",
-                background: `${activeColor}15`,
+                background: "rgba(255,255,255,0.03)",
                 color: activeColor,
-                border: `1px solid ${activeColor}30`,
+                border: "1px solid rgba(255,255,255,0.06)",
                 borderRadius: "999px",
                 fontWeight: 700,
                 letterSpacing: "0.5px"
@@ -231,16 +231,20 @@ function LandingPageContent() {
               className="animate-fade-up"
               style={{
                 fontSize: "clamp(32px, 3.8vw, 56px)",
-                fontWeight: 900,
+                fontWeight: 800,
                 textAlign: "left",
                 lineHeight: 1.15,
                 marginBottom: 20,
-                letterSpacing: "-1.5px"
+                letterSpacing: "-1.5px",
+                background: "linear-gradient(135deg, #FFFFFF 0%, #A0A0A0 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
               }}
             >
               {schoolConfig.heroTitlePrefix}
               <span style={{
-                background: `linear-gradient(135deg, ${activeColor}, #9F58FF)`,
+                background: `linear-gradient(135deg, ${activeColor}, #00F2FE)`,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text"
@@ -252,7 +256,7 @@ function LandingPageContent() {
               className="animate-fade-up"
               style={{
                 fontSize: "clamp(15px, 1.8vw, 18px)",
-                color: "var(--text-secondary)",
+                color: "rgba(255, 255, 255, 0.6)",
                 textAlign: "left",
                 maxWidth: 600,
                 marginBottom: 32,
@@ -274,21 +278,31 @@ function LandingPageContent() {
             >
               <Link
                 href={`/visualize?school=${schoolConfig.id}`}
-                className="btn btn-primary"
+                className="btn"
                 style={{ 
                   padding: "14px 32px", 
                   fontSize: 15, 
-                  borderRadius: 12, 
-                  background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})`,
-                  boxShadow: `0 8px 24px ${activeColor}30`,
+                  borderRadius: "14px", 
+                  background: "#FFFFFF",
+                  color: "#000000",
+                  fontWeight: 700,
+                  boxShadow: `0 8px 24px rgba(255, 255, 255, 0.1)`,
                 }}
               >
                 Start Visualizing Free
               </Link>
               <a
                 href="#pricing"
-                className="btn btn-ghost"
-                style={{ padding: "14px 32px", fontSize: 15, borderRadius: 12 }}
+                className="btn"
+                style={{ 
+                  padding: "14px 32px", 
+                  fontSize: 15, 
+                  borderRadius: "14px",
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "#FFFFFF",
+                  fontWeight: 600
+                }}
               >
                 View Plans
               </a>

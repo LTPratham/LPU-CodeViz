@@ -35,9 +35,9 @@ export const SCHOOL_CONFIGS: Record<string, SchoolConfig> = {
     heroTitleHighlight: "Start understanding it.",
     heroSub: "Ace your mid-terms and practicals with step-by-step animated visualizers for C, C++, Python, SQL, Java, and HTML. Includes plain-English line-by-line explanations and an AI tutor.",
     badge: "Computer Science & Engineering",
-    primaryColor: "#00F2FE",
-    primaryLight: "#4EECD6",
-    primaryGlow: "rgba(0, 242, 254, 0.25)",
+    primaryColor: "#05DF72",
+    primaryLight: "#39FF14",
+    primaryGlow: "rgba(5, 223, 114, 0.15)",
     subjects: [
       { code: "CSE101", name: "C Programming" },
       { code: "INT108", name: "Python" },

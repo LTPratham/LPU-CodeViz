@@ -924,10 +924,32 @@ function simulateRecursion(code: string): TraceStep[] {
 }
 
 // 9. Basic Variables Loop Simulation Tracer
+// Parses actual values from the code so changing a, b, or threshold produces correct output.
 function simulateVariables(code: string): TraceStep[] {
   const steps: TraceStep[] = [];
   let stepNum = 1;
 
+  // --- Parse actual variable values from code ---
+  const aMatch = code.match(/\bint\s+a\s*=\s*(-?\d+)/);
+  const bMatch = code.match(/\bint\s+b\s*=\s*(-?\d+)/);
+  // For loop upper bound (e.g. i <= 3)
+  const loopMatch = code.match(/i\s*<=\s*(\d+)/);
+  // Threshold in the if condition (e.g. sum > 25)
+  const threshMatch = code.match(/sum\s*>\s*(-?\d+)/);
+
+  const a = aMatch ? parseInt(aMatch[1]) : 10;
+  const b = bMatch ? parseInt(bMatch[1]) : 20;
+  const sum = a + b;
+  const loopMax = loopMatch ? parseInt(loopMatch[1]) : 3;
+  const threshold = threshMatch ? parseInt(threshMatch[1]) : 25;
+  const conditionTrue = sum > threshold;
+
+  // Build the output message based on actual values
+  const sumMsg = conditionTrue
+    ? `Sum ${sum} is greater than ${threshold}`
+    : `Sum is small`;
+
+  // Step 1: assign a
   steps.push({
     stepNum: stepNum++,
     line: 15,
@@ -935,15 +957,16 @@ function simulateVariables(code: string): TraceStep[] {
     state: {
       type: "variables",
       variables: [
-        { name: "a", value: 10, type: "int", status: "active" },
+        { name: "a", value: a, type: "int", status: "active" },
         { name: "b", value: null, type: "int", status: "default" }
       ],
       output: []
     },
-    description: "Initializing variables: a = 10",
-    variables: { a: 10 }
+    description: `Initializing variables: a = ${a}`,
+    variables: { a }
   });
 
+  // Step 2: assign b
   steps.push({
     stepNum: stepNum++,
     line: 16,
@@ -951,15 +974,16 @@ function simulateVariables(code: string): TraceStep[] {
     state: {
       type: "variables",
       variables: [
-        { name: "a", value: 10, type: "int", status: "default" },
-        { name: "b", value: 20, type: "int", status: "active" }
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "active" }
       ],
       output: []
     },
-    description: "Initializing variables: b = 20",
-    variables: { a: 10, b: 20 }
+    description: `Initializing variables: b = ${b}`,
+    variables: { a, b }
   });
 
+  // Step 3: calculate sum
   steps.push({
     stepNum: stepNum++,
     line: 19,
@@ -967,16 +991,17 @@ function simulateVariables(code: string): TraceStep[] {
     state: {
       type: "variables",
       variables: [
-        { name: "a", value: 10, type: "int", status: "default" },
-        { name: "b", value: 20, type: "int", status: "default" },
-        { name: "sum", value: 30, type: "int", status: "active" }
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "active" }
       ],
       output: []
     },
-    description: "Calculating sum = a + b = 30",
-    variables: { a: 10, b: 20, sum: 30 }
+    description: `Calculating sum = a + b = ${sum}`,
+    variables: { a, b, sum }
   });
 
+  // Step 4: evaluate condition
   steps.push({
     stepNum: stepNum++,
     line: 23,
@@ -984,35 +1009,39 @@ function simulateVariables(code: string): TraceStep[] {
     state: {
       type: "variables",
       variables: [
-        { name: "a", value: 10, type: "int", status: "default" },
-        { name: "b", value: 20, type: "int", status: "default" },
-        { name: "sum", value: 30, type: "int", status: "active" }
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "active" }
       ],
       output: []
     },
-    description: "Evaluating condition (sum > 25) which is True",
-    variables: { a: 10, b: 20, sum: 30 }
+    description: `Evaluating condition (sum > ${threshold}) which is ${conditionTrue ? "True" : "False"}`,
+    variables: { a, b, sum }
   });
 
+  // Step 5: print result of if/else
   steps.push({
     stepNum: stepNum++,
-    line: 24,
+    line: conditionTrue ? 24 : 26,
     action: "highlight",
     state: {
       type: "variables",
       variables: [
-        { name: "a", value: 10, type: "int", status: "default" },
-        { name: "b", value: 20, type: "int", status: "default" },
-        { name: "sum", value: 30, type: "int", status: "default" }
+        { name: "a", value: a, type: "int", status: "default" },
+        { name: "b", value: b, type: "int", status: "default" },
+        { name: "sum", value: sum, type: "int", status: "default" }
       ],
-      output: ["Sum 30 is greater than 25"]
+      output: [sumMsg]
     },
-    description: "Printing output to console: 'Sum 30 is greater than 25'",
-    variables: { a: 10, b: 20, sum: 30 }
+    description: `Printing output to console: '${sumMsg}'`,
+    variables: { a, b, sum }
   });
 
-  for (let i = 1; i <= 3; i++) {
-    const outputs = i === 1 ? ["Sum 30 is greater than 25"] : i === 2 ? ["Sum 30 is greater than 25", "Loop count: 1"] : ["Sum 30 is greater than 25", "Loop count: 1", "Loop count: 2"];
+  // Step 6+: loop iterations
+  for (let i = 1; i <= loopMax; i++) {
+    const priorOutputs: string[] = [sumMsg];
+    for (let k = 1; k < i; k++) priorOutputs.push(`Loop count: ${k}`);
+
     steps.push({
       stepNum: stepNum++,
       line: 30,
@@ -1020,18 +1049,18 @@ function simulateVariables(code: string): TraceStep[] {
       state: {
         type: "variables",
         variables: [
-          { name: "a", value: 10, type: "int", status: "default" },
-          { name: "b", value: 20, type: "int", status: "default" },
-          { name: "sum", value: 30, type: "int", status: "default" },
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
           { name: "i", value: i, type: "int", status: "active" }
         ],
-        output: outputs
+        output: priorOutputs
       },
       description: `Loop iteration: i = ${i}`,
-      variables: { a: 10, b: 20, sum: 30, i }
+      variables: { a, b, sum, i }
     });
 
-    const nextOutputs = [...outputs, `Loop count: ${i}`];
+    const nextOutputs = [...priorOutputs, `Loop count: ${i}`];
     steps.push({
       stepNum: stepNum++,
       line: 31,
@@ -1039,15 +1068,15 @@ function simulateVariables(code: string): TraceStep[] {
       state: {
         type: "variables",
         variables: [
-          { name: "a", value: 10, type: "int", status: "default" },
-          { name: "b", value: 20, type: "int", status: "default" },
-          { name: "sum", value: 30, type: "int", status: "default" },
+          { name: "a", value: a, type: "int", status: "default" },
+          { name: "b", value: b, type: "int", status: "default" },
+          { name: "sum", value: sum, type: "int", status: "default" },
           { name: "i", value: i, type: "int", status: "default" }
         ],
         output: nextOutputs
       },
       description: `Printing loop value: 'Loop count: ${i}'`,
-      variables: { a: 10, b: 20, sum: 30, i }
+      variables: { a, b, sum, i }
     });
   }
 
@@ -1250,7 +1279,16 @@ int main() {
 }`;
 
   const norm = (str: string) => str.replace(/\r\n/g, "\n").trim();
-  if (norm(code) === norm(C_BASICS_DEFAULT_CODE)) {
+  // Detect the C basics template structurally: any C code that has int a=..., int b=..., sum=a+b, if(sum>...) and a for loop.
+  // This way, changing values like a=5 or b=5 still gets simulated correctly instead of falling through to the API.
+  const isCBasicsTemplate = (
+    /\bint\s+a\s*=\s*-?\d+/.test(code) &&
+    /\bint\s+b\s*=\s*-?\d+/.test(code) &&
+    /\bsum\s*=\s*a\s*\+\s*b/.test(code) &&
+    /\bif\s*\(\s*sum/.test(code) &&
+    /\bfor\s*\(/.test(code)
+  );
+  if (norm(code) === norm(C_BASICS_DEFAULT_CODE) || isCBasicsTemplate) {
     return {
       dataStructure: "variables",
       steps: simulateVariables(code)

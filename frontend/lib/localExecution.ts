@@ -1223,7 +1223,34 @@ function tryLocalExecutionRaw(lang: string, code: string): TraceResponse | null 
   const normalized = code.toLowerCase();
 
   // 1. Basic variables loop template
-  if (normalized.includes("basics") && normalized.includes("int a = 10;") && normalized.includes("sum = a + b")) {
+  const C_BASICS_DEFAULT_CODE = `#include <stdio.h>
+
+int main() {
+    // 1. Initialize variables
+    int a = 10;
+    int b = 20;
+    
+    // 2. Perform operations
+    int sum = a + b;
+    int diff = b - a;
+    
+    // 3. Conditional logic
+    if (sum > 25) {
+        printf("Sum %d is greater than 25\\n", sum);
+    } else {
+        printf("Sum is small\\n");
+    }
+    
+    // 4. Simple loop
+    for(int i = 1; i <= 3; i++) {
+        printf("Loop count: %d\\n", i);
+    }
+    
+    return 0;
+}`;
+
+  const norm = (str: string) => str.replace(/\r\n/g, "\n").trim();
+  if (norm(code) === norm(C_BASICS_DEFAULT_CODE)) {
     return {
       dataStructure: "variables",
       steps: simulateVariables(code)

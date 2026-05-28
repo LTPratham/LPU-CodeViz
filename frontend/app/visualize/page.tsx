@@ -203,7 +203,7 @@ function VisualizeContent() {
     setChallengeState("unanswered");
 
     // Check for client-side local execution fallback
-    const localTrace = tryLocalExecution(activeLang, activeCode);
+    const localTrace = await tryLocalExecution(activeLang, activeCode);
     if (localTrace) {
       setSteps(localTrace.steps);
       setDataStructure(localTrace.dataStructure);

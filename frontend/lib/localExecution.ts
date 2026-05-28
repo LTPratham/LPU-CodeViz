@@ -1,4 +1,5 @@
 import type { TraceResponse, TraceStep, StepAction, ArrayElement, RecursionFrame } from "./types";
+import { runPythonOffline } from "./pyodideRunner";
 
 // Helper to extract an array of numbers from standard C/Python/Java syntax
 function extractArray(code: string): number[] | null {
@@ -1304,10 +1305,20 @@ function tryLocalExecutionRaw(lang: string, code: string): TraceResponse | null 
 }
 
 // Main Local Execution Switchboard with Line Alignment
-export function tryLocalExecution(lang: string, code: string): TraceResponse | null {
+export async function tryLocalExecution(lang: string, code: string): Promise<TraceResponse | null> {
   const res = tryLocalExecutionRaw(lang, code);
   if (res) {
     res.steps = alignLocalSteps(res.steps, code, lang, res.dataStructure);
+    return res;
   }
-  return res;
+
+  if (lang === "python") {
+    try {
+      return await runPythonOffline(code);
+    } catch (err) {
+      console.warn("Offline Pyodide execution failed:", err);
+    }
+  }
+
+  return null;
 }

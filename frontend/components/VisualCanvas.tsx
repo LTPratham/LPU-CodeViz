@@ -1,7 +1,7 @@
 "use client";
 import type { TraceStep, VisualizationState } from "@/lib/types";
 import dynamic from "next/dynamic";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ComplexityProfiler from "./visualizers/ComplexityProfiler";
 import { exportAllStepsAsSVG } from "@/lib/exportAllSteps";
 import GraphBuilder from "./visualizers/GraphBuilder";
@@ -118,6 +118,7 @@ export default function VisualCanvas({
   onGenerateCode,
 }: Props) {
   const [activeTab, setActiveTab] = useState<"visualizer" | "complexity" | "builder">("visualizer");
+  const [isConsoleCollapsed, setIsConsoleCollapsed] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // All hooks must be called before any conditional returns.
@@ -128,6 +129,15 @@ export default function VisualCanvas({
   const currentOutput: string[] = (step?.state as any)?.output || [];
   const finalStep = steps[steps.length - 1];
   const finalOutput: string[] = (finalStep?.state as any)?.output || [];
+
+  // Auto-expand the console if output is generated
+  useEffect(() => {
+    if (finalOutput.length > 0) {
+      setIsConsoleCollapsed(false);
+    } else {
+      setIsConsoleCollapsed(true);
+    }
+  }, [finalOutput.length]);
 
   const handleExportSVG = () => {
     exportAllStepsAsSVG(steps, dataStructure, code, language);
@@ -318,82 +328,102 @@ export default function VisualCanvas({
         </div>
       </div>
 
-      {/* Integrated Console Pane at the bottom (only for visualizer tab when output exists) */}
-      {activeTab === "visualizer" && finalOutput.length > 0 && (
+      {/* Collapsible Integrated Console Pane at the bottom */}
+      {activeTab === "visualizer" && (
         <div style={{
-          height: 180,
+          height: isConsoleCollapsed ? 32 : 180,
           background: "#080C14",
           borderTop: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
-          width: "100%"
+          width: "100%",
+          transition: "height 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
         }}>
           {/* Console Header */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "8px 16px",
-            background: "rgba(255, 255, 255, 0.02)",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            fontSize: 11,
-            fontWeight: 700,
-            color: "var(--text-muted)",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase"
-          }}>
+          <div 
+            onClick={() => setIsConsoleCollapsed(!isConsoleCollapsed)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 16px",
+              height: 32,
+              background: "rgba(255, 255, 255, 0.02)",
+              borderBottom: isConsoleCollapsed ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "var(--text-muted)",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              userSelect: "none"
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span>💻 Console Output</span>
-              <span style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                color: "var(--text-secondary)",
-                padding: "1px 5px",
-                borderRadius: 4,
-                fontSize: 9,
-                fontWeight: 700
-              }}>
-                {currentOutput.length} / {finalOutput.length} lines
-              </span>
+              <span>{isConsoleCollapsed ? "▶" : "▼"} 💻 Console Output</span>
+              {finalOutput.length > 0 && (
+                <span style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  color: "var(--text-secondary)",
+                  padding: "1px 5px",
+                  borderRadius: 4,
+                  fontSize: 9,
+                  fontWeight: 700
+                }}>
+                  {currentOutput.length} / {finalOutput.length} lines
+                </span>
+              )}
             </div>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(currentOutput.join("\n"));
-                alert("Console output copied to clipboard!");
-              }}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                fontSize: 10,
-                fontWeight: 600
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
-            >
-              📋 Copy Output
-            </button>
+            {!isConsoleCollapsed && currentOutput.length > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(currentOutput.join("\n"));
+                  alert("Console output copied to clipboard!");
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                  fontSize: 10,
+                  fontWeight: 600
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+              >
+                📋 Copy Output
+              </button>
+            )}
           </div>
           
           {/* Console lines */}
-          <div style={{
-            flex: 1,
-            padding: "12px 16px",
-            overflow: "auto",
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            lineHeight: 1.6,
-            textAlign: "left"
-          }}>
-            {currentOutput.map((line: string, i: number) => (
-              <div key={i} style={{ color: "#34D399", display: "flex", gap: 8 }}>
-                <span style={{ color: "rgba(255, 255, 255, 0.15)", userSelect: "none", minWidth: 20, textAlign: "right" }}>{i + 1}</span>
-                <span style={{ color: "rgba(255, 255, 255, 0.3)", userSelect: "none" }}>&gt;</span>
-                <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{line}</span>
-              </div>
-            ))}
-          </div>
+          {!isConsoleCollapsed && (
+            <div style={{
+              flex: 1,
+              padding: "12px 16px",
+              overflow: "auto",
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              lineHeight: 1.6,
+              textAlign: "left"
+            }}>
+              {currentOutput.length === 0 ? (
+                <div style={{ color: "rgba(255, 255, 255, 0.2)", fontStyle: "italic", fontSize: 11 }}>
+                  Console ready. (No output generated yet. Use print/printf statements in your code.)
+                </div>
+              ) : (
+                currentOutput.map((line: string, i: number) => (
+                  <div key={i} style={{ color: "#34D399", display: "flex", gap: 8 }}>
+                    <span style={{ color: "rgba(255, 255, 255, 0.15)", userSelect: "none", minWidth: 20, textAlign: "right" }}>{i + 1}</span>
+                    <span style={{ color: "rgba(255, 255, 255, 0.3)", userSelect: "none" }}>&gt;</span>
+                    <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{line}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

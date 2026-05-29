@@ -103,6 +103,205 @@ function isSortingCode(ds: string): boolean {
   );
 }
 
+interface TerminalOutputProps {
+  currentOutput: string[];
+  finalOutput: string[];
+  language?: string;
+}
+
+function TerminalOutput({ currentOutput, finalOutput, language }: TerminalOutputProps) {
+  const [showFull, setShowFull] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const linesToDisplay = showFull ? finalOutput : currentOutput;
+
+  const filteredLines = linesToDisplay.filter(line => 
+    line.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(linesToDisplay.join("\n"));
+    alert("Output copied to clipboard!");
+  };
+
+  const getLanguageTip = () => {
+    switch (language) {
+      case "python":
+        return `print("value")`;
+      case "c":
+      case "cpp":
+        return `printf("value\\n");  // or std::cout << value << std::endl;`;
+      case "java":
+        return `System.out.println("value");`;
+      case "sql":
+        return `SELECT * FROM table;  // or SELECT value;`;
+      default:
+        return `print/printf statements`;
+    }
+  };
+
+  return (
+    <div style={{
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      background: "#090D16",
+      borderRadius: 12,
+      border: "1px solid rgba(255, 255, 255, 0.08)",
+      overflow: "hidden",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+    }}>
+      {/* Terminal Title Bar */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "8px 16px",
+        background: "rgba(255, 255, 255, 0.03)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+        flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F56" }}></div>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFBD2E" }}></div>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }}></div>
+          <span style={{ fontSize: 11, color: "rgba(255, 255, 255, 0.4)", fontFamily: "var(--font-mono)", marginLeft: 8 }}>
+            bash - console - {linesToDisplay.length} lines
+          </span>
+        </div>
+
+        {/* Toolbar controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* Mode Switcher */}
+          <div style={{
+            display: "flex",
+            background: "rgba(255, 255, 255, 0.05)",
+            borderRadius: 6,
+            padding: 2,
+            border: "1px solid rgba(255, 255, 255, 0.05)"
+          }}>
+            <button
+              onClick={() => setShowFull(false)}
+              style={{
+                padding: "2px 8px",
+                fontSize: 10,
+                fontWeight: 600,
+                borderRadius: 4,
+                border: "none",
+                background: !showFull ? "rgba(255,255,255,0.1)" : "transparent",
+                color: !showFull ? "#fff" : "rgba(255,255,255,0.5)",
+                cursor: "pointer"
+              }}
+            >
+              Current Step
+            </button>
+            <button
+              onClick={() => setShowFull(true)}
+              style={{
+                padding: "2px 8px",
+                fontSize: 10,
+                fontWeight: 600,
+                borderRadius: 4,
+                border: "none",
+                background: showFull ? "rgba(255,255,255,0.1)" : "transparent",
+                color: showFull ? "#fff" : "rgba(255,255,255,0.5)",
+                cursor: "pointer"
+              }}
+            >
+              Full Program
+            </button>
+          </div>
+
+          {/* Search box */}
+          {linesToDisplay.length > 0 && (
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 6,
+                padding: "2px 8px",
+                fontSize: 10,
+                color: "#fff",
+                outline: "none",
+                width: 100,
+              }}
+            />
+          )}
+
+          {/* Copy Button */}
+          {linesToDisplay.length > 0 && (
+            <button
+              onClick={handleCopy}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 6,
+                padding: "2px 8px",
+                fontSize: 10,
+                color: "rgba(255,255,255,0.7)",
+                cursor: "pointer",
+              }}
+            >
+              📋 Copy
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Terminal Output Area */}
+      <div style={{
+        flex: 1,
+        padding: 16,
+        overflow: "auto",
+        fontFamily: "var(--font-mono)",
+        fontSize: 13,
+        lineHeight: 1.6,
+        textAlign: "left",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        {linesToDisplay.length === 0 ? (
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1,
+            color: "rgba(255, 255, 255, 0.3)",
+            textAlign: "center",
+            padding: 32,
+            gap: 12
+          }}>
+            <span style={{ fontSize: 24 }}>💻</span>
+            <div>
+              <p style={{ fontWeight: 600, color: "rgba(255,255,255,0.5)", fontSize: 14 }}>No Output Generated</p>
+              <p style={{ fontSize: 12, marginTop: 4 }}>
+                Write code that outputs to console using e.g. <code style={{ color: "var(--primary-light)", background: "rgba(255,255,255,0.05)", padding: "2px 4px", borderRadius: 4 }}>{getLanguageTip()}</code>
+              </p>
+            </div>
+          </div>
+        ) : filteredLines.length === 0 ? (
+          <div style={{ color: "rgba(255, 255, 255, 0.3)", textAlign: "center", padding: 24 }}>
+            No matches found for "{searchQuery}"
+          </div>
+        ) : (
+          filteredLines.map((line, i) => (
+            <div key={i} style={{ color: "#34D399", display: "flex", alignItems: "flex-start", gap: 8 }}>
+              <span style={{ color: "rgba(255,255,255,0.15)", userSelect: "none", minWidth: 20, textAlign: "right" }}>{i + 1}</span>
+              <span style={{ color: "rgba(255, 255, 255, 0.4)", userSelect: "none" }}>&gt;</span>
+              <span style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{line}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function VisualCanvas({
   step,
   dataStructure,
@@ -117,13 +316,17 @@ export default function VisualCanvas({
   currentStepIdx = 0,
   onGenerateCode,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<"visualizer" | "complexity" | "builder">("visualizer");
+  const [activeTab, setActiveTab] = useState<"visualizer" | "complexity" | "builder" | "output">("visualizer");
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // All hooks must be called before any conditional returns.
   // isLoading guard is handled inside renderContent below.
   const ds = dataStructure.toLowerCase();
   const isGraph = ds.includes("graph") || (step && step.state && step.state.type === "graph");
+
+  const currentOutput: string[] = (step?.state as any)?.output || [];
+  const finalStep = steps[steps.length - 1];
+  const finalOutput: string[] = (finalStep?.state as any)?.output || [];
 
   const handleExportSVG = () => {
     exportAllStepsAsSVG(steps, dataStructure, code, language);
@@ -138,6 +341,16 @@ export default function VisualCanvas({
 
     if (activeTab === "complexity") {
       return <ComplexityProfiler steps={steps} currentStepIdx={currentStepIdx} />;
+    }
+
+    if (activeTab === "output") {
+      return (
+        <TerminalOutput
+          currentOutput={currentOutput}
+          finalOutput={finalOutput}
+          language={language}
+        />
+      );
     }
 
     // Default Visualizer
@@ -251,6 +464,36 @@ export default function VisualCanvas({
               ✏️ Graph Builder
             </button>
           )}
+          <button
+            onClick={() => setActiveTab("output")}
+            style={{
+              padding: "0 12px",
+              height: "100%",
+              border: "none",
+              background: activeTab === "output" ? "rgba(29,158,117,0.15)" : "transparent",
+              color: activeTab === "output" ? "var(--primary-light)" : "var(--text-muted)",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              borderBottom: activeTab === "output" ? "2px solid var(--primary)" : "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 4
+            }}
+          >
+            💻 Output {finalOutput.length > 0 && (
+              <span style={{
+                background: "rgba(255,255,255,0.1)",
+                color: "var(--text-secondary)",
+                padding: "1px 5px",
+                borderRadius: 4,
+                fontSize: 9,
+                fontWeight: 700
+              }}>
+                {finalOutput.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {activeTab === "visualizer" && steps.length > 0 && (

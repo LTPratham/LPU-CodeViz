@@ -143,7 +143,7 @@ function MiniGraphPreview() {
             fontFamily: "monospace",
           }}
         >
-          codecanvas.lpu.edu/workspace
+          codeviz.lpu.edu/workspace
         </div>
         {/* Toolbar mock */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>

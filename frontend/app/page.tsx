@@ -1,1103 +1,719 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { getSchoolConfig } from "../lib/schools";
 
-const FLOATING_SNIPPETS = [
-  { code: "arr[j] > arr[j+1]", x: "8%", y: "20%", delay: 0 },
-  { code: "fibonacci(n-1)", x: "75%", y: "15%", delay: 0.5 },
-  { code: "stack.push(val)", x: "85%", y: "60%", delay: 1 },
-  { code: "SELECT * FROM", x: "5%", y: "70%", delay: 1.5 },
-  { code: "node->next = NULL", x: "60%", y: "80%", delay: 0.8 },
+// ─── Feature Data ────────────────────────────────────────────────────────────
+
+const WORKSPACE_FEATURES = [
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="12" r="4" /><line x1="12" y1="2" x2="12" y2="6" />
+        <line x1="12" y1="18" x2="12" y2="22" /><line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" /><line x1="2" y1="12" x2="6" y2="12" />
+        <line x1="18" y1="12" x2="22" y2="12" /><line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+      </svg>
+    ),
+    title: "Visual Dependency Graph",
+    desc: "Explore your codebase as an interactive node graph. Pan, zoom, and drag nodes to understand architecture at a glance.",
+    badge: "Canvas First",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+      </svg>
+    ),
+    title: "Step-by-Step Code Tracer",
+    desc: "Paste any C, C++, Python, or SQL algorithm and trace it line-by-line with animated data structure visualizations.",
+    badge: "Algorithm Tracer",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+    title: "AI Code Insights",
+    desc: "Get intelligent analysis — detect high coupling, circular dependencies, dead code, and complexity hotspots automatically.",
+    badge: "AI Powered",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+    ),
+    title: "LPU Syllabus Coverage",
+    desc: "Every CSE101, INT101, CSE205, and INT301 topic has a built-in visualizer mapped directly to the LPU curriculum.",
+    badge: "LPU Specific",
+  },
 ];
 
-const BUBBLE_SORT_STEPS = [
+const HOW_IT_WORKS = [
   {
-    array: [5, 2, 8, 1, 4],
-    activeLine: 1, // def bubble_sort(arr):
-    compared: [],
-    swapped: [],
-    sorted: [],
-    explanation: "Initialize array: [5, 2, 8, 1, 4] and start outer loop."
+    step: "01",
+    title: "Open the Workspace",
+    desc: "Launch the visual workspace — it opens instantly with your project's dependency graph pre-loaded.",
   },
   {
-    array: [5, 2, 8, 1, 4],
-    activeLine: 2, // for i in range(len(arr)):
-    compared: [],
-    swapped: [],
-    sorted: [],
-    explanation: "Start outer loop pass 1 (i = 0)."
+    step: "02",
+    title: "Explore the Graph",
+    desc: "Click any node to inspect its imports, exports, complexity, and AI-generated insights.",
   },
   {
-    array: [5, 2, 8, 1, 4],
-    activeLine: 3, // for j in range(len(arr)-i-1):
-    compared: [0, 1],
-    swapped: [],
-    sorted: [],
-    explanation: "Compare elements at index 0 (5) and index 1 (2)."
+    step: "03",
+    title: "Trace & Understand",
+    desc: "Paste any algorithm and step through it line-by-line with animated data structure rendering.",
   },
-  {
-    array: [5, 2, 8, 1, 4],
-    activeLine: 4, // if arr[j] > arr[j+1]:
-    compared: [0, 1],
-    swapped: [],
-    sorted: [],
-    explanation: "Since 5 > 2, swap condition is met."
-  },
-  {
-    array: [2, 5, 8, 1, 4],
-    activeLine: 5, // arr[j], arr[j+1] = arr[j+1], arr[j]
-    compared: [],
-    swapped: [0, 1],
-    sorted: [],
-    explanation: "Swapped 5 and 2. Array is now [2, 5, 8, 1, 4]."
-  },
-  {
-    array: [2, 5, 8, 1, 4],
-    activeLine: 3, // Next iteration j = 1
-    compared: [1, 2],
-    swapped: [],
-    sorted: [],
-    explanation: "Compare elements at index 1 (5) and index 2 (8)."
-  },
-  {
-    array: [2, 5, 8, 1, 4],
-    activeLine: 4,
-    compared: [1, 2],
-    swapped: [],
-    sorted: [],
-    explanation: "Since 5 < 8, no swap is required. Proceed."
-  },
-  {
-    array: [2, 5, 8, 1, 4],
-    activeLine: 3, // j = 2
-    compared: [2, 3],
-    swapped: [],
-    sorted: [],
-    explanation: "Compare elements at index 2 (8) and index 3 (1)."
-  },
-  {
-    array: [2, 5, 8, 1, 4],
-    activeLine: 4,
-    compared: [2, 3],
-    swapped: [],
-    sorted: [],
-    explanation: "Since 8 > 1, swap condition is met."
-  },
-  {
-    array: [2, 5, 1, 8, 4],
-    activeLine: 5,
-    compared: [],
-    swapped: [2, 3],
-    sorted: [],
-    explanation: "Swapped 8 and 1. Array is now [2, 5, 1, 8, 4]."
-  },
-  {
-    array: [2, 5, 1, 8, 4],
-    activeLine: 3, // j = 3
-    compared: [3, 4],
-    swapped: [],
-    sorted: [],
-    explanation: "Compare elements at index 3 (8) and index 4 (4)."
-  },
-  {
-    array: [2, 5, 1, 8, 4],
-    activeLine: 4,
-    compared: [3, 4],
-    swapped: [],
-    sorted: [],
-    explanation: "Since 8 > 4, swap condition is met."
-  },
-  {
-    array: [2, 5, 1, 4, 8],
-    activeLine: 5,
-    compared: [],
-    swapped: [3, 4],
-    sorted: [4],
-    explanation: "Swapped 8 and 4. The element 8 is now in its final sorted position."
-  },
-  {
-    array: [2, 5, 1, 4, 8],
-    activeLine: 2, // i = 1
-    compared: [],
-    swapped: [],
-    sorted: [4],
-    explanation: "Start outer loop pass 2 (i = 1). Checking remaining elements."
-  },
-  {
-    array: [2, 5, 1, 4, 8],
-    activeLine: 3, // j = 0
-    compared: [0, 1],
-    swapped: [],
-    sorted: [4],
-    explanation: "Compare elements at index 0 (2) and index 1 (5). In order."
-  },
-  {
-    array: [2, 5, 1, 4, 8],
-    activeLine: 3, // j = 1
-    compared: [1, 2],
-    swapped: [],
-    sorted: [4],
-    explanation: "Compare elements at index 1 (5) and index 2 (1)."
-  },
-  {
-    array: [2, 1, 5, 4, 8],
-    activeLine: 5,
-    compared: [],
-    swapped: [1, 2],
-    sorted: [4],
-    explanation: "Swapped 5 and 1. Array is now [2, 1, 5, 4, 8]."
-  },
-  {
-    array: [2, 1, 5, 4, 8],
-    activeLine: 3, // j = 2
-    compared: [2, 3],
-    swapped: [],
-    sorted: [4],
-    explanation: "Compare elements at index 2 (5) and index 3 (4)."
-  },
-  {
-    array: [2, 1, 4, 5, 8],
-    activeLine: 5,
-    compared: [],
-    swapped: [2, 3],
-    sorted: [3, 4],
-    explanation: "Swapped 5 and 4. Element 5 is now sorted."
-  },
-  {
-    array: [2, 1, 4, 5, 8],
-    activeLine: 2, // i = 2
-    compared: [],
-    swapped: [],
-    sorted: [3, 4],
-    explanation: "Start outer loop pass 3 (i = 2)."
-  },
-  {
-    array: [2, 1, 4, 5, 8],
-    activeLine: 3, // j = 0
-    compared: [0, 1],
-    swapped: [],
-    sorted: [3, 4],
-    explanation: "Compare elements at index 0 (2) and index 1 (1)."
-  },
-  {
-    array: [1, 2, 4, 5, 8],
-    activeLine: 5,
-    compared: [],
-    swapped: [0, 1],
-    sorted: [2, 3, 4],
-    explanation: "Swapped 2 and 1. Element 2 is now sorted."
-  },
-  {
-    array: [1, 2, 4, 5, 8],
-    activeLine: 0,
-    compared: [],
-    swapped: [],
-    sorted: [0, 1, 2, 3, 4],
-    explanation: "All passes complete. Array is fully sorted: [1, 2, 4, 5, 8]!"
-  }
 ];
 
-function LandingPageContent() {
-  const searchParams = useSearchParams();
-  const schoolParam = searchParams.get("school");
-  const [mounted, setMounted] = useState(false);
-  const [scrollPercentage, setScrollPercentage] = useState(0);
+// ─── Mini Graph Preview ───────────────────────────────────────────────────────
 
-  // Mini Visualizer State
-  const [stepIndex, setStepIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(false);
+function MiniGraphPreview() {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<string | null>("page-vis");
 
-  // How it works active step state
-  const [activeStep, setActiveStep] = useState(0);
+  const nodes = [
+    { id: "page-vis",  label: "visualize/page.tsx",  type: "page",      x: 90,  y: 36,  color: "#3B82F6" },
+    { id: "comp-canvas", label: "VisualCanvas.tsx",  type: "component", x: 270, y: 10,  color: "#8B5CF6" },
+    { id: "comp-editor", label: "CodeEditor.tsx",    type: "component", x: 270, y: 74,  color: "#8B5CF6" },
+    { id: "svc-api",   label: "api.ts",              type: "service",   x: 440, y: 36,  color: "#10B981" },
+    { id: "hook-vis",  label: "useVisualizer.ts",    type: "hook",      x: 440, y: 90,  color: "#F59E0B", cycle: true },
+    { id: "util-types",label: "types.ts",            type: "util",      x: 600, y: 36,  color: "#6B7280" },
+    { id: "page-home", label: "page.tsx",            type: "page",      x: 90,  y: 130, color: "#3B82F6" },
+    { id: "comp-hero", label: "Hero.tsx",            type: "component", x: 270, y: 130, color: "#8B5CF6" },
+    { id: "dead-util", label: "legacyTracer.ts",     type: "util",      x: 600, y: 120, color: "#6B7280", dead: true },
+  ];
 
-  useEffect(() => {
-    setMounted(true);
-    
-    const handleScroll = () => {
-      const scrolled = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const percent = maxScroll > 0 ? scrolled / maxScroll : 0;
-      setScrollPercentage(percent);
-    };
+  const edges = [
+    { from: "page-vis",  to: "comp-canvas" },
+    { from: "page-vis",  to: "comp-editor" },
+    { from: "page-vis",  to: "svc-api" },
+    { from: "comp-canvas", to: "svc-api" },
+    { from: "svc-api",   to: "hook-vis" },
+    { from: "svc-api",   to: "util-types" },
+    { from: "page-home", to: "comp-hero" },
+  ];
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Mini visualizer autoplay timer
-  useEffect(() => {
-    if (!isAutoPlay) return;
-    const interval = setInterval(() => {
-      setStepIndex((prev) => (prev + 1) % BUBBLE_SORT_STEPS.length);
-    }, 1800);
-    return () => clearInterval(interval);
-  }, [isAutoPlay]);
-
-  // Retrieve dynamic school config
-  const schoolConfig = getSchoolConfig(schoolParam);
-  const activeColor = schoolConfig.primaryColor;
-
-  const currentStep = BUBBLE_SORT_STEPS[stepIndex];
-
-  const handleStepForward = () => {
-    setStepIndex((prev) => (prev + 1) % BUBBLE_SORT_STEPS.length);
-    setIsAutoPlay(false);
-  };
-
-  const handleStepBack = () => {
-    setStepIndex((prev) => (prev - 1 + BUBBLE_SORT_STEPS.length) % BUBBLE_SORT_STEPS.length);
-    setIsAutoPlay(false);
-  };
-
-  const handleReset = () => {
-    setStepIndex(0);
-    setIsAutoPlay(false);
-  };
+  const getNode = (id: string) => nodes.find((n) => n.id === id)!;
 
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "var(--bg)",
-        overflowX: "hidden",
+        width: "100%",
+        background: "#0F0F11",
+        border: "1px solid #27272A",
+        borderRadius: 12,
+        overflow: "hidden",
+        position: "relative",
       }}
     >
-      {/* ── Dynamic Topbar ── */}
-      <nav
-        className="glass"
+      {/* Browser chrome */}
+      <div
         style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
+          background: "#111113",
+          borderBottom: "1px solid #27272A",
+          padding: "10px 14px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 32px",
-          height: 64,
-          borderBottom: "1px solid var(--border)",
-          borderRadius: 0,
+          gap: 12,
         }}
       >
+        <div style={{ display: "flex", gap: 5 }}>
+          {["#EF4444", "#F59E0B", "#22C55E"].map((c) => (
+            <span key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c, display: "inline-block" }} />
+          ))}
+        </div>
+        <div
+          style={{
+            flex: 1,
+            background: "#09090B",
+            border: "1px solid #27272A",
+            borderRadius: 4,
+            padding: "3px 10px",
+            fontSize: 10,
+            color: "#52525B",
+            fontFamily: "monospace",
+          }}
+        >
+          codecanvas.lpu.edu/workspace
+        </div>
+        {/* Toolbar mock */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div style={{ background: "#18181B", borderRadius: 4, padding: "3px 8px", fontSize: 10, color: "#52525B", border: "1px solid #27272A" }}>
+            LPU-CodeViz ▾
+          </div>
+          <div style={{ background: "#18181B", borderRadius: 4, padding: "3px 8px", fontSize: 10, color: "#52525B", border: "1px solid #27272A" }}>
+            🔍
+          </div>
+        </div>
+      </div>
+
+      {/* Workspace mock */}
+      <div style={{ display: "flex", height: 280 }}>
+        {/* Left panel mini */}
+        <div
+          style={{
+            width: 110,
+            borderRight: "1px solid #27272A",
+            padding: "8px 0",
+            fontSize: 10,
+          }}
+        >
+          <div style={{ padding: "4px 8px", fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Layers
+          </div>
+          {[
+            { label: "Pages",       color: "#3B82F6", on: true },
+            { label: "Components",  color: "#8B5CF6", on: true },
+            { label: "Hooks",       color: "#F59E0B", on: true },
+            { label: "Services",    color: "#10B981", on: true },
+            { label: "Utils",       color: "#6B7280", on: true },
+          ].map((l) => (
+            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: l.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 9 }}>{l.label}</span>
+              <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: l.on ? l.color : "#27272A" }} />
+            </div>
+          ))}
+          <div style={{ height: 1, background: "#27272A", margin: "6px 0" }} />
+          <div style={{ padding: "4px 8px", fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Filters
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
+            <span style={{ fontSize: 9 }}>Dead Code</span>
+            <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: "#F59E0B" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
+            <span style={{ fontSize: 9 }}>Cycles</span>
+            <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: "#3B82F6" }} />
+          </div>
+        </div>
+
+        {/* Canvas */}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+          {/* Dot grid */}
+          <svg
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.3 }}
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="0.8" fill="#27272A" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dots)" />
+          </svg>
+
+          {/* Edges */}
+          <svg
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
+          >
+            {edges.map((e) => {
+              const from = getNode(e.from);
+              const to = getNode(e.to);
+              if (!from || !to) return null;
+              const isHighlighted =
+                (hoveredNode === e.from || hoveredNode === e.to) ||
+                (selectedNode === e.from || selectedNode === e.to);
+              return (
+                <line
+                  key={`${e.from}-${e.to}`}
+                  x1={from.x + 55}
+                  y1={from.y + 14}
+                  x2={to.x}
+                  y2={to.y + 14}
+                  stroke={isHighlighted ? "#3B82F6" : "#27272A"}
+                  strokeWidth={isHighlighted ? 1.5 : 1}
+                  strokeOpacity={isHighlighted ? 1 : 0.7}
+                />
+              );
+            })}
+          </svg>
+
+          {/* Nodes */}
+          {nodes.map((n) => {
+            const isSelected = selectedNode === n.id;
+            const isHovered = hoveredNode === n.id;
+            return (
+              <div
+                key={n.id}
+                onMouseEnter={() => setHoveredNode(n.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+                onClick={() => setSelectedNode(isSelected ? null : n.id)}
+                style={{
+                  position: "absolute",
+                  left: n.x,
+                  top: n.y + 16,
+                  width: 110,
+                  background: isSelected ? "#18181B" : "#111113",
+                  border: isSelected
+                    ? "1.5px solid #3B82F6"
+                    : (n as any).dead
+                    ? "1px solid #F59E0B"
+                    : (n as any).cycle
+                    ? "1px solid #EF4444"
+                    : "1px solid #27272A",
+                  borderRadius: 5,
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  boxShadow: isSelected ? "0 0 0 2px rgba(59,130,246,0.2)" : "none",
+                  transition: "all 100ms ease",
+                }}
+              >
+                <div style={{ height: 2, background: n.color }} />
+                <div style={{ padding: "5px 7px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: n.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 9, fontWeight: 600, color: "#FAFAFA", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {n.label}
+                    </span>
+                    {(n as any).dead && (
+                      <span style={{ fontSize: 8, color: "#F59E0B", marginLeft: "auto", background: "rgba(245,158,11,0.12)", padding: "0 3px", borderRadius: 2 }}>dead</span>
+                    )}
+                    {(n as any).cycle && (
+                      <span style={{ fontSize: 8, color: "#EF4444", marginLeft: "auto", background: "rgba(239,68,68,0.12)", padding: "0 3px", borderRadius: 2 }}>cycle</span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, borderTop: "1px solid #1C1C1F", paddingTop: 4, marginTop: 2 }}>
+                    <span style={{ fontSize: 8, background: "#18181B", padding: "1px 4px", borderRadius: 2, fontWeight: 600, color: n.color }}>
+                      {n.type.toUpperCase().slice(0, 4)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Minimap */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              width: 72,
+              height: 44,
+              background: "#111113",
+              border: "1px solid #27272A",
+              borderRadius: 4,
+              overflow: "hidden",
+              opacity: 0.8,
+            }}
+          >
+            {nodes.map((n) => (
+              <div
+                key={n.id}
+                style={{
+                  position: "absolute",
+                  left: n.x / 10,
+                  top: n.y / 8,
+                  width: 12,
+                  height: 6,
+                  background: n.color,
+                  opacity: 0.5,
+                  borderRadius: 1,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Zoom controls */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 8,
+              left: 8,
+              background: "#111113",
+              border: "1px solid #27272A",
+              borderRadius: 4,
+              overflow: "hidden",
+            }}
+          >
+            {["+", "−", "⊡"].map((sym) => (
+              <div
+                key={sym}
+                style={{
+                  width: 22,
+                  height: 20,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  color: "#52525B",
+                  borderBottom: sym !== "⊡" ? "1px solid #27272A" : "none",
+                }}
+              >
+                {sym}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right panel mini */}
+        <div style={{ width: 130, borderLeft: "1px solid #27272A", padding: "8px 0", overflow: "hidden" }}>
+          {selectedNode ? (
+            <>
+              <div style={{ padding: "4px 10px 8px", borderBottom: "1px solid #27272A" }}>
+                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Inspector</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#FAFAFA", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {nodes.find((n) => n.id === selectedNode)?.label}
+                </div>
+                <div style={{ fontSize: 9, color: "#52525B", marginTop: 1 }}>Page Component</div>
+              </div>
+              <div style={{ padding: "6px 10px", borderBottom: "1px solid #27272A" }}>
+                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Metrics</div>
+                {[["Lines", "985"], ["Imports", "7"], ["Complexity", "9/10"]].map(([k, v]) => (
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#A1A1AA", marginBottom: 2 }}>
+                    <span>{k}</span>
+                    <span style={{ fontWeight: 600, color: k === "Complexity" ? "#F59E0B" : "#FAFAFA" }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: "6px 10px" }}>
+                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>AI Insights</div>
+                <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 3, padding: "4px 6px", fontSize: 9, color: "#FDE68A", lineHeight: 1.4 }}>
+                  ⚠ High complexity detected. Consider splitting.
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ padding: "8px 10px", color: "#52525B", fontSize: 10, textAlign: "center" }}>
+              Click a node to inspect
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Status bar mock */}
+      <div
+        style={{
+          background: "#111113",
+          borderTop: "1px solid #27272A",
+          padding: "5px 12px",
+          display: "flex",
+          gap: 16,
+          fontSize: 9,
+          color: "#52525B",
+        }}
+      >
+        <span>Nodes: <span style={{ color: "#FAFAFA" }}>30</span></span>
+        <span>Edges: <span style={{ color: "#FAFAFA" }}>45</span></span>
+        <span>Zoom: <span style={{ color: "#FAFAFA" }}>82%</span></span>
+        <span>Selected: <span style={{ color: "#3B82F6" }}>1</span></span>
+        <span style={{ marginLeft: "auto" }}>LPU CodeViz — Visual Workspace</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Landing Page ─────────────────────────────────────────────────────────────
+
+function LandingPageContent() {
+  const searchParams = useSearchParams();
+  const schoolParam = searchParams.get("school");
+  const schoolConfig = getSchoolConfig(schoolParam);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      {/* ── Navigation ── */}
+      <nav className="landing-nav">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: `linear-gradient(135deg, ${activeColor}, #9A4BFF)`,
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              background: "var(--primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 16,
-              fontWeight: 800,
-              color: "white",
-              boxShadow: `0 0 16px ${activeColor}40`,
+              flexShrink: 0,
             }}
           >
-            ◈
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
+              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" opacity="0.3" />
+            </svg>
           </div>
+          <span style={{ fontWeight: 700, fontSize: 16, color: "var(--text)", letterSpacing: "-0.3px" }}>
+            CodeViz
+          </span>
           <span
             style={{
-              fontWeight: 900,
-              fontSize: 20,
-              color: "var(--text)",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              letterSpacing: "-0.5px"
+              fontSize: 10,
+              background: "var(--primary-dim)",
+              color: "var(--primary)",
+              padding: "2px 7px",
+              borderRadius: 4,
+              border: "1px solid var(--primary-border)",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
             }}
           >
-            CodeCanvas
-            <span style={{ 
-              fontSize: 9, 
-              background: `${activeColor}15`, 
-              color: activeColor, 
-              padding: "2px 8px", 
-              borderRadius: 6, 
-              border: `1px solid ${activeColor}30`,
-              fontWeight: 800,
-              letterSpacing: "0.8px",
-              textTransform: "uppercase"
-            }}>{schoolConfig.shortName}</span>
+            LPU
           </span>
         </div>
 
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          {schoolConfig.subjects.slice(0, 3).map((s) => (
-            <span
-              key={s.code}
-              className="badge"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid var(--border)",
-                color: "var(--text-muted)",
-                fontSize: "10px",
-                display: "inline-flex"
-              }}
-            >
-              {s.code}
-            </span>
-          ))}
-          <Link href={`/visualize?school=${schoolConfig.id}`} className="btn btn-primary" style={{ fontSize: 13, background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})`, boxShadow: `0 4px 14px ${activeColor}30` }}>
-            Launch Visualizer →
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <Link
+            href={`/visualize?school=${schoolConfig.id}`}
+            className="btn btn-ghost"
+            style={{ fontSize: 13 }}
+          >
+            Algorithm Tracer
+          </Link>
+          <Link
+            href="/workspace"
+            className="btn btn-primary"
+            style={{ fontSize: 13 }}
+            id="nav-open-workspace"
+          >
+            Open Workspace
           </Link>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section
-        style={{
-          position: "relative",
-          minHeight: "95vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "80px 24px 80px",
-          overflow: "hidden",
-        }}
-      >
-        {/* Layered vibrant theme gradient orbs */}
+      <section className="landing-hero">
+        {/* Subtle background gradient — non-flashy */}
         <div
           style={{
             position: "absolute",
-            top: "5%",
-            left: "10%",
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${activeColor}18 0%, transparent 70%)`,
-            filter: "blur(60px)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "10%",
-            right: "5%",
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${schoolConfig.primaryGlow}15 0%, transparent 70%)`,
-            filter: "blur(50px)",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,130,246,0.06) 0%, transparent 60%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* Floating code snippets */}
-        {mounted &&
-          FLOATING_SNIPPETS.map((s, i) => (
-            <div
-              key={i}
-              className="animate-float"
-              style={{
-                position: "absolute",
-                left: s.x,
-                top: s.y,
-                background: "rgba(17, 22, 37, 0.4)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                padding: "8px 16px",
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                color: activeColor,
-                opacity: 0.5,
-                pointerEvents: "none",
-                whiteSpace: "nowrap",
-                boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
-              }}
-            >
-              {s.code}
-            </div>
-          ))}
-
-        <div style={{
-          width: "100%",
-          maxWidth: "1240px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "48px",
-          alignItems: "center",
-          zIndex: 10,
-          position: "relative"
-        }} className="hero-grid">
-          
-          {/* Left Column: Copy & Actions */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-            {/* Institution Badge */}
-            <div
-              className="badge animate-fade-in"
-              style={{
-                marginBottom: 20,
-                fontSize: 11,
-                padding: "6px 16px",
-                background: `${activeColor}12`,
-                color: activeColor,
-                border: `1px solid ${activeColor}30`,
-                borderRadius: "999px",
-                fontWeight: 750,
-                letterSpacing: "0.5px"
-              }}
-            >
-              🎓 Customized Portal for LPU {schoolConfig.name}
-            </div>
-
-            {/* Dynamic Headline */}
-            <h1
-              className="animate-fade-up"
-              style={{
-                fontSize: "clamp(34px, 4vw, 58px)",
-                fontWeight: 800,
-                textAlign: "left",
-                lineHeight: 1.15,
-                marginBottom: 20,
-                letterSpacing: "-1.5px",
-                background: "linear-gradient(135deg, #FFFFFF 0%, #A0A0A0 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text"
-              }}
-            >
-              {schoolConfig.heroTitlePrefix}
-              <span style={{
-                background: `linear-gradient(135deg, ${activeColor}, #00F2FE)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text"
-              }}>{schoolConfig.heroTitleHighlight}</span>
-            </h1>
-
-            {/* Sub headline */}
-            <p
-              className="animate-fade-up"
-              style={{
-                fontSize: "clamp(15px, 1.8vw, 17px)",
-                color: "rgba(255, 255, 255, 0.7)",
-                textAlign: "left",
-                maxWidth: 600,
-                marginBottom: 32,
-                lineHeight: 1.65,
-              }}
-            >
-              {schoolConfig.heroSub}
-            </p>
-
-            {/* CTA buttons */}
-            <div
-              className="animate-fade-up"
-              style={{
-                display: "flex",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 40
-              }}
-            >
-              <Link
-                href={`/visualize?school=${schoolConfig.id}`}
-                className="btn btn-primary"
-                style={{ 
-                  padding: "14px 32px", 
-                  fontSize: 15, 
-                  borderRadius: "14px", 
-                  background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})`,
-                  color: "#000000",
-                  fontWeight: 700,
-                  boxShadow: `0 8px 24px ${activeColor}40`,
-                }}
-              >
-                Start Visualizing Free
-              </Link>
-              <a
-                href="#how-it-works"
-                className="btn"
-                style={{ 
-                  padding: "14px 32px", 
-                  fontSize: 15, 
-                  borderRadius: "14px",
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#FFFFFF",
-                  fontWeight: 600
-                }}
-              >
-                See How It Works
-              </a>
-            </div>
-
-            {/* Syllabus / Subject list strip */}
-            <div
-              className="animate-fade-up"
-              style={{
-                display: "flex",
-                gap: 10,
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-              }}
-            >
-              {schoolConfig.subjects.map((s) => (
-                <div
-                  key={s.code}
-                  style={{
-                    background: "rgba(17, 22, 37, 0.4)",
-                    backdropFilter: "blur(8px)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 12,
-                    color: "var(--text-secondary)",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                  }}
-                >
-                  <span style={{ color: activeColor, fontWeight: 800, marginRight: 4 }}>{s.code}</span>{" "}
-                  {s.name}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Column: Layered Premium Interactive Mini-Visualizer Viewport */}
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 760, width: "100%", textAlign: "center" }}>
+          {/* Badge */}
           <div
-            className="animate-fade-up"
             style={{
-              width: "100%",
-              position: "relative",
-              aspectRatio: "16/11",
-              zIndex: 5
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 12px",
+              borderRadius: "var(--radius-full)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              fontSize: 12,
+              color: "var(--muted)",
+              fontWeight: 500,
+              marginBottom: 24,
             }}
           >
-            {/* The main browser-frame mock */}
-            <div
-              className="glass"
+            <span
               style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: "16px",
-                overflow: "hidden",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 30px ${activeColor}10`,
-                display: "flex",
-                flexDirection: "column",
-                background: "#03050a"
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "var(--success)",
+                display: "inline-block",
               }}
-            >
-              {/* Browser Header Bar */}
-              <div
-                style={{
-                  height: 38,
-                  background: "rgba(255, 255, 255, 0.02)",
-                  borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "0 16px",
-                  justifyContent: "space-between"
-                }}
-              >
-                {/* Dots */}
-                <div style={{ display: "flex", gap: 6 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-                </div>
-                {/* Simulated URL input */}
-                <div
-                  style={{
-                    background: "rgba(0, 0, 0, 0.3)",
-                    border: "1px solid rgba(255, 255, 255, 0.04)",
-                    borderRadius: "6px",
-                    padding: "2px 24px",
-                    fontSize: "11px",
-                    color: "rgba(255, 255, 255, 0.4)",
-                    fontFamily: "var(--font-mono)"
-                  }}
-                >
-                  codecanvas.edu/visualizer/bubble_sort
-                </div>
-                <div style={{ width: 40 }} />
-              </div>
-
-              {/* Grid content split: editor on left, visualization bars on right */}
-              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", overflow: "hidden" }}>
-                
-                {/* Editor Column */}
-                <div style={{ borderRight: "1px solid rgba(255, 255, 255, 0.05)", display: "flex", flexDirection: "column", background: "#010204" }}>
-                  <div style={{ padding: "8px 12px", background: "rgba(255, 255, 255, 0.01)", borderBottom: "1px solid rgba(255, 255, 255, 0.03)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-                    <span>Editor Preview</span>
-                    <span style={{ color: activeColor }}>Python</span>
-                  </div>
-                  
-                  {/* Code Lines */}
-                  <div style={{ flex: 1, padding: 14, fontFamily: "var(--font-mono)", fontSize: 11, lineHeight: "1.7", overflowY: "auto" }}>
-                    {[
-                      "def bubble_sort(arr):",
-                      "  for i in range(len(arr)):",
-                      "    for j in range(len(arr)-i-1):",
-                      "      if arr[j] > arr[j+1]:",
-                      "        arr[j], arr[j+1] = arr[j+1], arr[j]"
-                    ].map((line, idx) => {
-                      const isCurrent = idx + 1 === currentStep.activeLine;
-                      return (
-                        <div
-                          key={idx}
-                          style={{
-                            display: "flex",
-                            background: isCurrent ? `${activeColor}15` : "transparent",
-                            borderLeft: isCurrent ? `3px solid ${activeColor}` : "3px solid transparent",
-                            paddingLeft: 6,
-                            marginLeft: -6,
-                            borderRadius: "0 4px 4px 0",
-                            transition: "all 0.2s ease"
-                          }}
-                        >
-                          <span style={{ color: "rgba(255, 255, 255, 0.15)", width: 18, userSelect: "none" }}>{idx + 1}</span>
-                          <span style={{ color: isCurrent ? "#FFFFFF" : "rgba(255, 255, 255, 0.65)" }}>{line}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Visualizer Column */}
-                <div style={{ display: "flex", flexDirection: "column", background: "#04060c", padding: 12 }}>
-                  <div style={{ padding: "0 0 8px 0", borderBottom: "1px solid rgba(255, 255, 255, 0.03)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-                    <span>Visualizer Output</span>
-                    <span style={{ color: "#FFF" }}>Step {stepIndex} / {BUBBLE_SORT_STEPS.length - 1}</span>
-                  </div>
-
-                  {/* Dynamic Render Bars */}
-                  <div style={{ flex: 1, display: "flex", alignItems: "flex-end", justifyContent: "space-around", padding: "24px 12px 12px 12px", height: "140px" }}>
-                    {currentStep.array.map((val, index) => {
-                      const isCompared = (currentStep.compared as number[]).includes(index);
-                      const isSwapped = (currentStep.swapped as number[]).includes(index);
-                      const isSorted = (currentStep.sorted as number[]).includes(index);
-                      
-                      let barColor = "rgba(255, 255, 255, 0.12)";
-                      let shadow = "none";
-                      
-                      if (isCompared) {
-                        barColor = "#3B82F6"; // Blue comparing
-                        shadow = "0 0 14px rgba(59, 130, 246, 0.4)";
-                      } else if (isSwapped) {
-                        barColor = "#EF4444"; // Red swap
-                        shadow = "0 0 14px rgba(239, 68, 68, 0.4)";
-                      } else if (isSorted) {
-                        barColor = activeColor; // Green sorted
-                        shadow = `0 0 14px ${activeColor}40`;
-                      }
-
-                      return (
-                        <div
-                          key={index}
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            width: "14%",
-                            gap: 8,
-                            transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1)"
-                          }}
-                        >
-                          <span style={{ fontSize: 10, fontWeight: 800, color: (isCompared || isSwapped || isSorted) ? "#FFFFFF" : "rgba(255,255,255,0.45)" }}>{val}</span>
-                          <div
-                            style={{
-                              width: "100%",
-                              height: `${val * 16}px`,
-                              background: barColor,
-                              boxShadow: shadow,
-                              borderRadius: "4px 4px 0 0",
-                              transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1)"
-                            }}
-                          />
-                          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>j={index}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Visualizer Mini Controls */}
-                  <div
-                    style={{
-                      borderTop: "1px solid rgba(255, 255, 255, 0.05)",
-                      paddingTop: 10,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 6
-                    }}
-                  >
-                    <button
-                      onClick={handleStepBack}
-                      className="btn"
-                      style={{
-                        padding: "6px 12px",
-                        fontSize: 11,
-                        background: "rgba(255, 255, 255, 0.04)",
-                        color: "#fff",
-                        border: "1px solid rgba(255, 255, 255, 0.08)"
-                      }}
-                    >
-                      Back
-                    </button>
-                    
-                    <button
-                      onClick={() => setIsAutoPlay(!isAutoPlay)}
-                      className="btn"
-                      style={{
-                        padding: "6px 14px",
-                        fontSize: 11,
-                        background: isAutoPlay ? "#ef4444" : activeColor,
-                        color: isAutoPlay ? "#FFF" : "#000",
-                        fontWeight: 700
-                      }}
-                    >
-                      {isAutoPlay ? "⏸ Pause" : "▶ Autoplay"}
-                    </button>
-
-                    <button
-                      onClick={handleStepForward}
-                      className="btn btn-ghost"
-                      style={{
-                        padding: "6px 12px",
-                        fontSize: 11,
-                        color: "#fff",
-                      }}
-                    >
-                      Step
-                    </button>
-
-                    <button
-                      onClick={handleReset}
-                      className="btn-icon"
-                      style={{ padding: "4px 8px", fontSize: 11 }}
-                      title="Reset trace"
-                    >
-                      ↺
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* OVERLAY WIDGET 1: Floating Telemetry Card (Bottom-Left) */}
-            <div
-              className="float-card animate-float"
-              style={{
-                position: "absolute",
-                bottom: "-16px",
-                left: "-28px",
-                background: "rgba(8, 12, 24, 0.85)",
-                backdropFilter: "blur(20px)",
-                border: `1.5px solid rgba(255, 255, 255, 0.08)`,
-                borderRadius: "14px",
-                padding: "12px 18px",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-                zIndex: 10,
-                transition: "all 0.3s ease"
-              }}
-            >
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  background: `${activeColor}15`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: activeColor,
-                  fontWeight: 800
-                }}
-              >
-                ⇄
-              </div>
-              <div>
-                <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>TELEMETRY</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
-                  Swaps: <span style={{ color: "#EF4444" }}>{currentStep.swapped.length > 0 ? "1" : "0"}</span> &bull; Compares: <span style={{ color: "#3B82F6" }}>{currentStep.compared.length > 0 ? "1" : "0"}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* OVERLAY WIDGET 2: AI Tutor chat bubble (Top-Right) */}
-            <div
-              className="animate-float"
-              style={{
-                position: "absolute",
-                top: "-24px",
-                right: "-24px",
-                background: "rgba(11, 19, 32, 0.9)",
-                backdropFilter: "blur(20px)",
-                border: `1px solid ${activeColor}40`,
-                boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 15px ${activeColor}15`,
-                borderRadius: "16px",
-                padding: "12px 16px",
-                maxWidth: "240px",
-                zIndex: 10,
-                animationDelay: "0.8s"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                <span style={{ fontSize: 10, background: `${activeColor}20`, color: activeColor, padding: "2px 6px", borderRadius: 4, fontWeight: 800 }}>AI TUTOR</span>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeColor, display: "inline-block" }} className="animate-pulse" />
-              </div>
-              <p style={{ fontSize: 11, color: "rgba(255, 255, 255, 0.85)", lineHeight: 1.5, margin: 0 }}>
-                "{currentStep.explanation}"
-              </p>
-            </div>
-
+            />
+            Built for {schoolConfig.name} · LPU
           </div>
 
-        </div>
-      </section>
+          {/* Headline */}
+          <h1
+            style={{
+              fontSize: "clamp(32px, 5vw, 60px)",
+              fontWeight: 800,
+              letterSpacing: "-2px",
+              lineHeight: 1.1,
+              color: "var(--text)",
+              marginBottom: 20,
+            }}
+          >
+            Explore Your Code
+            <br />
+            <span style={{ color: "var(--primary)" }}>Architecture</span>
+          </h1>
 
-      {/* ── Section: Interactive How it Works Stepper ── */}
-      <section
-        id="how-it-works"
-        style={{
-          padding: "100px 24px",
-          maxWidth: 1200,
-          margin: "0 auto",
-          borderTop: "1px solid var(--border)"
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 54 }}>
-          <div className="badge" style={{ marginBottom: 16, fontSize: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
-            The Workflow
-          </div>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", marginBottom: 16, fontWeight: 850 }}>
-            Four steps to <span style={{ color: activeColor }}>comprehending</span> logic
-          </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
-            CodeCanvas automates code tracing and displays algorithms dynamically.
+          {/* Sub */}
+          <p
+            style={{
+              fontSize: "clamp(15px, 2vw, 17px)",
+              color: "var(--muted)",
+              maxWidth: 540,
+              margin: "0 auto 36px",
+              lineHeight: 1.65,
+            }}
+          >
+            A professional visual workspace for code exploration. Trace algorithms,
+            map dependencies, and understand structure — all in one place.
           </p>
-        </div>
 
-        {/* Stepper Header Selectors */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            maxWidth: 800,
-            margin: "0 auto 48px",
-            position: "relative"
-          }}
-        >
-          {/* Connector Line */}
+          {/* CTAs */}
           <div
             style={{
-              position: "absolute",
-              top: "20px",
-              left: 40,
-              right: 40,
-              height: 2,
-              background: "rgba(255, 255, 255, 0.08)",
-              zIndex: 1
+              display: "flex",
+              gap: 10,
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: 56,
             }}
-          />
-          {/* Active Connector Progress */}
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              left: 40,
-              width: `${activeStep * 33.3}%`,
-              height: 2,
-              background: activeColor,
-              zIndex: 2,
-              transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
-            }}
-          />
+          >
+            <Link
+              href="/workspace"
+              className="btn btn-primary"
+              style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600 }}
+              id="hero-cta-workspace"
+            >
+              Open Workspace →
+            </Link>
+            <Link
+              href={`/visualize?school=${schoolConfig.id}`}
+              className="btn btn-ghost"
+              style={{ padding: "11px 28px", fontSize: 14 }}
+              id="hero-cta-tracer"
+            >
+              Algorithm Tracer
+            </Link>
+          </div>
 
-          {[
-            { num: 1, label: "Input Code" },
-            { num: 2, label: "Trace Generation" },
-            { num: 3, label: "Simulation" },
-            { num: 4, label: "AI Feedback" }
-          ].map((step, idx) => {
-            const isCompleted = idx < activeStep;
-            const isActive = idx === activeStep;
-            return (
-              <button
-                key={idx}
-                onClick={() => setActiveStep(idx)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  zIndex: 3,
-                  cursor: "pointer",
-                  width: 90
-                }}
-              >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 800,
-                    fontSize: 14,
-                    background: isCompleted || isActive ? (isActive ? "#FFFFFF" : activeColor) : "#111524",
-                    color: isActive ? "#000" : (isCompleted ? "#000" : "rgba(255,255,255,0.4)"),
-                    border: `1.5px solid ${isCompleted || isActive ? activeColor : "rgba(255,255,255,0.08)"}`,
-                    boxShadow: isActive ? `0 0 16px ${activeColor}40` : "none",
-                    transition: "all 0.3s ease"
-                  }}
-                >
-                  {step.num}
-                </div>
-                <span
-                  style={{
-                    marginTop: 8,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: isActive ? activeColor : (isCompleted ? "#FFF" : "rgba(255,255,255,0.4)"),
-                    transition: "all 0.3s ease",
-                    whiteSpace: "nowrap"
-                  }}
-                >
-                  {step.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Stepper Content Slides */}
-        <div
-          className="glass"
-          style={{
-            maxWidth: 800,
-            margin: "0 auto",
-            borderRadius: "16px",
-            padding: 32,
-            border: "1px solid rgba(255,255,255,0.05)",
-            boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
-            minHeight: "180px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center"
-          }}
-        >
-          {activeStep === 0 && (
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Step 1: Write or Paste Your Code</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, margin: 0 }}>
-                Write clean algorithms directly inside the Monaco-powered editor or select built-in templates covering array sorting, recursive Fibonacci sequences, dynamic queues, and relational SQL statements linked directly to your school syllabus.
-              </p>
-            </div>
-          )}
-          {activeStep === 1 && (
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Step 2: Automated AST Trace Parsing</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, margin: 0 }}>
-                Our parser breaks down code blocks, tracing pointer links, dynamic array structures, and recursive loops. It constructs an execution stack sequence that tracks the changes of local scope variables across every loop iteration.
-              </p>
-            </div>
-          )}
-          {activeStep === 2 && (
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Step 3: Play through Interactive Visual Animations</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, margin: 0 }}>
-                Step forward or autoplay through transitions. Variable watchlists and console logs update simultaneously as visual elements (such as node links, swap arcs, stack towers, and binary grids) respond in real-time.
-              </p>
-            </div>
-          )}
-          {activeStep === 3 && (
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Step 4: AI Tutor Explanations & Mock Exams</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, margin: 0 }}>
-                Stuck on a specific execution loop? Query our line-level AI assistant which evaluates the code context to answer complexity, syntax, and logic queries instantly in plain English.
-              </p>
-            </div>
-          )}
+          {/* Product preview */}
+          <MiniGraphPreview />
         </div>
       </section>
 
-      {/* ── Features Custom Visualizers Grid ── */}
+      {/* ── How it Works ── */}
       <section
-        id="features"
         style={{
-          padding: "80px 24px 100px",
-          maxWidth: 1200,
+          padding: "80px 24px",
+          maxWidth: 900,
           margin: "0 auto",
+          borderTop: "1px solid var(--border)",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <div className="badge" style={{ marginBottom: 16, fontSize: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
-            School Specific Visualizers
-          </div>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 16, fontWeight: 850 }}>
-            Interactive dynamic algorithms, <span style={{ color: activeColor }}>animated</span>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
+            How it works
           </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: 18, maxWidth: 580, margin: "0 auto" }}>
-            Each syllabus topic is fully trace-integrated with a custom visualizer canvas.
+          <p style={{ fontSize: 15, color: "var(--muted)" }}>
+            From zero to understanding in three steps.
           </p>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: 24,
           }}
         >
-          {schoolConfig.features.map((f, i) => (
+          {HOW_IT_WORKS.map((step) => (
             <div
-              key={i}
-              className="card glass"
+              key={step.step}
               style={{
-                padding: 32,
-                position: "relative",
-                overflow: "hidden",
-                border: "1px solid rgba(255, 255, 255, 0.05)",
-                borderRadius: "16px"
+                padding: "24px",
+                background: "var(--surface-1)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
               }}
             >
               <div
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 2,
-                  background: `linear-gradient(90deg, ${activeColor}, transparent)`,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "var(--primary)",
+                  fontFamily: "var(--font-mono)",
+                  marginBottom: 12,
+                  letterSpacing: "0.05em",
                 }}
-              />
+              >
+                {step.step}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>
+                {step.title}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>{step.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section
+        id="features"
+        style={{
+          padding: "80px 24px",
+          maxWidth: 1100,
+          margin: "0 auto",
+          borderTop: "1px solid var(--border)",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
+            Everything you need to understand code
+          </h2>
+          <p style={{ fontSize: 15, color: "var(--muted)" }}>
+            Purpose-built for {schoolConfig.name} students.
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: 20,
+          }}
+        >
+          {WORKSPACE_FEATURES.map((f, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "24px",
+                background: "var(--surface-1)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                transition: "border-color 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--primary)")}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
+            >
               <div
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 12,
-                  background: `${activeColor}15`,
-                  border: `1px solid ${activeColor}30`,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  background: "var(--primary-dim)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 22,
-                  marginBottom: 20,
-                  color: activeColor,
+                  color: "var(--primary)",
+                  marginBottom: 16,
                 }}
               >
                 {f.icon}
               </div>
-              <h3 style={{ fontSize: 19, fontWeight: 750, marginBottom: 10 }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "var(--text)" }}>
+                {f.title}
+              </div>
+              <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
                 {f.desc}
               </p>
-              <span className="badge" style={{ fontSize: 10, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "var(--muted)",
+                  background: "var(--surface-2)",
+                  padding: "2px 8px",
+                  borderRadius: "var(--radius-full)",
+                  border: "1px solid var(--border)",
+                }}
+              >
                 {f.badge}
               </span>
             </div>
@@ -1105,123 +721,185 @@ function LandingPageContent() {
         </div>
       </section>
 
-      {/* ── Pricing / Payment Portal Section ── */}
+      {/* ── CTA Banner ── */}
+      <section
+        style={{
+          padding: "80px 24px",
+          borderTop: "1px solid var(--border)",
+          textAlign: "center",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "clamp(24px, 3.5vw, 40px)",
+            fontWeight: 700,
+            marginBottom: 16,
+            color: "var(--text)",
+          }}
+        >
+          Ready to explore your code?
+        </h2>
+        <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>
+          Open the workspace and understand your codebase in minutes.
+        </p>
+        <Link
+          href="/workspace"
+          className="btn btn-primary"
+          style={{ padding: "12px 32px", fontSize: 15, fontWeight: 600 }}
+          id="cta-bottom-workspace"
+        >
+          Open Workspace →
+        </Link>
+      </section>
+
+      {/* ── Pricing ── */}
       <section
         id="pricing"
         style={{
-          padding: "100px 24px",
-          background: "rgba(11, 14, 23, 0.5)",
+          padding: "80px 24px",
           borderTop: "1px solid var(--border)",
-          borderBottom: "1px solid var(--border)",
+          maxWidth: 900,
+          margin: "0 auto",
         }}
       >
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 64 }}>
-            <div className="badge" style={{ marginBottom: 16, fontSize: 12, background: `${activeColor}15`, color: activeColor, border: `1px solid ${activeColor}30` }}>
-              Flexible Student Plans
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
+            Simple pricing
+          </h2>
+          <p style={{ fontSize: 15, color: "var(--muted)" }}>
+            Start free. Upgrade when you need more.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+          {/* Free */}
+          <div
+            style={{
+              padding: "28px 24px",
+              background: "var(--surface-1)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Free</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Get started</div>
+            <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
+              ₹0 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
             </div>
-            <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 16, fontWeight: 850 }}>
-              Upgrade to premium learning
-            </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: 17 }}>
-              Get unlimited execution steps, live AI query assistant, and syllabus-linked mock exams.
-            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
+              {["5 code traces / day", "Workspace access", "Core visualizers"].map((f) => (
+                <li key={f} style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "var(--success)" }}>✓</span> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href={`/visualize?school=${schoolConfig.id}`} className="btn btn-ghost" style={{ textAlign: "center" }}>
+              Get Started
+            </Link>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32 }}>
-            {/* Free Plan */}
-            <div className="glass" style={{ padding: "40px 32px", borderRadius: "20px", display: "flex", flexDirection: "column", border: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: "20px", fontWeight: 750, marginBottom: 8 }}>Free Trial</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: 24 }}>Perfect for getting started</p>
-              <div style={{ fontSize: "36px", fontWeight: 900, marginBottom: 32 }}>₹0 <span style={{ fontSize: "14px", color: "var(--text-muted)" }}>/ semester</span></div>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px", color: "var(--text-secondary)" }}>
-                <li>✓ 5 code traces per day</li>
-                <li>✓ Standard speed visualization</li>
-                <li>✓ Access to core visualizers</li>
-                <li style={{ opacity: 0.5 }}>✗ Live AI Tutor query support</li>
-                <li style={{ opacity: 0.5 }}>✗ Unlimited runtime history</li>
-              </ul>
-              <Link href={`/visualize?school=${schoolConfig.id}`} className="btn btn-ghost" style={{ marginTop: "auto", width: "100%", padding: "12px" }}>
-                Use Free Version
-              </Link>
+          {/* Pro */}
+          <div
+            style={{
+              padding: "28px 24px",
+              background: "var(--surface-1)",
+              border: "1.5px solid var(--primary)",
+              borderRadius: 10,
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "var(--primary)",
+                color: "white",
+                fontSize: 9,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "var(--radius-full)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Popular
             </div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Pro</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>For active students</div>
+            <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
+              ₹299 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
+            </div>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
+              {["Unlimited traces", "50 AI queries / day", "Variable watch-list", "Priority processing"].map((f) => (
+                <li key={f} style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "var(--success)" }}>✓</span> {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href={`/payment?plan=pro&school=${schoolConfig.id}`}
+              className="btn btn-primary"
+              style={{ textAlign: "center" }}
+              id="pricing-pro-cta"
+            >
+              Upgrade to Pro
+            </Link>
+          </div>
 
-            {/* Pro Plan */}
-            <div className="glass" style={{ padding: "40px 32px", borderRadius: "20px", display: "flex", flexDirection: "column", border: `1px solid ${activeColor}50`, boxShadow: `0 0 32px ${activeColor}15`, position: "relative" }}>
-              <div style={{ position: "absolute", top: "16px", right: "24px", background: activeColor, color: "#060913", fontSize: "10px", fontWeight: 800, padding: "4px 10px", borderRadius: "10px", textTransform: "uppercase" }}>Popular</div>
-              <h3 style={{ fontSize: "20px", fontWeight: 750, marginBottom: 8 }}>Pro Plan</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: 24 }}>For active students</p>
-              <div style={{ fontSize: "36px", fontWeight: 900, marginBottom: 32 }}>₹299 <span style={{ fontSize: "14px", color: "var(--text-muted)" }}>/ semester</span></div>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px", color: "var(--text-secondary)" }}>
-                <li>✓ Unlimited execution traces</li>
-                <li>✓ 50 AI Tutor credits / day</li>
-                <li>✓ Interactive step control buttons</li>
-                <li>✓ Variable watch-list panel</li>
-                <li>✓ Priority processing queue</li>
-              </ul>
-              <Link href={`/payment?plan=pro&school=${schoolConfig.id}`} className="btn btn-primary" style={{ marginTop: "auto", width: "100%", padding: "12px", background: `linear-gradient(135deg, ${activeColor}, ${schoolConfig.primaryLight})` }}>
-                Upgrade to Pro
-              </Link>
+          {/* Premium */}
+          <div
+            style={{
+              padding: "28px 24px",
+              background: "var(--surface-1)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Premium</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Complete portal</div>
+            <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
+              ₹499 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
             </div>
-
-            {/* Institutional Premium */}
-            <div className="glass" style={{ padding: "40px 32px", borderRadius: "20px", display: "flex", flexDirection: "column", border: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: "20px", fontWeight: 750, marginBottom: 8 }}>Premium Plus</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: 24 }}>The complete learning portal</p>
-              <div style={{ fontSize: "36px", fontWeight: 900, marginBottom: 32 }}>₹499 <span style={{ fontSize: "14px", color: "var(--text-muted)" }}>/ semester</span></div>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px", color: "var(--text-secondary)" }}>
-                <li>✓ Everything in Pro</li>
-                <li>✓ Unlimited AI Tutor responses</li>
-                <li>✓ Full dynamic history storage</li>
-                <li>✓ Code export & PDF reports</li>
-                <li>✓ Mock syllabus exams & solutions</li>
-              </ul>
-              <Link href={`/payment?plan=premium&school=${schoolConfig.id}`} className="btn btn-ghost" style={{ marginTop: "auto", width: "100%", padding: "12px" }}>
-                Get Premium Plus
-              </Link>
-            </div>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
+              {["Everything in Pro", "Unlimited AI queries", "Code export + PDF", "Mock syllabus exams"].map((f) => (
+                <li key={f} style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "var(--success)" }}>✓</span> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href={`/payment?plan=premium&school=${schoolConfig.id}`} className="btn btn-ghost" style={{ textAlign: "center" }}>
+              Get Premium
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ padding: "48px 24px", borderTop: "1px solid var(--border)", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
-        <p>© 2026 CodeCanvas LPU Portal. Built by Prathamesh Sawarkar.</p>
+      <footer
+        style={{
+          padding: "32px 24px",
+          borderTop: "1px solid var(--border)",
+          textAlign: "center",
+          color: "var(--muted)",
+          fontSize: 12,
+        }}
+      >
+        <p>© 2026 LPU CodeViz. Built by Prathamesh Sawarkar.</p>
       </footer>
-      <style jsx global>{`
-        @media (max-width: 968px) {
-          .hero-grid {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-            text-align: center !important;
-          }
-          .hero-grid > div:first-child {
-            align-items: center !important;
-          }
-          .hero-grid h1 {
-            text-align: center !important;
-          }
-          .hero-grid p {
-            text-align: center !important;
-            margin: 0 auto 32px !important;
-          }
-          .hero-grid > div:first-child > div:last-child {
-            justify-content: center !important;
-          }
-          .hero-grid > div:last-child {
-            transform: none !important;
-            max-width: 600px !important;
-            margin: 0 auto !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
 export default function LandingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#060913" }} />}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--bg)" }} />}>
       <LandingPageContent />
     </Suspense>
   );

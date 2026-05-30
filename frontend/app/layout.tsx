@@ -4,21 +4,31 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthListener } from "@/components/AuthListener";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "CodeCanvas — Interactive Code Visualization for Computer Science Students",
+  title: "LPU CodeViz — Visual Code Exploration",
   description:
-    "Understand code, don't just copy it. CodeCanvas visualizes C, C++, Python and SQL code step-by-step with animated data structures, plain-English explanations, and an AI tutor — built for CS students.",
+    "A professional visual code exploration platform for LPU students. Understand architecture, trace algorithms step-by-step, and explore dependencies with an interactive workspace.",
   keywords: [
     "code visualizer", "C programming", "data structures", "algorithm animation",
     "Lovely Professional University", "CSE101", "INT101", "CSE205", "INT301", "CSE202",
+    "code architecture", "dependency graph", "visual debugging",
   ],
-  authors: [{ name: "CodeCanvas" }],
+  authors: [{ name: "Prathamesh Sawarkar" }],
   openGraph: {
-    title: "CodeCanvas — Interactive Code Visualization",
-    description: "Visualize C, C++, Python, SQL code with animations + AI tutor explanations.",
+    title: "LPU CodeViz — Visual Code Exploration",
+    description: "Explore code architecture with an interactive visual workspace built for LPU students.",
     type: "website",
   },
 };
@@ -37,32 +47,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              document.addEventListener('contextmenu', event => event.preventDefault());
-              document.addEventListener('keydown', event => {
-                if (event.keyCode === 123) {
-                  event.preventDefault(); // Prevent F12
-                }
-                if (event.ctrlKey && event.shiftKey && event.keyCode === 73) {
-                  event.preventDefault(); // Prevent Ctrl+Shift+I
-                }
-                if (event.ctrlKey && event.shiftKey && event.keyCode === 74) {
-                  event.preventDefault(); // Prevent Ctrl+Shift+J
-                }
-                if (event.ctrlKey && event.keyCode === 85) {
-                  event.preventDefault(); // Prevent Ctrl+U
-                }
-                if (event.ctrlKey && event.keyCode === 67) {
-                  event.preventDefault(); // Prevent Ctrl+C
-                }
-              });
-              document.addEventListener('selectstart', event => event.preventDefault());
-              document.addEventListener('dragstart', event => event.preventDefault());
-            `,
-          }}
-        />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
@@ -73,4 +57,3 @@ export default function RootLayout({
     </html>
   );
 }
-

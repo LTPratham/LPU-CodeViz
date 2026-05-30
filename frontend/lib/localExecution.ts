@@ -34,7 +34,8 @@ function simulateBubbleSort(arr: number[]): TraceStep[] {
     action: "highlight",
     state: {
       type: "array",
-      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" }))
+      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" })),
+      output: []
     },
     description: `Initial array: [${workArr.join(", ")}]`,
     variables: { i: 0, j: 0, temp: 0 }
@@ -108,11 +109,16 @@ function simulateBubbleSort(arr: number[]): TraceStep[] {
   }
 
   selectedSteps.forEach((s) => {
+    const isLast = s.action === "sort";
     steps.push({
       stepNum: stepNum++,
       line: s.action === "swap" ? 134 : s.action === "compare" ? 132 : 130,
       action: s.action,
-      state: { type: "array", elements: s.elements },
+      state: { 
+        type: "array", 
+        elements: s.elements,
+        output: isLast ? [`Sorted array: ${workArr.join(" ")} `] : []
+      },
       description: s.desc,
       variables: s.vars
     });
@@ -134,7 +140,8 @@ function simulateSelectionSort(arr: number[]): TraceStep[] {
     action: "highlight",
     state: {
       type: "array",
-      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" }))
+      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" })),
+      output: [`Original: [${arr.join(", ")}]`]
     },
     description: `Initial array: [${workArr.join(", ")}]`,
     variables: { i: 0, j: 0, min_idx: 0 }
@@ -233,11 +240,18 @@ function simulateSelectionSort(arr: number[]): TraceStep[] {
   }
 
   selectedSteps.forEach((s) => {
+    const isLast = s.action === "sort";
     steps.push({
       stepNum: stepNum++,
       line: s.action === "swap" ? 494 : s.action === "compare" ? 492 : 489,
       action: s.action,
-      state: { type: "array", elements: s.elements },
+      state: { 
+        type: "array", 
+        elements: s.elements,
+        output: isLast 
+          ? [`Original: [${arr.join(", ")}]`, `Sorted: [${workArr.join(", ")}]`]
+          : [`Original: [${arr.join(", ")}]`]
+      },
       description: s.desc,
       variables: s.vars
     });
@@ -259,7 +273,8 @@ function simulateInsertionSort(arr: number[]): TraceStep[] {
     action: "highlight",
     state: {
       type: "array",
-      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" }))
+      elements: workArr.map((v, idx) => ({ value: v, index: idx, status: "default" })),
+      output: []
     },
     description: `Initial array: [${workArr.join(", ")}]`,
     variables: { i: 1, j: 0, key: 0 }
@@ -340,11 +355,16 @@ function simulateInsertionSort(arr: number[]): TraceStep[] {
   }
 
   selectedSteps.forEach((s) => {
+    const isLast = s.action === "sort";
     steps.push({
       stepNum: stepNum++,
       line: s.action === "swap" ? 134 : s.action === "compare" ? 132 : 130,
       action: s.action,
-      state: { type: "array", elements: s.elements },
+      state: { 
+        type: "array", 
+        elements: s.elements,
+        output: isLast ? [`Sorted array: ${workArr.join(" ")} `] : []
+      },
       description: s.desc,
       variables: s.vars
     });
@@ -365,7 +385,8 @@ function simulateLinearSearch(arr: number[], target: number): TraceStep[] {
     action: "highlight",
     state: {
       type: "array",
-      elements: arr.map((v, idx) => ({ value: v, index: idx, status: "default" }))
+      elements: arr.map((v, idx) => ({ value: v, index: idx, status: "default" })),
+      output: []
     },
     description: `Starting Linear Search for target = ${target} in array [${arr.join(", ")}]`,
     variables: { i: 0, target }
@@ -390,7 +411,11 @@ function simulateLinearSearch(arr: number[], target: number): TraceStep[] {
         stepNum: stepNum++,
         line: 181,
         action: "compare",
-        state: { type: "array", elements: foundElements },
+        state: { 
+          type: "array", 
+          elements: foundElements,
+          output: []
+        },
         description: `Comparing arr[${i}] (${arr[i]}) with target (${target}). Match found!`,
         variables: { i, target }
       });
@@ -400,7 +425,11 @@ function simulateLinearSearch(arr: number[], target: number): TraceStep[] {
         stepNum: stepNum++,
         line: 180,
         action: "compare",
-        state: { type: "array", elements: checkElements },
+        state: { 
+          type: "array", 
+          elements: checkElements,
+          output: []
+        },
         description: `Comparing arr[${i}] (${arr[i]}) with target (${target}). No match.`,
         variables: { i, target }
       });
@@ -414,7 +443,8 @@ function simulateLinearSearch(arr: number[], target: number): TraceStep[] {
       action: "return",
       state: {
         type: "array",
-        elements: arr.map((v, idx) => ({ value: v, index: idx, status: idx === foundIdx ? ("sorted" as const) : ("default" as const) }))
+        elements: arr.map((v, idx) => ({ value: v, index: idx, status: idx === foundIdx ? ("sorted" as const) : ("default" as const) })),
+        output: [`Found at index ${foundIdx}`]
       },
       description: `Target ${target} found at index ${foundIdx}. Returning ${foundIdx}.`,
       variables: { i: foundIdx, target, result: foundIdx }
@@ -426,7 +456,8 @@ function simulateLinearSearch(arr: number[], target: number): TraceStep[] {
       action: "return",
       state: {
         type: "array",
-        elements: arr.map((v, idx) => ({ value: v, index: idx, status: "default" as const }))
+        elements: arr.map((v, idx) => ({ value: v, index: idx, status: "default" as const })),
+        output: ["Not found"]
       },
       description: `Target ${target} not found in array. Returning -1.`,
       variables: { i: n, target, result: -1 }
@@ -556,7 +587,24 @@ function simulateBinarySearch(arr: number[], target: number): TraceStep[] {
     });
   }
 
-  return steps;
+  const lastStep = steps[steps.length - 1];
+  const resultVal = lastStep?.variables?.result;
+  const printMessage = resultVal !== -1 && resultVal !== undefined
+    ? `Found ${target} at index ${resultVal}`
+    : `${target} not found`;
+
+  const updatedSteps = steps.map((s, idx) => {
+    const isLast = idx === steps.length - 1;
+    return {
+      ...s,
+      state: {
+        ...s.state,
+        output: isLast ? [printMessage] : []
+      }
+    };
+  });
+
+  return updatedSteps;
 }
 
 // 6. Stack Simulation Tracer
@@ -916,11 +964,28 @@ function simulateRecursion(code: string): TraceStep[] {
     traceFact(inputN);
   }
 
-  if (steps.length > 100) {
-    return steps.slice(0, 100).map((s, idx) => ({ ...s, stepNum: idx + 1 }));
+  const lastStep = steps[steps.length - 1];
+  const finalResult = lastStep?.variables?.result ?? (isFib ? 3 : 720);
+  const printMessage = isFib 
+    ? `Fibonacci of ${inputN} = ${finalResult}`
+    : `${inputN}! = ${finalResult}`;
+
+  const updatedSteps = steps.map((s, idx) => {
+    const isLast = idx === steps.length - 1;
+    return {
+      ...s,
+      state: {
+        ...s.state,
+        output: isLast ? [printMessage] : []
+      }
+    };
+  });
+
+  if (updatedSteps.length > 100) {
+    return updatedSteps.slice(0, 100).map((s, idx) => ({ ...s, stepNum: idx + 1 }));
   }
 
-  return steps;
+  return updatedSteps;
 }
 
 // 9. Basic Variables Loop Simulation Tracer

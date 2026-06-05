@@ -17,18 +17,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LPU CodeViz — Visual Code Exploration",
+  title: "CodeCanvas — AI Algorithm Visualizer & Tutor",
   description:
-    "A professional visual code exploration platform for LPU students. Understand architecture, trace algorithms step-by-step, and explore dependencies with an interactive workspace.",
+    "An AI-powered algorithm visualizer and learning platform for LPU students. Visualize C, C++, Python, Java, and SQL programs step-by-step with an interactive visual canvas and an AI tutor.",
   keywords: [
     "code visualizer", "C programming", "data structures", "algorithm animation",
     "Lovely Professional University", "CSE101", "INT101", "CSE205", "INT301", "CSE202",
-    "code architecture", "dependency graph", "visual debugging",
+    "algorithm tracer", "visualizer", "AI tutor", "interactive learning",
   ],
   authors: [{ name: "Prathamesh Sawarkar" }],
   openGraph: {
-    title: "LPU CodeViz — Visual Code Exploration",
-    description: "Explore code architecture with an interactive visual workspace built for LPU students.",
+    title: "CodeCanvas — AI Algorithm Visualizer & Tutor",
+    description: "An AI-powered algorithm visualizer and learning platform for LPU students. Visualize programs step-by-step.",
     type: "website",
   },
 };

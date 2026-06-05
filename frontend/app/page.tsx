@@ -1,46 +1,20 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { getSchoolConfig } from "../lib/schools";
 
 // ─── Feature Data ────────────────────────────────────────────────────────────
 
-const WORKSPACE_FEATURES = [
+const TRACER_FEATURES = [
   {
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <circle cx="12" cy="12" r="4" /><line x1="12" y1="2" x2="12" y2="6" />
-        <line x1="12" y1="18" x2="12" y2="22" /><line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" /><line x1="2" y1="12" x2="6" y2="12" />
-        <line x1="18" y1="12" x2="22" y2="12" /><line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
-        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
       </svg>
     ),
-    title: "Visual Dependency Graph",
-    desc: "Explore your codebase as an interactive node graph. Pan, zoom, and drag nodes to understand architecture at a glance.",
-    badge: "Canvas First",
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
-      </svg>
-    ),
-    title: "Step-by-Step Code Tracer",
-    desc: "Paste any C, C++, Python, or SQL algorithm and trace it line-by-line with animated data structure visualizations.",
-    badge: "Algorithm Tracer",
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-    title: "AI Code Insights",
-    desc: "Get intelligent analysis — detect high coupling, circular dependencies, dead code, and complexity hotspots automatically.",
+    title: "AI-Simulated Execution",
+    desc: "Paste any C, C++, Python, Java, or SQL code. Our LLM-powered engine simulates memory line-by-line safety without server risks.",
     badge: "AI Powered",
   },
   {
@@ -50,8 +24,29 @@ const WORKSPACE_FEATURES = [
         <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
     ),
-    title: "LPU Syllabus Coverage",
-    desc: "Every CSE101, INT101, CSE205, and INT301 topic has a built-in visualizer mapped directly to the LPU curriculum.",
+    title: "10+ Interactive Visualizers",
+    desc: "Watch sorting bars swap, stacks pop, binary trees balance, and graph nodes light up dynamically as your code runs.",
+    badge: "Canvas First",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+    title: "Voice AI Tutor Sidebar",
+    desc: "Stuck on a nested loop or pointer dereference? Click the floating AI tutor for explanations or trigger real voice guidance.",
+    badge: "Smart Tutor",
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    ),
+    title: "LPU Syllabus Alignment",
+    desc: "Includes pre-configured coding examples and visual challenges designed for CSE101, INT101, CSE205, and INT301 lab courses.",
     badge: "LPU Specific",
   },
 ];
@@ -59,50 +54,97 @@ const WORKSPACE_FEATURES = [
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Open the Workspace",
-    desc: "Launch the visual workspace — it opens instantly with your project's dependency graph pre-loaded.",
+    title: "Select or Write Code",
+    desc: "Choose from 20+ syllabus templates or write custom code in our VS Code-style editor with autocomplete.",
   },
   {
     step: "02",
-    title: "Explore the Graph",
-    desc: "Click any node to inspect its imports, exports, complexity, and AI-generated insights.",
+    title: "Run Simulation",
+    desc: "Hit 'Visualize' to generate trace states outlining line numbers, memory tables, and explanations.",
   },
   {
     step: "03",
-    title: "Trace & Understand",
-    desc: "Paste any algorithm and step through it line-by-line with animated data structure rendering.",
+    title: "Trace Line-by-Line",
+    desc: "Click next or hit spacebar to step forward. Watch memory changes animate in real-time.",
   },
 ];
 
-// ─── Mini Graph Preview ───────────────────────────────────────────────────────
+// ─── Interactive Algorithm Tracer Preview ───────────────────────────────────────
 
-function MiniGraphPreview() {
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [selectedNode, setSelectedNode] = useState<string | null>("page-vis");
+function MiniTracerPreview() {
+  const [stepIndex, setStepIndex] = useState(0);
 
-  const nodes = [
-    { id: "page-vis",  label: "visualize/page.tsx",  type: "page",      x: 90,  y: 36,  color: "#3B82F6" },
-    { id: "comp-canvas", label: "VisualCanvas.tsx",  type: "component", x: 270, y: 10,  color: "#8B5CF6" },
-    { id: "comp-editor", label: "CodeEditor.tsx",    type: "component", x: 270, y: 74,  color: "#8B5CF6" },
-    { id: "svc-api",   label: "api.ts",              type: "service",   x: 440, y: 36,  color: "#10B981" },
-    { id: "hook-vis",  label: "useVisualizer.ts",    type: "hook",      x: 440, y: 90,  color: "#F59E0B", cycle: true },
-    { id: "util-types",label: "types.ts",            type: "util",      x: 600, y: 36,  color: "#6B7280" },
-    { id: "page-home", label: "page.tsx",            type: "page",      x: 90,  y: 130, color: "#3B82F6" },
-    { id: "comp-hero", label: "Hero.tsx",            type: "component", x: 270, y: 130, color: "#8B5CF6" },
-    { id: "dead-util", label: "legacyTracer.ts",     type: "util",      x: 600, y: 120, color: "#6B7280", dead: true },
+  const steps = [
+    {
+      line: 3,
+      explanation: "Starting inner sorting loop at j = 0. Comparing adjacent elements.",
+      vars: { i: 0, j: 0, swapped: "False" },
+      bars: [
+        { value: 14, status: "default" },
+        { value: 22, status: "default" },
+        { value: 8, status: "default" },
+        { value: 31, status: "default" },
+        { value: 19, status: "default" },
+      ],
+    },
+    {
+      line: 4,
+      explanation: "Comparing arr[j] (14) and arr[j+1] (22). Since 14 < 22, no swap is required.",
+      vars: { i: 0, j: 0, swapped: "False" },
+      bars: [
+        { value: 14, status: "comparing" },
+        { value: 22, status: "comparing" },
+        { value: 8, status: "default" },
+        { value: 31, status: "default" },
+        { value: 19, status: "default" },
+      ],
+    },
+    {
+      line: 3,
+      explanation: "Incrementing inner loop to index j = 1.",
+      vars: { i: 0, j: 1, swapped: "False" },
+      bars: [
+        { value: 14, status: "default" },
+        { value: 22, status: "default" },
+        { value: 8, status: "default" },
+        { value: 31, status: "default" },
+        { value: 19, status: "default" },
+      ],
+    },
+    {
+      line: 4,
+      explanation: "Comparing arr[1] (22) and arr[2] (8). Since 22 > 8, they must be swapped.",
+      vars: { i: 0, j: 1, swapped: "False" },
+      bars: [
+        { value: 14, status: "default" },
+        { value: 22, status: "comparing" },
+        { value: 8, status: "comparing" },
+        { value: 31, status: "default" },
+        { value: 19, status: "default" },
+      ],
+    },
+    {
+      line: 5,
+      explanation: "Swapping arr[1] and arr[2]. Value 22 shifts right, and swapped is set to True.",
+      vars: { i: 0, j: 1, swapped: "True" },
+      bars: [
+        { value: 14, status: "default" },
+        { value: 8, status: "active" },
+        { value: 22, status: "active" },
+        { value: 31, status: "default" },
+        { value: 19, status: "default" },
+      ],
+    },
   ];
 
-  const edges = [
-    { from: "page-vis",  to: "comp-canvas" },
-    { from: "page-vis",  to: "comp-editor" },
-    { from: "page-vis",  to: "svc-api" },
-    { from: "comp-canvas", to: "svc-api" },
-    { from: "svc-api",   to: "hook-vis" },
-    { from: "svc-api",   to: "util-types" },
-    { from: "page-home", to: "comp-hero" },
-  ];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStepIndex((prev) => (prev + 1) % steps.length);
+    }, 3200);
+    return () => clearInterval(timer);
+  }, []);
 
-  const getNode = (id: string) => nodes.find((n) => n.id === id)!;
+  const currentStep = steps[stepIndex];
 
   return (
     <div
@@ -143,271 +185,145 @@ function MiniGraphPreview() {
             fontFamily: "monospace",
           }}
         >
-          codeviz.lpu.edu/workspace
+          codecanvas.lpu.edu/visualize
         </div>
-        {/* Toolbar mock */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <div style={{ background: "#18181B", borderRadius: 4, padding: "3px 8px", fontSize: 10, color: "#52525B", border: "1px solid #27272A" }}>
-            LPU-CodeViz ▾
-          </div>
-          <div style={{ background: "#18181B", borderRadius: 4, padding: "3px 8px", fontSize: 10, color: "#52525B", border: "1px solid #27272A" }}>
-            🔍
+            Bubble Sort Demo ▾
           </div>
         </div>
       </div>
 
-      {/* Workspace mock */}
-      <div style={{ display: "flex", height: 280 }}>
-        {/* Left panel mini */}
+      {/* Editor & visualizer mock split */}
+      <div style={{ display: "flex", height: 300, flexWrap: "wrap" }}>
+        {/* Editor panel */}
         <div
           style={{
-            width: 110,
+            flex: "1 1 240px",
             borderRight: "1px solid #27272A",
-            padding: "8px 0",
-            fontSize: 10,
+            padding: "12px",
+            fontFamily: "monospace",
+            fontSize: 11,
+            background: "#09090B",
+            color: "#A1A1AA",
+            overflow: "hidden",
           }}
         >
-          <div style={{ padding: "4px 8px", fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Layers
+          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+            bubble_sort.py
           </div>
           {[
-            { label: "Pages",       color: "#3B82F6", on: true },
-            { label: "Components",  color: "#8B5CF6", on: true },
-            { label: "Hooks",       color: "#F59E0B", on: true },
-            { label: "Services",    color: "#10B981", on: true },
-            { label: "Utils",       color: "#6B7280", on: true },
-          ].map((l) => (
-            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: l.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 9 }}>{l.label}</span>
-              <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: l.on ? l.color : "#27272A" }} />
-            </div>
-          ))}
-          <div style={{ height: 1, background: "#27272A", margin: "6px 0" }} />
-          <div style={{ padding: "4px 8px", fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Filters
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
-            <span style={{ fontSize: 9 }}>Dead Code</span>
-            <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: "#F59E0B" }} />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", color: "#A1A1AA" }}>
-            <span style={{ fontSize: 9 }}>Cycles</span>
-            <span style={{ marginLeft: "auto", width: 16, height: 8, borderRadius: 4, background: "#3B82F6" }} />
-          </div>
-        </div>
-
-        {/* Canvas */}
-        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-          {/* Dot grid */}
-          <svg
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.3 }}
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="1" cy="1" r="0.8" fill="#27272A" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dots)" />
-          </svg>
-
-          {/* Edges */}
-          <svg
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
-          >
-            {edges.map((e) => {
-              const from = getNode(e.from);
-              const to = getNode(e.to);
-              if (!from || !to) return null;
-              const isHighlighted =
-                (hoveredNode === e.from || hoveredNode === e.to) ||
-                (selectedNode === e.from || selectedNode === e.to);
-              return (
-                <line
-                  key={`${e.from}-${e.to}`}
-                  x1={from.x + 55}
-                  y1={from.y + 14}
-                  x2={to.x}
-                  y2={to.y + 14}
-                  stroke={isHighlighted ? "#3B82F6" : "#27272A"}
-                  strokeWidth={isHighlighted ? 1.5 : 1}
-                  strokeOpacity={isHighlighted ? 1 : 0.7}
-                />
-              );
-            })}
-          </svg>
-
-          {/* Nodes */}
-          {nodes.map((n) => {
-            const isSelected = selectedNode === n.id;
-            const isHovered = hoveredNode === n.id;
+            "def bubbleSort(arr):",
+            "    n = len(arr)",
+            "    for i in range(n):",
+            "        for j in range(0, n-i-1):",
+            "            if arr[j] > arr[j+1]:",
+            "                arr[j], arr[j+1] = arr[j+1], arr[j]",
+          ].map((line, idx) => {
+            const isCurrent = idx + 1 === currentStep.line;
             return (
               <div
-                key={n.id}
-                onMouseEnter={() => setHoveredNode(n.id)}
-                onMouseLeave={() => setHoveredNode(null)}
-                onClick={() => setSelectedNode(isSelected ? null : n.id)}
+                key={idx}
                 style={{
-                  position: "absolute",
-                  left: n.x,
-                  top: n.y + 16,
-                  width: 110,
-                  background: isSelected ? "#18181B" : "#111113",
-                  border: isSelected
-                    ? "1.5px solid #3B82F6"
-                    : (n as any).dead
-                    ? "1px solid #F59E0B"
-                    : (n as any).cycle
-                    ? "1px solid #EF4444"
-                    : "1px solid #27272A",
-                  borderRadius: 5,
-                  overflow: "hidden",
-                  cursor: "pointer",
-                  boxShadow: isSelected ? "0 0 0 2px rgba(59,130,246,0.2)" : "none",
-                  transition: "all 100ms ease",
+                  display: "flex",
+                  background: isCurrent ? "rgba(59,130,246,0.12)" : "transparent",
+                  color: isCurrent ? "#FAFAFA" : "#A1A1AA",
+                  padding: "2px 4px",
+                  borderRadius: 3,
+                  borderLeft: isCurrent ? "3px solid #3B82F6" : "3px solid transparent",
+                  transition: "all 150ms ease",
                 }}
               >
-                <div style={{ height: 2, background: n.color }} />
-                <div style={{ padding: "5px 7px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: n.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 9, fontWeight: 600, color: "#FAFAFA", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {n.label}
-                    </span>
-                    {(n as any).dead && (
-                      <span style={{ fontSize: 8, color: "#F59E0B", marginLeft: "auto", background: "rgba(245,158,11,0.12)", padding: "0 3px", borderRadius: 2 }}>dead</span>
-                    )}
-                    {(n as any).cycle && (
-                      <span style={{ fontSize: 8, color: "#EF4444", marginLeft: "auto", background: "rgba(239,68,68,0.12)", padding: "0 3px", borderRadius: 2 }}>cycle</span>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", gap: 4, borderTop: "1px solid #1C1C1F", paddingTop: 4, marginTop: 2 }}>
-                    <span style={{ fontSize: 8, background: "#18181B", padding: "1px 4px", borderRadius: 2, fontWeight: 600, color: n.color }}>
-                      {n.type.toUpperCase().slice(0, 4)}
-                    </span>
-                  </div>
-                </div>
+                <span style={{ width: 16, color: "#52525B", userSelect: "none" }}>{idx + 1}</span>
+                <span style={{ whiteSpace: "pre" }}>{line}</span>
               </div>
             );
           })}
-
-          {/* Minimap */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 8,
-              right: 8,
-              width: 72,
-              height: 44,
-              background: "#111113",
-              border: "1px solid #27272A",
-              borderRadius: 4,
-              overflow: "hidden",
-              opacity: 0.8,
-            }}
-          >
-            {nodes.map((n) => (
-              <div
-                key={n.id}
-                style={{
-                  position: "absolute",
-                  left: n.x / 10,
-                  top: n.y / 8,
-                  width: 12,
-                  height: 6,
-                  background: n.color,
-                  opacity: 0.5,
-                  borderRadius: 1,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Zoom controls */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 8,
-              left: 8,
-              background: "#111113",
-              border: "1px solid #27272A",
-              borderRadius: 4,
-              overflow: "hidden",
-            }}
-          >
-            {["+", "−", "⊡"].map((sym) => (
-              <div
-                key={sym}
-                style={{
-                  width: 22,
-                  height: 20,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 11,
-                  color: "#52525B",
-                  borderBottom: sym !== "⊡" ? "1px solid #27272A" : "none",
-                }}
-              >
-                {sym}
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Right panel mini */}
-        <div style={{ width: 130, borderLeft: "1px solid #27272A", padding: "8px 0", overflow: "hidden" }}>
-          {selectedNode ? (
-            <>
-              <div style={{ padding: "4px 10px 8px", borderBottom: "1px solid #27272A" }}>
-                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Inspector</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#FAFAFA", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {nodes.find((n) => n.id === selectedNode)?.label}
+        {/* Visualizer canvas */}
+        <div
+          style={{
+            flex: "1.2 1 280px",
+            background: "#0F0F11",
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
+            minHeight: 180,
+          }}
+        >
+          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+            Visual Canvas: Array
+          </div>
+          
+          {/* Sorting bars */}
+          <div style={{ display: "flex", alignContent: "flex-end", alignItems: "flex-end", gap: 10, flex: 1, justifyContent: "center", paddingBottom: 16 }}>
+            {currentStep.bars.map((bar, idx) => {
+              let barColor = "#27272A";
+              if (bar.status === "comparing") barColor = "#3B82F6";
+              if (bar.status === "active") barColor = "#22C55E";
+
+              return (
+                <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      width: 24,
+                      height: bar.value * 4,
+                      background: barColor,
+                      borderRadius: "4px 4px 0 0",
+                      transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+                      boxShadow: bar.status !== "default" ? "0 0 10px rgba(59,130,246,0.2)" : "none",
+                    }}
+                  />
+                  <span style={{ fontSize: 9, fontFamily: "monospace", color: "#52525B" }}>{bar.value}</span>
                 </div>
-                <div style={{ fontSize: 9, color: "#52525B", marginTop: 1 }}>Page Component</div>
-              </div>
-              <div style={{ padding: "6px 10px", borderBottom: "1px solid #27272A" }}>
-                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Metrics</div>
-                {[["Lines", "985"], ["Imports", "7"], ["Complexity", "9/10"]].map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#A1A1AA", marginBottom: 2 }}>
-                    <span>{k}</span>
-                    <span style={{ fontWeight: 600, color: k === "Complexity" ? "#F59E0B" : "#FAFAFA" }}>{v}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ padding: "6px 10px" }}>
-                <div style={{ fontSize: 9, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>AI Insights</div>
-                <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 3, padding: "4px 6px", fontSize: 9, color: "#FDE68A", lineHeight: 1.4 }}>
-                  ⚠ High complexity detected. Consider splitting.
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ padding: "8px 10px", color: "#52525B", fontSize: 10, textAlign: "center" }}>
-              Click a node to inspect
+              );
+            })}
+          </div>
+
+          {/* Stepper control bar preview */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #1C1C1F", paddingTop: 8, fontSize: 10, color: "#52525B" }}>
+            <span>Step {stepIndex + 1} / 5</span>
+            <div style={{ display: "flex", gap: 6 }}>
+              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A" }}>Prev</span>
+              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A", color: "#FAFAFA" }}>Playing</span>
+              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A" }}>Next</span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Status bar mock */}
-      <div
-        style={{
-          background: "#111113",
-          borderTop: "1px solid #27272A",
-          padding: "5px 12px",
-          display: "flex",
-          gap: 16,
-          fontSize: 9,
-          color: "#52525B",
-        }}
-      >
-        <span>Nodes: <span style={{ color: "#FAFAFA" }}>30</span></span>
-        <span>Edges: <span style={{ color: "#FAFAFA" }}>45</span></span>
-        <span>Zoom: <span style={{ color: "#FAFAFA" }}>82%</span></span>
-        <span>Selected: <span style={{ color: "#3B82F6" }}>1</span></span>
-        <span style={{ marginLeft: "auto" }}>LPU CodeViz — Visual Workspace</span>
+        {/* AI Tutor Sidebar panel */}
+        <div
+          style={{
+            flex: "1 1 220px",
+            borderLeft: "1px solid #27272A",
+            background: "#111113",
+            padding: "12px",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+            AI Tutor Explanation
+          </div>
+          <div style={{ fontSize: 11, color: "#A1A1AA", lineHeight: 1.5, flex: 1 }}>
+            {currentStep.explanation}
+          </div>
+          
+          <div style={{ borderTop: "1px solid #27272A", paddingTop: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 8, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Variables Watch</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {Object.entries(currentStep.vars).map(([name, val]) => (
+                <div key={name} style={{ display: "flex", justifyContent: "space-between", fontFamily: "monospace", fontSize: 10 }}>
+                  <span style={{ color: "#52525B" }}>{name}</span>
+                  <span style={{ color: "#FAFAFA", fontWeight: 600 }}>{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -445,7 +361,7 @@ function LandingPageContent() {
             </svg>
           </div>
           <span style={{ fontWeight: 700, fontSize: 16, color: "var(--text)", letterSpacing: "-0.3px" }}>
-            CodeViz
+            CodeCanvas
           </span>
           <span
             style={{
@@ -466,25 +382,17 @@ function LandingPageContent() {
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <Link
             href={`/visualize?school=${schoolConfig.id}`}
-            className="btn btn-ghost"
-            style={{ fontSize: 13 }}
-          >
-            Algorithm Tracer
-          </Link>
-          <Link
-            href="/workspace"
             className="btn btn-primary"
             style={{ fontSize: 13 }}
-            id="nav-open-workspace"
+            id="nav-open-tracer"
           >
-            Open Workspace
+            Launch Visualizer
           </Link>
         </div>
       </nav>
 
       {/* ── Hero ── */}
       <section className="landing-hero">
-        {/* Subtle background gradient — non-flashy */}
         <div
           style={{
             position: "absolute",
@@ -495,7 +403,7 @@ function LandingPageContent() {
           }}
         />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 760, width: "100%", textAlign: "center" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 780, width: "100%", textAlign: "center" }}>
           {/* Badge */}
           <div
             style={{
@@ -521,13 +429,13 @@ function LandingPageContent() {
                 display: "inline-block",
               }}
             />
-            Built for {schoolConfig.name} · LPU
+            Curriculum Aligned for {schoolConfig.name} · LPU
           </div>
 
           {/* Headline */}
           <h1
             style={{
-              fontSize: "clamp(32px, 5vw, 60px)",
+              fontSize: "clamp(32px, 5vw, 56px)",
               fontWeight: 800,
               letterSpacing: "-2px",
               lineHeight: 1.1,
@@ -535,9 +443,9 @@ function LandingPageContent() {
               marginBottom: 20,
             }}
           >
-            Explore Your Code
+            Visualize Your Code.
             <br />
-            <span style={{ color: "var(--primary)" }}>Architecture</span>
+            <span style={{ color: "var(--primary)" }}>Master Algorithms.</span>
           </h1>
 
           {/* Sub */}
@@ -545,13 +453,13 @@ function LandingPageContent() {
             style={{
               fontSize: "clamp(15px, 2vw, 17px)",
               color: "var(--muted)",
-              maxWidth: 540,
+              maxWidth: 580,
               margin: "0 auto 36px",
               lineHeight: 1.65,
             }}
           >
-            A professional visual workspace for code exploration. Trace algorithms,
-            map dependencies, and understand structure — all in one place.
+            Watch your variables change, stacks pop, and structures animate in real-time.
+            An interactive sandbox with voice AI tutor explanations designed to make coding intuitive.
           </p>
 
           {/* CTAs */}
@@ -565,25 +473,17 @@ function LandingPageContent() {
             }}
           >
             <Link
-              href="/workspace"
+              href={`/visualize?school=${schoolConfig.id}`}
               className="btn btn-primary"
               style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600 }}
-              id="hero-cta-workspace"
-            >
-              Open Workspace →
-            </Link>
-            <Link
-              href={`/visualize?school=${schoolConfig.id}`}
-              className="btn btn-ghost"
-              style={{ padding: "11px 28px", fontSize: 14 }}
               id="hero-cta-tracer"
             >
-              Algorithm Tracer
+              Start Visualizing Free →
             </Link>
           </div>
 
           {/* Product preview */}
-          <MiniGraphPreview />
+          <MiniTracerPreview />
         </div>
       </section>
 
@@ -598,10 +498,10 @@ function LandingPageContent() {
       >
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
-            How it works
+            How CodeCanvas Works
           </h2>
           <p style={{ fontSize: 15, color: "var(--muted)" }}>
-            From zero to understanding in three steps.
+            Go from syntax confusion to visual confidence in three steps.
           </p>
         </div>
 
@@ -655,10 +555,10 @@ function LandingPageContent() {
       >
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
-            Everything you need to understand code
+            Purpose-Built for LPU Coding Learners
           </h2>
           <p style={{ fontSize: 15, color: "var(--muted)" }}>
-            Purpose-built for {schoolConfig.name} students.
+            All the features you need to bridge the gap between code structure and mental models.
           </p>
         </div>
 
@@ -669,7 +569,7 @@ function LandingPageContent() {
             gap: 20,
           }}
         >
-          {WORKSPACE_FEATURES.map((f, i) => (
+          {TRACER_FEATURES.map((f, i) => (
             <div
               key={i}
               style={{
@@ -737,18 +637,18 @@ function LandingPageContent() {
             color: "var(--text)",
           }}
         >
-          Ready to explore your code?
+          Ready to see your code in motion?
         </h2>
         <p style={{ fontSize: 15, color: "var(--muted)", marginBottom: 32 }}>
-          Open the workspace and understand your codebase in minutes.
+          Launch the CodeCanvas algorithm sandbox and start simulating.
         </p>
         <Link
-          href="/workspace"
+          href={`/visualize?school=${schoolConfig.id}`}
           className="btn btn-primary"
           style={{ padding: "12px 32px", fontSize: 15, fontWeight: 600 }}
-          id="cta-bottom-workspace"
+          id="cta-bottom-visualizer"
         >
-          Open Workspace →
+          Launch Visualizer →
         </Link>
       </section>
 
@@ -764,10 +664,10 @@ function LandingPageContent() {
       >
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, marginBottom: 12 }}>
-            Simple pricing
+            Simple Semester-Based Plans
           </h2>
           <p style={{ fontSize: 15, color: "var(--muted)" }}>
-            Start free. Upgrade when you need more.
+            Get started for free or upgrade to expand your daily runs and AI tutor access.
           </p>
         </div>
 
@@ -783,13 +683,13 @@ function LandingPageContent() {
               flexDirection: "column",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Free</div>
-            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Get started</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Free Sandbox</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Core visualizer access</div>
             <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
               ₹0 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
-              {["5 code traces / day", "Workspace access", "Core visualizers"].map((f) => (
+              {["5 traces / day", "Standard visual layouts", "Basic AI explanations"].map((f) => (
                 <li key={f} style={{ display: "flex", gap: 8 }}>
                   <span style={{ color: "var(--success)" }}>✓</span> {f}
                 </li>
@@ -829,13 +729,13 @@ function LandingPageContent() {
             >
               Popular
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Pro</div>
-            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>For active students</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Pro Student</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Unlimited traces & variables</div>
             <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
               ₹299 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
-              {["Unlimited traces", "50 AI queries / day", "Variable watch-list", "Priority processing"].map((f) => (
+              {["Unlimited code traces", "50 AI tutor queries / day", "Interactive graph builder", "Custom variables watchlist"].map((f) => (
                 <li key={f} style={{ display: "flex", gap: 8 }}>
                   <span style={{ color: "var(--success)" }}>✓</span> {f}
                 </li>
@@ -862,13 +762,13 @@ function LandingPageContent() {
               flexDirection: "column",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Premium</div>
-            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Complete portal</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Premium Guide</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20 }}>Full AI capability</div>
             <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 24 }}>
               ₹499 <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400 }}>/ semester</span>
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "var(--muted)", flex: 1 }}>
-              {["Everything in Pro", "Unlimited AI queries", "Code export + PDF", "Mock syllabus exams"].map((f) => (
+              {["Everything in Pro", "Unlimited voice AI queries", "Vector SVG export", "Mock challenge assessments"].map((f) => (
                 <li key={f} style={{ display: "flex", gap: 8 }}>
                   <span style={{ color: "var(--success)" }}>✓</span> {f}
                 </li>
@@ -891,7 +791,7 @@ function LandingPageContent() {
           fontSize: 12,
         }}
       >
-        <p>© 2026 LPU CodeViz. Built by Prathamesh Sawarkar.</p>
+        <p>© 2026 CodeCanvas. Built by Prathamesh Sawarkar.</p>
       </footer>
     </div>
   );

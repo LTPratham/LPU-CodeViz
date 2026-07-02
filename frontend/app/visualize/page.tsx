@@ -15,6 +15,7 @@ import { createClient } from "@/utils/supabase/client";
 import { signout } from "../login/actions";
 import { generateChallenge, shuffleArray } from "@/lib/challenge";
 import VisualizerErrorBoundary from "@/components/VisualizerErrorBoundary";
+const OnboardingTour = dynamic(() => import("@/components/OnboardingTour"), { ssr: false });
 import { getSchoolConfig } from "@/lib/schools";
 
 
@@ -88,6 +89,7 @@ function VisualizeContent() {
   const [comparisons, setComparisons] = useState(0);
   const [swaps, setSwaps] = useState(0);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isChallengeMode, setIsChallengeMode] = useState(false);
@@ -96,6 +98,8 @@ function VisualizeContent() {
   const [activeChallenge, setActiveChallenge] = useState<PredictionChallenge | null>(null);
   const [userAnswer, setUserAnswer] = useState<string | null>(null);
   const [challengeState, setChallengeState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
+  const [shareSlug, setShareSlug] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
   // Increments on every Visualize click — used as key on error boundary so it fully resets
   const [visualizeRunId, setVisualizeRunId] = useState(0);
 
@@ -115,9 +119,71 @@ function VisualizeContent() {
       const data = res?.data;
       if (data?.user) {
         setUserEmail(data.user.email || data.user.phone || "User");
+        setUserId(data.user.id);
       }
     });
   }, []);
+
+  // Save trace to history + update student_progress
+  const saveTraceHistory = useCallback(async (
+    lang: string, code: string, steps: any[], dataStructure: string
+  ) => {
+    if (!userId) return;
+    const supabase = createClient();
+    try {
+      // Save to trace_history
+      await (supabase as any).from('trace_history').insert({
+        user_id: userId,
+        lang,
+        code,
+        steps_json: steps,
+        data_structure: dataStructure,
+        school_id: schoolConfig.id,
+        step_count: steps.length,
+      });
+      // Increment progress counter (race-condition-safe RPC)
+      await (supabase as any).rpc('upsert_progress', {
+        user_id_param: userId,
+        algorithm_type_param: dataStructure,
+      });
+      // Update streak
+      await (supabase as any).rpc('update_streak', { user_id_param: userId });
+      // Award XP
+      await (supabase as any).rpc('increment_xp', { user_id_param: userId, xp_amount: 10 });
+    } catch (err) {
+      console.warn('Failed to save trace history:', err);
+    }
+  }, [userId, schoolConfig.id]);
+
+  // Share current trace
+  const handleShare = useCallback(async () => {
+    if (!steps.length) return;
+    setIsSharing(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await (supabase as any)
+        .from('shared_traces')
+        .insert({
+          user_id: userId,
+          lang: language,
+          code,
+          steps_json: steps,
+          data_structure: dataStructure,
+          title: `${language.toUpperCase()} — ${dataStructure} trace`,
+        })
+        .select('slug')
+        .single();
+      if (data?.slug) {
+        setShareSlug(data.slug);
+        const url = `${window.location.origin}/share/${data.slug}`;
+        await navigator.clipboard.writeText(url).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Share failed:', err);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [steps, userId, language, code, dataStructure]);
 
   const handleSignOut = useCallback(async () => {
     const supabase = createClient();
@@ -250,6 +316,8 @@ function VisualizeContent() {
 
       // Save fresh local result to cache (overwrites any stale entry)
       saveToCache(activeLang, activeCode, localTrace, finalExplains);
+      // Save to trace history
+      saveTraceHistory(activeLang, activeCode, localTrace.steps, localTrace.dataStructure);
       setIsLoading(false);
       return;
     }
@@ -279,8 +347,9 @@ function VisualizeContent() {
       setDataStructure(traceRes.dataStructure);
       setExplanations(explainRes);
       
-      // Save cloud run to cache
+      // Save cloud run to cache + trace history
       saveToCache(activeLang, activeCode, traceRes, explainRes);
+      saveTraceHistory(activeLang, activeCode, traceRes.steps, traceRes.dataStructure);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setError(msg.includes("fetch") ? "Cannot connect to backend. Is the FastAPI server running? (localhost:8000)" : msg);
@@ -401,6 +470,7 @@ function VisualizeContent() {
       background: "var(--bg)",
       overflow: "hidden",
     }}>
+      <OnboardingTour />
       {/* ── Topbar ── */}
       <div style={{
         display: "flex",
@@ -479,16 +549,13 @@ function VisualizeContent() {
 
           {/* Share Button */}
           <button
-            onClick={() => {
-              const b64 = encodeURIComponent(btoa(code));
-              const url = `${window.location.origin}/visualize?lang=${language}&code=${b64}`;
-              navigator.clipboard.writeText(url);
-              alert("URL copied to clipboard!");
-            }}
             className="btn btn-ghost"
-            style={{ padding: "6px 12px", fontSize: 12, height: "auto" }}
+            style={{ padding: "6px 12px", fontSize: 12, height: "auto", display: "flex", alignItems: "center", gap: 4 }}
+            onClick={handleShare}
+            disabled={!steps.length || isSharing}
+            title={shareSlug ? `Copied! /share/${shareSlug}` : "Share this trace"}
           >
-            🔗 Share
+            {isSharing ? "⏳" : shareSlug ? "✓ Copied" : "🔗 Share"}
           </button>
 
           {/* Theme Toggle */}
@@ -504,6 +571,12 @@ function VisualizeContent() {
           {/* User Profile / Sign Out */}
           {userEmail && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 12, borderLeft: "1px solid var(--border)" }}>
+              <Link
+                href="/dashboard"
+                style={{ fontSize: 11, color: "var(--primary)", textDecoration: "none", fontWeight: 600, padding: "2px 8px", border: "1px solid var(--primary-border)", borderRadius: 4 }}
+              >
+                Dashboard
+              </Link>
               <div style={{ 
                 width: 24, height: 24, borderRadius: "50%", background: "var(--primary)", color: "white",
                 display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: "bold"

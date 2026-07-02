@@ -529,43 +529,20 @@ code, pre, .font-mono {
   position: relative;
 }
 
-/* ─── React Flow overrides ─── */
-.react-flow__background {
-  background-color: var(--canvas) !important;
+/* ─── 3D Canvas ─── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
-.react-flow__minimap {
-  background: var(--surface-1) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
-.react-flow__minimap-mask {
-  fill: rgba(59, 130, 246, 0.08) !important;
-}
-.react-flow__controls {
-  background: var(--surface-1) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  box-shadow: var(--shadow) !important;
-}
-.react-flow__controls-button {
-  background: transparent !important;
-  border: none !important;
-  border-bottom: 1px solid var(--border) !important;
-  color: var(--muted) !important;
-  transition: background 150ms ease, color 150ms ease !important;
-}
-.react-flow__controls-button:hover {
-  background: var(--surface-hover) !important;
-  color: var(--text) !important;
-}
-.react-flow__controls-button:last-child { border-bottom: none !important; }
-.react-flow__edge-path { stroke: var(--border) !important; stroke-width: 1.5px !important; }
-.react-flow__edge.selected .react-flow__edge-path { stroke: var(--primary) !important; }
-.react-flow__handle {
-  background: var(--primary) !important;
-  border: 2px solid var(--panel) !important;
-  width: 8px !important;
-  height: 8px !important;
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ─── Monaco Editor ─── */
@@ -615,22 +592,4 @@ code, pre, .font-mono {
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   body { font-size: 14px; }
-  .panel-left, .panel-right { display: none; }
-  .mobile-warning {
-    display: flex !important;
-  }
-}
-
-.mobile-warning {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 9999;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  text-align: center;
-  padding: 32px;
 }

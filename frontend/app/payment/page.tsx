@@ -1,98 +1,136 @@
 "use client";
+
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 function PaymentPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const plan = searchParams.get("plan") || "premium";
+  const plan = searchParams.get("plan") || "pro";
   const school = searchParams.get("school") || "cse";
 
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
-  const price = plan === "pro" ? "₹299" : plan === "premium" ? "₹499" : "₹0";
-  const planName = plan === "pro" ? "Pro Plan" : plan === "premium" ? "Institutional Premium" : "Free Plan";
+  // Prices in INR
+  const basePrice = plan === "pro" ? 299 : plan === "premium" ? 499 : 0;
+  const gstAmount = Math.round(basePrice * 0.18);
+  const totalPrice = basePrice + gstAmount;
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    value = value.match(/.{1,4}/g)?.join(" ") || value;
-    setCardNumber(value.slice(0, 19));
-  };
+  const planName = plan === "pro" ? "Pro Student Plan" : plan === "premium" ? "Institutional Premium" : "Free Plan";
 
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 2) {
-      value = value.slice(0, 2) + "/" + value.slice(2, 4);
-    }
-    setExpiry(value.slice(0, 5));
-  };
+  useEffect(() => {
+    // Dynamically load Razorpay checkout script
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
 
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setCvv(value.slice(0, 3));
-  };
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cardNumber || !expiry || !cvv || !name) return;
+    if (!name || !email || !phone) {
+      alert("Please fill in all billing details.");
+      return;
+    }
+
+    if (!window.Razorpay) {
+      alert("Razorpay payment gateway is loading. Please try again in a moment.");
+      return;
+    }
+
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      // Save subscription state
-      localStorage.setItem("user_subscription", plan);
-    }, 2500);
+
+    const options = {
+      key: "rzp_test_demoLPU", // Sandbox key for demo purposes
+      amount: totalPrice * 100, // Amount in paise
+      currency: "INR",
+      name: "CodeCanvas",
+      description: `${planName} - Semester Subscription`,
+      image: "https://codecanvas-lpu.vercel.app/logo.png",
+      prefill: {
+        name: name,
+        email: email,
+        contact: phone,
+      },
+      theme: {
+        color: "#3B82F6",
+      },
+      handler: function (response: any) {
+        setIsProcessing(false);
+        setIsSuccess(true);
+        // Save subscription state
+        localStorage.setItem("user_subscription", JSON.stringify(planName));
+      },
+      modal: {
+        ondismiss: function () {
+          setIsProcessing(false);
+        },
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   if (isSuccess) {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "#060913",
+        background: "var(--bg)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "24px"
       }}>
-        <div className="glass" style={{
+        <div style={{
           maxWidth: "480px",
           width: "100%",
           borderRadius: "24px",
+          background: "var(--surface-1)",
+          border: "1px solid var(--border)",
           padding: "48px 32px",
           textAlign: "center",
-          boxShadow: "0 0 40px rgba(0, 242, 254, 0.15)",
-          border: "1px solid rgba(0, 242, 254, 0.3)"
         }}>
           <div style={{
             width: "80px",
             height: "80px",
             borderRadius: "50%",
-            background: "rgba(0, 230, 118, 0.15)",
-            border: "2px solid #00E676",
+            background: "rgba(34, 197, 94, 0.12)",
+            border: "2px solid var(--success)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "36px",
-            color: "#00E676",
+            color: "var(--success)",
             margin: "0 auto 24px",
-            boxShadow: "0 0 20px rgba(0, 230, 118, 0.3)"
           }}>
             ✓
           </div>
-          <h1 style={{ fontSize: "28px", fontWeight: 850, marginBottom: 12 }}>Payment Successful!</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "15px", lineHeight: 1.6, marginBottom: 32 }}>
+          <h1 style={{ fontSize: "28px", fontWeight: 800, marginBottom: 12, color: "var(--text)" }}>Payment Successful!</h1>
+          <p style={{ color: "var(--muted)", fontSize: "15px", lineHeight: 1.6, marginBottom: 32 }}>
             Thank you! Your account has been upgraded to <strong>{planName}</strong>. You now have unlimited AI trace explanations, full code history, and priority tutor response.
           </p>
           <button 
             onClick={() => router.push(`/visualize?school=${school}`)}
             className="btn btn-primary"
-            style={{ width: "100%", padding: "14px", borderRadius: "12px", fontSize: "15px" }}
+            style={{ width: "100%", padding: "14px", borderRadius: "12px", fontSize: "15px", fontWeight: 700 }}
           >
             Go to Visualizer
           </button>
@@ -101,60 +139,104 @@ function PaymentPageContent() {
     );
   }
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    background: "var(--bg)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px 24px",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 700,
+    color: "var(--muted)",
+    marginBottom: "6px",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    background: "var(--surface-2)",
+    border: "1px solid var(--border)",
+    borderRadius: 8,
+    color: "var(--text)",
+    fontSize: 14,
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#060913",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "24px"
-    }}>
+    <div style={containerStyle}>
       <div style={{
         maxWidth: "960px",
         width: "100%",
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
         gap: "32px",
         alignItems: "start"
-      }} className="responsive-grid">
+      }}>
         {/* Checkout Details */}
-        <div className="glass" style={{ padding: "32px", borderRadius: "20px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: 20 }}>Order Summary</h2>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ color: "var(--text-secondary)" }}>{planName}</span>
-            <span style={{ fontWeight: 700 }}>{price} / semester</span>
+        <div style={{ padding: "32px", borderRadius: "20px", background: "var(--surface-1)", border: "1px solid var(--border)" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: 24, color: "var(--text)" }}>Order Summary</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: "14px" }}>
+            <span style={{ color: "var(--muted)" }}>{planName}</span>
+            <span style={{ fontWeight: 600, color: "var(--text)" }}>₹{basePrice}.00</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ color: "var(--text-secondary)" }}>School/College</span>
-            <span style={{ textTransform: "uppercase", fontWeight: 600 }}>LPU-{school}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: "14px" }}>
+            <span style={{ color: "var(--muted)" }}>GST (18%)</span>
+            <span style={{ fontWeight: 600, color: "var(--text)" }}>₹{gstAmount}.00</span>
           </div>
-          <div className="divider" style={{ margin: "20px 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: "14px" }}>
+            <span style={{ color: "var(--muted)" }}>School/College</span>
+            <span style={{ textTransform: "uppercase", fontWeight: 600, color: "var(--text)" }}>LPU-{school}</span>
+          </div>
+          <div style={{ height: 1, background: "var(--border)", margin: "20px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "18px", fontWeight: 800 }}>
-            <span>Total Due</span>
-            <span style={{ color: "var(--primary)" }}>{price}</span>
+            <span style={{ color: "var(--text)" }}>Total Due</span>
+            <span style={{ color: "var(--primary)" }}>₹{totalPrice}.00</span>
           </div>
 
           <div style={{ marginTop: "32px" }}>
-            <div style={{ display: "flex", gap: "16px", alignItems: "center", background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border)", marginBottom: "12px" }}>
-              <img src="/secure_payment.png" alt="Secure Shield" style={{ width: "40px", height: "40px" }} />
-              <div style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                <strong>Secure SSL Encryption</strong><br/>
-                Your financial transactions are fully secure and protected by enterprise security standards.
+            <div style={{ display: "flex", gap: "16px", alignItems: "center", background: "var(--surface-2)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border)", marginBottom: "12px" }}>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: "var(--primary-dim)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--primary)",
+                flexShrink: 0
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.4 }}>
+                <strong>Secure Payment via Razorpay</strong><br/>
+                UPI, Credit/Debit Card, Netbanking, and Wallet payment options supported.
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card Entry Form */}
-        <div className="glass" style={{ padding: "32px", borderRadius: "20px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: 24 }}>Payment Information</h2>
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* Razorpay Billing Details Form */}
+        <div style={{ padding: "32px", borderRadius: "20px", background: "var(--surface-1)", border: "1px solid var(--border)" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: 24, color: "var(--text)" }}>Billing Information</h2>
+          <form onSubmit={handlePay} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase" }}>Cardholder Name</label>
+              <label style={labelStyle}>Full Name</label>
               <input 
                 type="text" 
-                className="input" 
+                style={inputStyle}
                 placeholder="Prathamesh Sawarkar"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -162,66 +244,46 @@ function PaymentPageContent() {
               />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase" }}>Card Number</label>
+              <label style={labelStyle}>Email Address</label>
               <input 
-                type="text" 
-                className="input" 
-                placeholder="4111 2222 3333 4444"
-                value={cardNumber}
-                onChange={handleCardNumberChange}
+                type="email" 
+                style={inputStyle}
+                placeholder="prathamesh@lpu.co.in"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase" }}>Expiry Date</label>
-                <input 
-                  type="text" 
-                  className="input" 
-                  placeholder="MM/YY"
-                  value={expiry}
-                  onChange={handleExpiryChange}
-                  required
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-muted)", marginBottom: "6px", textTransform: "uppercase" }}>CVV</label>
-                <input 
-                  type="password" 
-                  className="input" 
-                  placeholder="•••"
-                  value={cvv}
-                  onChange={handleCvvChange}
-                  required
-                />
-              </div>
+            <div>
+              <label style={labelStyle}>Phone Number (for UPI/verification)</label>
+              <input 
+                type="tel" 
+                style={inputStyle}
+                placeholder="9876543210"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
             </div>
 
             <button 
               type="submit" 
               className="btn btn-primary" 
-              style={{ width: "100%", padding: "14px", borderRadius: "12px", fontSize: "15px", marginTop: "12px" }}
-              disabled={isProcessing}
+              style={{ width: "100%", padding: "14px", borderRadius: "12px", fontSize: "15px", marginTop: "12px", fontWeight: 700 }}
+              disabled={isProcessing || !razorpayLoaded}
             >
-              {isProcessing ? "Processing Security Protocol..." : `Pay ${price}`}
+              {isProcessing ? "Opening Secure Checkout..." : `Pay ₹${totalPrice}.00`}
             </button>
           </form>
         </div>
       </div>
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          .responsive-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#060913" }} />}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--bg)" }} />}>
       <PaymentPageContent />
     </Suspense>
   );

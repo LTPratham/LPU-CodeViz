@@ -26,7 +26,8 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        queryParams: { access_type: 'offline', prompt: 'consent' }
       }
     });
     if (error) setError(error.message);
@@ -88,61 +89,101 @@ export default function LoginPage() {
       alignItems: "center",
       justifyContent: "center",
       padding: 24,
-      background: "var(--background)"
+      background: "var(--bg)"
     }}>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         style={{
           width: "100%",
-          maxWidth: 400,
-          background: "var(--card)",
+          maxWidth: 420,
+          background: "var(--surface-1)",
           border: "1px solid var(--border)",
           borderRadius: 16,
-          padding: 32,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
+          padding: 36,
+          boxShadow: "0 8px 40px rgba(0,0,0,0.45)"
         }}
       >
         <Link href="/" style={{ 
-          display: "inline-block", marginBottom: 24, color: "var(--text-muted)", textDecoration: "none", fontSize: 14
+          display: "inline-flex", alignItems: "center", gap: 6,
+          marginBottom: 28, color: "var(--muted)", textDecoration: "none", fontSize: 13,
+          transition: "color 0.2s"
         }}>
           ← Back to Home
         </Link>
         
-        <h1 style={{ fontSize: 24, marginBottom: 8 }}>
+        {/* Brand mark */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 9,
+            background: "linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "var(--font-mono)"
+          }}>C</div>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>CodeCanvas</span>
+        </div>
+
+        <h1 style={{ fontSize: 22, marginBottom: 6, color: "var(--text)", fontWeight: 700, letterSpacing: "-0.02em" }}>
           {showForgotPassword
-            ? "Reset password"
+            ? "Reset your password"
             : (authMode === "email" 
                 ? (isLogin ? "Welcome back" : "Create an account") 
                 : "Sign in with Phone")}
         </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
+        <p style={{ color: "var(--muted)", fontSize: 13.5, marginBottom: 28, lineHeight: 1.6 }}>
           {showForgotPassword
-            ? "Enter your email address and we'll send you a link to reset your password."
+            ? "Enter your email and we'll send you a reset link."
             : (authMode === "email" 
-                ? "Use your university email to securely access your visualizations."
-                : "We will send you a 6-digit secure code via SMS.")}
+                ? "Use your university email to access your visualizations."
+                : "We'll send a 6-digit secure code via SMS.")}
         </p>
 
-        {/* Custom Tabs */}
+        {/* Google OAuth Button — ABOVE the form */}
         {!showForgotPassword && (
-          <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "rgba(0,0,0,0.2)", padding: 4, borderRadius: 10 }}>
+          <>
+            <button
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="btn-google"
+            >
+              {/* Authentic Google G logo with 4 colored segments */}
+              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
+
+            {/* OR Divider */}
+            <div style={{ margin: "22px 0 20px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
+              <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
+            </div>
+          </>
+        )}
+
+        {/* Email / Phone Tabs */}
+        {!showForgotPassword && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 22, background: "rgba(0,0,0,0.3)", padding: 4, borderRadius: 10 }}>
             <button 
               onClick={() => { setAuthMode("email"); setError(null); }}
               style={{
-                flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                flex: 1, padding: "8px", borderRadius: 7, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer",
                 background: authMode === "email" ? "var(--primary)" : "transparent",
-                color: authMode === "email" ? "white" : "var(--text-secondary)",
-                transition: "all 0.2s"
+                color: authMode === "email" ? "white" : "var(--muted)",
+                transition: "all 0.2s", fontFamily: "var(--font-ui)"
               }}
             >Email</button>
             <button 
               onClick={() => { setAuthMode("phone"); setError(null); }}
               style={{
-                flex: 1, padding: "8px", borderRadius: 6, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                flex: 1, padding: "8px", borderRadius: 7, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer",
                 background: authMode === "phone" ? "var(--primary)" : "transparent",
-                color: authMode === "phone" ? "white" : "var(--text-secondary)",
-                transition: "all 0.2s"
+                color: authMode === "phone" ? "white" : "var(--muted)",
+                transition: "all 0.2s", fontFamily: "var(--font-ui)"
               }}
             >Phone</button>
           </div>
@@ -152,7 +193,7 @@ export default function LoginPage() {
           {showForgotPassword ? (
             <motion.form key="forgot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleForgotPasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
-                <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Email Address</label>
+                <label style={{ display: "block", fontSize: 13, marginBottom: 8, color: "var(--muted)", fontWeight: 500 }}>Email Address</label>
                 <input 
                   type="email" 
                   required 
@@ -164,33 +205,33 @@ export default function LoginPage() {
               </div>
               {error && <div className="error-msg">{error}</div>}
               {resetSent && (
-                <div style={{ padding: 12, background: "rgba(34,197,94,0.1)", color: "#22C55E", borderRadius: 8, fontSize: 14 }}>
-                  Reset link sent! Please check your email inbox.
+                <div style={{ padding: 12, background: "rgba(34,197,94,0.1)", color: "#22C55E", borderRadius: 8, fontSize: 14, border: "1px solid rgba(34,197,94,0.2)" }}>
+                  ✓ Reset link sent! Check your email inbox.
                 </div>
               )}
-              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 8 }}>
+              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 4 }}>
                 {loading ? "Sending..." : "Send Reset Link"}
               </button>
-              <div style={{ marginTop: 12, textAlign: "center", fontSize: 14 }}>
-                <button type="button" onClick={() => { setShowForgotPassword(false); setError(null); }} style={{ background: "none", border: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", padding: 0 }}>
-                  Back to Sign In
+              <div style={{ textAlign: "center", fontSize: 13 }}>
+                <button type="button" onClick={() => { setShowForgotPassword(false); setError(null); }} style={{ background: "none", border: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-ui)" }}>
+                  ← Back to Sign In
                 </button>
               </div>
             </motion.form>
           ) : authMode === "email" ? (
-            <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Email Address</label>
+                <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>Email Address</label>
                 <input name="email" type="email" required placeholder="student@university.edu" className="custom-input" />
               </div>
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <label style={{ fontSize: 14, color: "var(--text-secondary)" }}>Password</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+                  <label style={{ fontSize: 13, color: "var(--muted)", fontWeight: 500 }}>Password</label>
                   {isLogin && (
                     <button 
                       type="button" 
                       onClick={() => { setShowForgotPassword(true); setError(null); }} 
-                      style={{ background: "none", border: "none", color: "var(--primary)", fontSize: 13, fontWeight: 500, cursor: "pointer", padding: 0 }}
+                      style={{ background: "none", border: "none", color: "var(--primary)", fontSize: 12.5, fontWeight: 500, cursor: "pointer", padding: 0, fontFamily: "var(--font-ui)" }}
                     >
                       Forgot password?
                     </button>
@@ -199,74 +240,80 @@ export default function LoginPage() {
                 <input name="password" type="password" required placeholder="••••••••" className="custom-input" />
               </div>
               {error && <div className="error-msg">{error}</div>}
-              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 8 }}>
-                {loading ? "Please wait..." : (isLogin ? "Sign In" : "Sign Up")}
+              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 6 }}>
+                {loading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account")}
               </button>
-              <div style={{ marginTop: 24, textAlign: "center", fontSize: 14, color: "var(--text-secondary)" }}>
+              <div style={{ marginTop: 18, textAlign: "center", fontSize: 13, color: "var(--muted)" }}>
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <button type="button" onClick={() => setIsLogin(!isLogin)} style={{ background: "none", border: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", padding: 0 }}>
-                  {isLogin ? "Sign up" : "Log in"}
+                <button type="button" onClick={() => setIsLogin(!isLogin)} style={{ background: "none", border: "none", color: "var(--primary)", fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "var(--font-ui)" }}>
+                  {isLogin ? "Sign up free" : "Log in"}
                 </button>
               </div>
             </motion.form>
           ) : (
-            <motion.form key="phone" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handlePhoneSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <motion.form key="phone" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handlePhoneSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {!otpSent ? (
                 <div>
-                  <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>Mobile Number</label>
+                  <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>Mobile Number</label>
                   <input name="phone" type="tel" required placeholder="+91 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} className="custom-input" />
                 </div>
               ) : (
                 <div>
-                  <label style={{ display: "block", fontSize: 14, marginBottom: 8, color: "var(--text-secondary)" }}>6-Digit OTP</label>
-                  <input name="token" type="text" required placeholder="123456" maxLength={6} className="custom-input" style={{ letterSpacing: 4, textAlign: "center", fontSize: 18 }} />
+                  <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>6-Digit OTP</label>
+                  <input name="token" type="text" required placeholder="123456" maxLength={6} className="custom-input" style={{ letterSpacing: 6, textAlign: "center", fontSize: 20, fontFamily: "var(--font-mono)" }} />
                 </div>
               )}
               {error && <div className="error-msg">{error}</div>}
-              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 8 }}>
+              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 6 }}>
                 {loading ? "Sending..." : (!otpSent ? "Send SMS Code" : "Verify & Login")}
               </button>
             </motion.form>
           )}
         </AnimatePresence>
 
-        <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
-          <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>OR</span>
-          <div style={{ flex: 1, height: 1, background: "var(--border)" }}></div>
-        </div>
-
-        <button 
-          onClick={handleGoogleLogin} 
-          disabled={loading} 
-          className="btn-google" 
-          style={{ marginTop: 24 }}
-        >
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 20, height: 20 }} />
-          Sign in with Google
-        </button>
+        <p style={{
+          textAlign: "center",
+          fontSize: 11,
+          color: "var(--muted)",
+          marginTop: 20,
+          lineHeight: 1.5,
+        }}>
+          By signing up or logging in, you agree to our{" "}
+          <Link href="/terms" style={{ color: "var(--primary)", textDecoration: "none" }}>Terms of Service</Link>{" "}
+          and{" "}
+          <Link href="/privacy" style={{ color: "var(--primary)", textDecoration: "none" }}>Privacy Policy</Link>.
+        </p>
 
       </motion.div>
 
       <style>{`
         .custom-input {
           width: 100%;
-          padding: 12px 16px;
+          padding: 11px 14px;
           border-radius: 8px;
           border: 1px solid var(--border);
-          background: var(--background);
-          color: var(--text-primary);
+          background: var(--surface-2);
+          color: var(--text);
           font-size: 14px;
+          font-family: var(--font-ui);
+          transition: border-color 0.2s, box-shadow 0.2s;
+          box-sizing: border-box;
+        }
+        .custom-input::placeholder {
+          color: var(--muted-dim);
         }
         .custom-input:focus {
-          outline: 2px solid var(--primary);
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px var(--primary-dim);
         }
         .error-msg {
-          padding: 12px;
-          background: rgba(239, 68, 68, 0.1);
-          color: #EF4444;
+          padding: 11px 13px;
+          background: rgba(239, 68, 68, 0.08);
+          color: #F87171;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 13.5px;
+          border: 1px solid rgba(239, 68, 68, 0.2);
         }
         .btn-primary {
           width: 100%;
@@ -276,37 +323,56 @@ export default function LoginPage() {
           border: none;
           border-radius: 8px;
           font-weight: 600;
+          font-size: 14px;
           cursor: pointer;
-          transition: opacity 0.2s;
+          transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+          font-family: var(--font-ui);
+          letter-spacing: 0.01em;
+        }
+        .btn-primary:hover:not(:disabled) {
+          background: var(--primary-hover);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+        }
+        .btn-primary:active:not(:disabled) {
+          transform: scale(0.99);
         }
         .btn-primary:disabled {
-          opacity: 0.7;
+          opacity: 0.6;
           cursor: not-allowed;
         }
         .btn-google {
           width: 100%;
-          padding: 12px;
-          background: transparent;
-          color: var(--text-primary);
-          border: 1px solid var(--border);
+          padding: 11px 16px;
+          background: #ffffff;
+          color: #3c4043;
+          border: 1.5px solid #dadce0;
           border-radius: 8px;
           font-weight: 600;
+          font-size: 14px;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 12px;
+          gap: 10px;
+          font-family: 'Roboto', var(--font-ui), sans-serif;
+          letter-spacing: 0.01em;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .btn-google:hover:not(:disabled) {
-          background: var(--card-hover, rgba(0,0,0,0.05));
+          background: #f7f8ff;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+          border-color: #c0c5cf;
+        }
+        .btn-google:active:not(:disabled) {
+          background: #eef0f8;
+          transform: scale(0.99);
         }
         .btn-google:disabled {
-          opacity: 0.7;
+          opacity: 0.65;
           cursor: not-allowed;
         }
       `}</style>
     </div>
   );
 }
-

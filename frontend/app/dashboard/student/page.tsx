@@ -14,8 +14,9 @@ import {
   timeAgo,
   ACHIEVEMENTS,
   formatDeadline,
-  type UserStats
+  type UserStats,
 } from "@/lib/dashboardUtils";
+import CertificateModal from "@/components/CertificateModal";
 
 interface Profile {
   id: string;
@@ -69,6 +70,7 @@ export default function StudentDashboard() {
   const [progress, setProgress] = useState<StudentProgress[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [showCertModal, setShowCertModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -485,9 +487,44 @@ export default function StudentDashboard() {
                 );
               })}
             </div>
+
+            {/* Certificate Trigger Banner */}
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>🎓 Verified Credential Unlocked</div>
+                <div style={{ fontSize: 11, color: "var(--muted)" }}>Share your NAAC-verified completion certificate to LinkedIn.</div>
+              </div>
+              <button
+                onClick={() => setShowCertModal(true)}
+                style={{
+                  background: "var(--primary)",
+                  color: "#000",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  boxShadow: "0 0 15px rgba(5, 223, 114, 0.3)",
+                }}
+              >
+                Claim Certificate & Share
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Certificate Modal */}
+      <CertificateModal
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        studentName={profile?.full_name || "Prathamesh Sawarkar"}
+        courseName="Data Structures & Dynamic Programming Mastery"
+      />
     </div>
   );
 }

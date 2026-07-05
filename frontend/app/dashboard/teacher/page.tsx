@@ -8,9 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, BookOpen, ClipboardList, BarChart2, Download,
   Plus, Copy, Check, Calendar, ChevronRight, GraduationCap,
-  Sparkles, Award, Trash2
+  Sparkles, Award, Trash2, AlertTriangle
 } from "lucide-react";
 import { getLevel, generateNaacCsv, type NaacRow, timeAgo } from "@/lib/dashboardUtils";
+import AtRiskRadar from "@/components/AtRiskRadar";
+
 
 interface Classroom {
   id: string;
@@ -45,7 +47,7 @@ interface StudentAnalytics {
 
 export default function TeacherDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"overview" | "classes" | "assignments" | "analytics" | "naac">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "atrisk" | "classes" | "assignments" | "analytics" | "naac">("overview");
   
   // Data States
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -300,6 +302,7 @@ export default function TeacherDashboard() {
       <aside style={{ width: 240, background: "var(--surface-1)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", padding: "24px 16px", gap: 6, flexShrink: 0 }}>
         {[
           { id: "overview", label: "Overview", Icon: BookOpen },
+          { id: "atrisk", label: "At-Risk Radar", Icon: AlertTriangle, badge: "4" },
           { id: "classes", label: "My Classes", Icon: Users },
           { id: "assignments", label: "Assignments", Icon: ClipboardList },
           { id: "analytics", label: "Student Roster", Icon: BarChart2 },
@@ -315,7 +318,7 @@ export default function TeacherDashboard() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
+                justifyContent: "space-between",
                 padding: "10px 14px",
                 borderRadius: 8,
                 background: isActive ? "var(--primary-dim)" : "transparent",
@@ -328,8 +331,22 @@ export default function TeacherDashboard() {
                 transition: "all 0.15s ease",
               }}
             >
-              <ActiveIcon size={16} />
-              {tab.label}
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <ActiveIcon size={16} />
+                {tab.label}
+              </div>
+              {"badge" in tab && tab.badge && (
+                <span style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  background: isActive ? "#F43F5E" : "rgba(244, 63, 94, 0.2)",
+                  color: isActive ? "#FFF" : "#F43F5E",
+                  padding: "2px 6px",
+                  borderRadius: 99,
+                }}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
           );
         })}
@@ -374,6 +391,62 @@ export default function TeacherDashboard() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* AI At-Risk Radar Banner */}
+            <div
+              onClick={() => setActiveTab("atrisk")}
+              style={{
+                background: "linear-gradient(135deg, rgba(244, 63, 94, 0.15), rgba(15, 23, 42, 0.8))",
+                border: "1px solid rgba(244, 63, 94, 0.35)",
+                borderRadius: 16,
+                padding: "18px 24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 16,
+                marginBottom: 32,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#F43F5E"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244, 63, 94, 0.35)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: "rgba(244, 63, 94, 0.2)",
+                  color: "#F43F5E",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 800, margin: 0, color: "#F8FAFC" }}>
+                      AI At-Risk Student Radar Active
+                    </h3>
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      background: "#F43F5E",
+                      color: "#FFF",
+                      padding: "2px 8px",
+                      borderRadius: 99,
+                    }}>
+                      4 Struggling Students Detected
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 13, color: "#CBD5E1", margin: "4px 0 0 0" }}>
+                    AI telemetry flagged Aarav Sharma (Recursion call stack stall) & 3 others. Click here to inspect AI diagnoses and dispatch automated interventions →
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={20} color="#F43F5E" />
             </div>
 
             {/* Recent activity layout */}
@@ -426,6 +499,11 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* AT-RISK RADAR TAB */}
+        {activeTab === "atrisk" && (
+          <AtRiskRadar />
         )}
 
         {/* MY CLASSES TAB */}

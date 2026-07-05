@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthListener } from "@/components/AuthListener";
 import ProductTour from "@/components/ProductTour";
+import CookieBanner from "@/components/CookieBanner";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,6 +34,7 @@ export const metadata: Metadata = {
     description: "An AI-powered algorithm visualizer and learning platform for LPU students. Visualize programs step-by-step.",
     type: "website",
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -54,6 +57,22 @@ export default function RootLayout({
           <AuthListener />
           {children}
           <ProductTour />
+          <CookieBanner />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                      console.log('PWA Service Worker registered with scope:', reg.scope);
+                    }, function(err) {
+                      console.log('Service Worker registration failed:', err);
+                    });
+                  });
+                }
+              `,
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

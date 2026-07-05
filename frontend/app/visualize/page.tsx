@@ -17,6 +17,7 @@ import { generateChallenge, shuffleArray } from "@/lib/challenge";
 import VisualizerErrorBoundary from "@/components/VisualizerErrorBoundary";
 const OnboardingTour = dynamic(() => import("@/components/OnboardingTour"), { ssr: false });
 import { getSchoolConfig } from "@/lib/schools";
+import LanguageSelector from "@/components/LanguageSelector";
 
 
 // Client-only components
@@ -538,6 +539,8 @@ function VisualizeContent() {
         </div>
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
+          <LanguageSelector />
+
           {/* Algorithm Catalog Button */}
           <button
             onClick={() => setIsCatalogOpen(true)}

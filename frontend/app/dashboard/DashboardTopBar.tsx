@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, ChevronDown, BookOpen, LayoutDashboard, User } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 
 interface Profile {
   id: string;
@@ -161,6 +162,8 @@ export default function DashboardTopBar({ profile, userId }: Props) {
           Visualizer
         </Link>
       </nav>
+
+      <LanguageSelector />
 
       {/* Avatar dropdown */}
       <div ref={dropdownRef} style={{ position: "relative" }}>

@@ -161,6 +161,56 @@ export default function DashboardTopBar({ profile, userId }: Props) {
           <BookOpen size={14} />
           Visualizer
         </Link>
+        <Link
+          href="/battleground"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 12px",
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#F59E0B",
+            textDecoration: "none",
+            background: "rgba(245, 158, 11, 0.1)",
+            border: "1px solid rgba(245, 158, 11, 0.3)",
+            transition: "all 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(245, 158, 11, 0.2)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(245, 158, 11, 0.1)";
+          }}
+        >
+          ⚔️ Arena
+        </Link>
+        <button
+          onClick={() => window.dispatchEvent(new Event("open-product-tour"))}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 12px",
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--primary)",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            transition: "all 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--surface-hover)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          ✨ Demo Tour
+        </button>
       </nav>
 
       <LanguageSelector />

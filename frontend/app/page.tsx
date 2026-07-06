@@ -769,6 +769,12 @@ function LandingPageContent() {
           <a href="#faq" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>FAQ</a>
           <a href="#contact" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>Contact</a>
           <Link
+            href="/battleground"
+            style={{ fontSize: 13, color: "#F59E0B", textDecoration: "none", fontWeight: 700, padding: "5px 10px", background: "rgba(245, 158, 11, 0.1)", borderRadius: 6, border: "1px solid rgba(245, 158, 11, 0.3)" }}
+          >
+            ⚔️ Battleground Arena
+          </Link>
+          <Link
             href={`/visualize?school=${schoolConfig.id}`}
             className="btn btn-primary"
             style={{ fontSize: 13 }}
@@ -824,6 +830,13 @@ function LandingPageContent() {
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Pricing</a>
           <a href="#faq" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>FAQ</a>
           <a href="#contact" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Contact</a>
+          <Link
+            href="/battleground"
+            style={{ fontSize: 14, color: "#F59E0B", textDecoration: "none", fontWeight: 700, padding: "8px 0" }}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            ⚔️ Battleground Arena
+          </Link>
           <Link
             href={`/visualize?school=${schoolConfig.id}`}
             className="btn btn-primary"
@@ -923,6 +936,24 @@ function LandingPageContent() {
               id="hero-cta-tracer"
             >
               Start Visualizing Free →
+            </Link>
+            <Link
+              href="/battleground"
+              style={{
+                padding: "11px 28px",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+                color: "#FFF",
+                background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                borderRadius: 8,
+                boxShadow: "0 4px 14px rgba(245, 158, 11, 0.3)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              ⚔️ Enter Battleground Arena
             </Link>
           </div>
 

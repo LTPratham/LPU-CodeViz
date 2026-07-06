@@ -14,10 +14,17 @@
   --muted-dim:      #52525B;
   --primary:        #3B82F6;
   --primary-hover:  #2563EB;
+  --primary-light:  #60A5FA;
+  --primary-dark:   #1D4ED8;
   --primary-dim:    rgba(59, 130, 246, 0.12);
   --primary-border: rgba(59, 130, 246, 0.3);
+  --primary-glow:   rgba(59, 130, 246, 0.25);
 
-  /* Surface Layers */
+  /* Surface Layers & Cards */
+  --bg-secondary:   #09090B;
+  --card:           #141824;
+  --text-secondary: #E2E8F0;
+  --text-muted:     #A1A1AA;
   --surface-0:      #09090B;
   --surface-1:      #111113;
   --surface-2:      #18181B;

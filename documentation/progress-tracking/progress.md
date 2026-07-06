@@ -46,6 +46,12 @@
 - [x] **NEP 2020 Vernacular Multi-Language Mode (`<LanguageSelector />`, `lib/translations.ts`)**: Instant regional UI switcher for English, Hindi, Tamil, Telugu, and Marathi.
 - [x] **LTI 1.3 LMS Passback & PWA Offline Support (`/integrations/lms`, `sw.js`, `manifest.json`)**: Automated roster synchronization and gradebook passback for Moodle, Google Classroom, and Canvas, plus standalone PWA offline WASM execution mode.
 
+### Phase 6: Live Walkthrough & Proctored Evaluation Refinements (Completed)
+- [x] **First-Visit Tutorial Persistence (`components/ProductTour.tsx`)**: Configured `has_seen_tour_prompt` in `localStorage` so the floating tutorial prompt only appears on a visitor's first visit and hides cleanly upon dismissal. Added a **`✨ Demo Tour`** re-launcher in `<DashboardTopBar />`.
+- [x] **Demo Authentication Bypass (`app/login/page.tsx`, `<ProductTour />`)**: Automatically issues `mock_role` demo sessions during interactive walkthroughs to prevent users from getting trapped on login. Added an **"✨ Instant Proctored Evaluation"** 1-click banner on the login card.
+- [x] **Pure University Competitive Programming Problem Statements (`app/battleground/play/page.tsx`)**: Stripped out all algorithmic hints, spoilers, and bug descriptions from arena problem panels. Formatted descriptions strictly to **Problem Statement**, **Input Specification**, **Expected Output**, and **Sample Cases** in alignment with university lab exam standards.
+- [x] **Strict Unmodified Code Grader Guard (`app/battleground/play/page.tsx`, `app/assignment/[id]/page.tsx`)**: Added anti-cheat pre-evaluation checks that instantly reject submissions matching initial unmodified buggy/sample templates.
+
 ## In-Progress Items
 - [ ] Production monitoring and real-time student engagement scaling
 

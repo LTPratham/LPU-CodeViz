@@ -53,13 +53,6 @@ export async function middleware(request: NextRequest) {
 
       // Refresh session and retrieve user
       const { data: { user } } = await supabase.auth.getUser();
-
-      // Enforce private route access for visualizer dashboard
-      if (!user && request.nextUrl.pathname.startsWith("/visualize")) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.search = request.nextUrl.search;
-        return NextResponse.redirect(loginUrl);
-      }
     } catch (err) {
       // Never crash the middleware — just continue without auth.
       console.warn("Middleware: Supabase session refresh failed:", err);

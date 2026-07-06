@@ -84,8 +84,8 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
       display: "flex",
       flexDirection: "column",
       height: "100%",
-      background: "var(--bg-secondary)",
-      borderTop: "1px solid var(--border)",
+      background: "var(--bg-secondary, #09090B)",
+      borderTop: "1px solid var(--border, #27272A)",
     }}>
       {/* Header */}
       <div style={{
@@ -93,8 +93,8 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
         alignItems: "center",
         gap: 8,
         padding: "8px 16px",
-        borderBottom: "1px solid var(--border)",
-        background: "var(--card)",
+        borderBottom: "1px solid var(--border, #27272A)",
+        background: "var(--card, #141824)",
         flexShrink: 0,
       }}>
         <div style={{
@@ -161,12 +161,12 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
               padding: "10px 14px",
               borderRadius: msg.role === "student" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
               background: msg.role === "student"
-                ? "linear-gradient(135deg, var(--primary-dark), var(--primary))"
-                : "var(--card)",
+                ? "linear-gradient(135deg, var(--primary-dark, #1D4ED8), var(--primary, #3B82F6))"
+                : "var(--card, #141824)",
               border: msg.role === "student"
                 ? "none"
-                : "1px solid var(--border)",
-              color: msg.role === "student" ? "white" : "var(--text-secondary)",
+                : "1px solid var(--border, #27272A)",
+              color: msg.role === "student" ? "white" : "var(--text-secondary, #E2E8F0)",
               fontSize: 13,
               lineHeight: 1.6,
               boxShadow: msg.role === "student" ? "0 2px 10px var(--primary-glow)" : "none",
@@ -182,8 +182,8 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
             <div style={{
               padding: "10px 14px",
               borderRadius: "14px 14px 14px 4px",
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: "var(--card, #141824)",
+              border: "1px solid var(--border, #27272A)",
               display: "flex",
               gap: 4,
               alignItems: "center",
@@ -218,9 +218,9 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
               style={{
                 padding: "4px 10px",
                 borderRadius: 20,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                color: "var(--text-muted)",
+                border: "1px solid var(--border, #27272A)",
+                background: "var(--card, #141824)",
+                color: "var(--text-muted, #A1A1AA)",
                 fontSize: 11,
                 cursor: "pointer",
                 transition: "all 0.15s",
@@ -246,8 +246,8 @@ export default function TutorChat({ code, lang, currentStep, onClose }: Props) {
         display: "flex",
         gap: 8,
         padding: "10px 16px",
-        borderTop: "1px solid var(--border)",
-        background: "var(--card)",
+        borderTop: "1px solid var(--border, #27272A)",
+        background: "var(--card, #141824)",
         flexShrink: 0,
       }}>
         <input

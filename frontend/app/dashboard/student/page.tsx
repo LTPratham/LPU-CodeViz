@@ -227,6 +227,58 @@ export default function StudentDashboard() {
         </Link>
       </motion.div>
 
+      {/* Algorithm Combat Arena Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%)",
+          border: "1px solid rgba(245, 158, 11, 0.4)",
+          borderRadius: 16,
+          padding: "24px",
+          marginBottom: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 16,
+          boxShadow: "0 8px 24px rgba(245, 158, 11, 0.1)"
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 12, background: "rgba(245, 158, 11, 0.2)", border: "1px solid rgba(245, 158, 11, 0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>
+            ⚔️
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#FFF" }}>CodeCanvas Proctored Combat Arena</span>
+              <span style={{ fontSize: 10, background: "#F59E0B", color: "#000", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>LIVE LPU-8821</span>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--muted)", margin: 0 }}>
+              Enter the algorithm battleground! Hunt bugs under time pressure, pass hidden edge cases, and climb the university ELO leaderboard.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/battleground/play?pin=LPU-8821"
+          style={{
+            padding: "12px 24px",
+            background: "linear-gradient(135deg, #F59E0B, #D97706)",
+            color: "#FFF",
+            textDecoration: "none",
+            borderRadius: 10,
+            fontWeight: 800,
+            fontSize: 14,
+            boxShadow: "0 4px 14px rgba(245, 158, 11, 0.3)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          🚀 Enter Battle Arena →
+        </Link>
+      </motion.div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
         {/* Left main content */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

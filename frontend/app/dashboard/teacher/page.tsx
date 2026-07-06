@@ -350,6 +350,27 @@ export default function TeacherDashboard() {
             </button>
           );
         })}
+        <Link
+          href="/battleground"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1))",
+            border: "1px solid rgba(245, 158, 11, 0.3)",
+            color: "#F59E0B",
+            fontSize: 14,
+            fontWeight: 700,
+            textDecoration: "none",
+            marginTop: "auto",
+            transition: "all 0.15s ease",
+          }}
+        >
+          <span>⚔️</span>
+          <span>Battle Arena</span>
+        </Link>
       </aside>
 
       {/* Main Panel */}
@@ -363,6 +384,9 @@ export default function TeacherDashboard() {
                 <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 4 }}>Overview of your classes, curriculum coverage, and student activity metrics.</p>
               </div>
               <div style={{ display: "flex", gap: 12 }}>
+                <Link href="/battleground" className="btn" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, background: "linear-gradient(135deg, #F59E0B, #D97706)", color: "#FFF", border: "none", fontWeight: 700, textDecoration: "none" }}>
+                  ⚔️ Host Arena
+                </Link>
                 <button onClick={() => setShowClassModal(true)} className="btn btn-ghost" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, border: "1px solid var(--border)" }}>
                   <Plus size={14} /> New Class
                 </button>

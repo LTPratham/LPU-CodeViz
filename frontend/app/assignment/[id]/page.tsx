@@ -134,6 +134,11 @@ export default function StudentAssignmentPage() {
       return;
     }
 
+    if (assignment && code.trim() === assignment.sample_code.trim()) {
+      alert("⚠️ Auto-Grader Rejection: You submitted the unmodified sample code without implementing the required solution! Please write your code before submitting.");
+      return;
+    }
+
     setSubmitting(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();

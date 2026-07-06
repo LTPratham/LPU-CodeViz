@@ -207,8 +207,9 @@ export default function ProductTour() {
   const [stepIndex, setStepIndex] = useState<number>(-1);
   const [box, setBox] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [hasSeenPrompt, setHasSeenPrompt] = useState<boolean>(false);
 
-  // Sync state from sessionStorage to survive page reloads
+  // Sync state from sessionStorage and check first-visit status
   useEffect(() => {
     const sc = sessionStorage.getItem("tour_scenario");
     const st = sessionStorage.getItem("tour_step");
@@ -216,6 +217,17 @@ export default function ProductTour() {
       setActiveScenario(sc as any);
       setStepIndex(parseInt(st, 10));
     }
+    const seen = localStorage.getItem("has_seen_tour_prompt");
+    if (seen === "true" && !sc) {
+      setHasSeenPrompt(true);
+    }
+
+    const handleOpenTour = () => {
+      setHasSeenPrompt(false);
+      setShowDropdown(true);
+    };
+    window.addEventListener("open-product-tour", handleOpenTour);
+    return () => window.removeEventListener("open-product-tour", handleOpenTour);
   }, []);
 
   const steps = activeScenario === "student" ? STUDENT_TOUR : activeScenario === "teacher" ? TEACHER_TOUR : [];
@@ -280,6 +292,13 @@ export default function ProductTour() {
   const handleStart = (scenario: "student" | "teacher") => {
     sessionStorage.setItem("tour_scenario", scenario);
     sessionStorage.setItem("tour_step", "0");
+    localStorage.setItem("has_seen_tour_prompt", "true");
+    setHasSeenPrompt(true);
+
+    // Automatically grant demo session access so unauthenticated visitors never get stuck on login during the demo!
+    document.cookie = `mock_role=${scenario}; path=/; max-age=31536000`;
+    localStorage.setItem("mock_role", scenario);
+
     setActiveScenario(scenario);
     setStepIndex(0);
     setShowDropdown(false);
@@ -329,6 +348,8 @@ export default function ProductTour() {
   const handleEnd = () => {
     sessionStorage.removeItem("tour_scenario");
     sessionStorage.removeItem("tour_step");
+    localStorage.setItem("has_seen_tour_prompt", "true");
+    setHasSeenPrompt(true);
     setActiveScenario(null);
     setStepIndex(-1);
     setBox(null);
@@ -336,8 +357,9 @@ export default function ProductTour() {
 
   return (
     <>
-      {/* Floating Tour Button */}
-      <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", alignItems: "end", gap: 10 }}>
+      {/* Floating Tour Button — Only visible on first visit or when tour is active */}
+      {(!hasSeenPrompt || activeScenario) && (
+        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", alignItems: "end", gap: 10 }}>
         {showDropdown && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -440,6 +462,7 @@ export default function ProductTour() {
           )}
         </button>
       </div>
+      )}
 
       {/* Tour Spotlight Overlay */}
       {currentStep && box && (

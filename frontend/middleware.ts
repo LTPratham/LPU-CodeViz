@@ -21,13 +21,14 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Only run Supabase session refresh if env vars are configured.
-  // If they are missing (e.g. Vercel preview without secrets), skip auth
-  // entirely so the app still works in demo/offline mode.
+  // Check if user even has a Supabase auth cookie before making an external API call over network.
+  // This prevents Vercel 504 MIDDLEWARE_INVOCATION_TIMEOUT when users visit without auth or in demo mode.
+  const hasSupabaseCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (supabaseUrl && supabaseKey) {
+  if (supabaseUrl && supabaseKey && hasSupabaseCookie) {
     try {
       const supabase = createServerClient(
         supabaseUrl,
@@ -51,11 +52,16 @@ export async function middleware(request: NextRequest) {
         }
       );
 
-      // Refresh session and retrieve user
-      const { data: { user } } = await supabase.auth.getUser();
+      // Refresh session with a strict 1500ms timeout to prevent Vercel Gateway Timeout (504)
+      const getUserPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase auth timeout in middleware")), 1500)
+      );
+
+      await Promise.race([getUserPromise, timeoutPromise]);
     } catch (err) {
-      // Never crash the middleware — just continue without auth.
-      console.warn("Middleware: Supabase session refresh failed:", err);
+      // Never crash or hang the middleware — just continue gracefully.
+      console.warn("Middleware: Supabase session refresh skipped/timed out:", err);
     }
   }
 

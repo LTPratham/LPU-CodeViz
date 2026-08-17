@@ -43,11 +43,11 @@ export default function BattlegroundLeaderboard({
 
   return (
     <div style={{
-      background: "rgba(15, 23, 42, 0.8)",
-      border: "1px solid rgba(59, 130, 246, 0.3)",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
       borderRadius: 16,
       padding: 24,
-      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+      boxShadow: "var(--shadow)",
       backdropFilter: "blur(12px)",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -66,10 +66,10 @@ export default function BattlegroundLeaderboard({
             <Trophy size={18} />
           </div>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#F8FAFC", margin: 0 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", margin: 0 }}>
               {mode === "live" ? "Live Arena Leaderboard" : "Global ELO Rankings"}
             </h3>
-            <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
               {mode === "live" ? "Real-time algorithmic speed & Big-O execution tracking" : "Top university algorithm gladiators"}
             </p>
           </div>
@@ -93,8 +93,8 @@ export default function BattlegroundLeaderboard({
         display: "grid",
         gridTemplateColumns: "40px 2fr 1fr 1fr 1fr 1fr",
         padding: "0 16px 12px 16px",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        color: "#64748B",
+        borderBottom: "1px solid var(--border)",
+        color: "var(--text-muted)",
         fontSize: 11,
         fontWeight: 700,
         textTransform: "uppercase",
@@ -125,15 +125,15 @@ export default function BattlegroundLeaderboard({
                 padding: "12px 16px",
                 borderRadius: 12,
                 background: isCurrentUser
-                  ? "linear-gradient(90deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.15))"
+                  ? "linear-gradient(90deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1))"
                   : rank === 1
-                  ? "linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0))"
-                  : "rgba(255, 255, 255, 0.02)",
+                  ? "linear-gradient(90deg, rgba(245, 158, 11, 0.12), transparent)"
+                  : "var(--surface-1)",
                 border: isCurrentUser
-                  ? "1px solid rgba(59, 130, 246, 0.6)"
+                  ? "1px solid rgba(59, 130, 246, 0.4)"
                   : rank === 1
-                  ? "1px solid rgba(245, 158, 11, 0.4)"
-                  : "1px solid rgba(255, 255, 255, 0.05)",
+                  ? "1px solid rgba(245, 158, 11, 0.3)"
+                  : "1px solid var(--border)",
                 transition: "all 0.2s ease",
               }}
             >
@@ -148,26 +148,26 @@ export default function BattlegroundLeaderboard({
                   width: 32,
                   height: 32,
                   borderRadius: "50%",
-                  background: "rgba(255, 255, 255, 0.1)",
+                  background: "var(--surface-3)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 14,
                   fontWeight: 700,
-                  color: "#FFF",
-                  border: isCurrentUser ? "2px solid #3B82F6" : "1px solid rgba(255, 255, 255, 0.2)",
+                  color: "var(--text)",
+                  border: isCurrentUser ? "2px solid #3B82F6" : "1px solid var(--border)",
                 }}>
                   {player.avatar || player.name.charAt(0)}
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#F8FAFC" }}>{player.name}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{player.name}</span>
                     {isCurrentUser && (
                       <span style={{ fontSize: 10, background: "#3B82F6", color: "#FFF", padding: "1px 6px", borderRadius: 4, fontWeight: 800 }}>YOU</span>
                     )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                    <span style={{ fontSize: 11, color: "#94A3B8", display: "flex", alignItems: "center", gap: 3 }}>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 3 }}>
                       <Flame size={12} color="#F59E0B" /> {player.streak}x Streak
                     </span>
                   </div>
@@ -215,7 +215,7 @@ export default function BattlegroundLeaderboard({
               </div>
 
               {/* Time / ELO */}
-              <div style={{ fontSize: 13, color: "#CBD5E1", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
                 {mode === "live" ? (
                   <>
                     <Clock size={14} color="#64748B" />
@@ -230,9 +230,9 @@ export default function BattlegroundLeaderboard({
               </div>
 
               {/* Score */}
-              <div style={{ textAlign: "right", fontSize: 16, fontWeight: 800, color: "#F8FAFC" }}>
+              <div style={{ textAlign: "right", fontSize: 16, fontWeight: 800, color: "var(--text)" }}>
                 {player.score.toLocaleString()}
-                <span style={{ fontSize: 11, color: "#64748B", marginLeft: 2 }}>pts</span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 2 }}>pts</span>
               </div>
             </div>
           );

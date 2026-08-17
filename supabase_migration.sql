@@ -1,5 +1,5 @@
 -- ============================================================
--- CodeCanvas — Full Database Schema Migration (Fixed Order)
+-- CodeCanvas — Full Database Schema Migration (Recursion Free)
 -- ============================================================
 
 -- 1. CREATE ALL TABLES FIRST
@@ -119,72 +119,95 @@ ALTER TABLE public.student_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shared_traces ENABLE ROW LEVEL SECURITY;
 
--- 3. CREATE POLICIES
+-- 3. DEFINE SECURITY FUNCTIONS (To bypass mutual recursion in RLS)
+
+CREATE OR REPLACE FUNCTION public.is_teacher(user_id_param UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = user_id_param AND role IN ('teacher', 'hod', 'admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_classroom_teacher(classroom_id_param UUID, user_id_param UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.classrooms
+    WHERE id = classroom_id_param AND teacher_id = user_id_param
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_classroom_student(classroom_id_param UUID, user_id_param UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.enrollments
+    WHERE classroom_id = classroom_id_param AND student_id = user_id_param
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_assignment_teacher(assignment_id_param UUID, user_id_param UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.assignments a
+    JOIN public.classrooms c ON c.id = a.classroom_id
+    WHERE a.id = assignment_id_param AND c.teacher_id = user_id_param
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4. CREATE POLICIES
 
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Teachers can view student profiles" ON public.profiles FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'hod', 'admin')
-  )
+  public.is_teacher(auth.uid())
 );
 
 CREATE POLICY "Teachers manage their classrooms" ON public.classrooms FOR ALL USING (teacher_id = auth.uid());
 CREATE POLICY "Students can view enrolled classrooms" ON public.classrooms FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.enrollments e WHERE e.classroom_id = id AND e.student_id = auth.uid()
-  )
+  public.is_classroom_student(id, auth.uid())
 );
 
 CREATE POLICY "Students can enroll themselves" ON public.enrollments FOR INSERT WITH CHECK (student_id = auth.uid());
 CREATE POLICY "Students can see own enrollments" ON public.enrollments FOR SELECT USING (student_id = auth.uid());
 CREATE POLICY "Teachers can see their class enrollments" ON public.enrollments FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.classrooms c WHERE c.id = classroom_id AND c.teacher_id = auth.uid()
-  )
+  public.is_classroom_teacher(classroom_id, auth.uid())
 );
 CREATE POLICY "Teachers can remove students" ON public.enrollments FOR DELETE USING (
-  EXISTS (
-    SELECT 1 FROM public.classrooms c WHERE c.id = classroom_id AND c.teacher_id = auth.uid()
-  )
+  public.is_classroom_teacher(classroom_id, auth.uid())
 );
 
 CREATE POLICY "Teachers manage assignments" ON public.assignments FOR ALL USING (
-  EXISTS (
-    SELECT 1 FROM public.classrooms c WHERE c.id = classroom_id AND c.teacher_id = auth.uid()
-  )
+  public.is_classroom_teacher(classroom_id, auth.uid())
 );
 CREATE POLICY "Students view assignments for their classes" ON public.assignments FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.enrollments e WHERE e.classroom_id = classroom_id AND e.student_id = auth.uid()
-  )
+  public.is_classroom_student(classroom_id, auth.uid())
 );
 
 CREATE POLICY "Students submit and view own submissions" ON public.submissions FOR ALL USING (student_id = auth.uid());
 CREATE POLICY "Teachers view submissions for their assignments" ON public.submissions FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.assignments a JOIN public.classrooms c ON c.id = a.classroom_id WHERE a.id = assignment_id AND c.teacher_id = auth.uid()
-  )
+  public.is_assignment_teacher(assignment_id, auth.uid())
 );
 CREATE POLICY "Teachers grade submissions" ON public.submissions FOR UPDATE USING (
-  EXISTS (
-    SELECT 1 FROM public.assignments a JOIN public.classrooms c ON c.id = a.classroom_id WHERE a.id = assignment_id AND c.teacher_id = auth.uid()
-  )
+  public.is_assignment_teacher(assignment_id, auth.uid())
 );
 
 CREATE POLICY "Users can insert own traces" ON public.trace_history FOR INSERT WITH CHECK (user_id = auth.uid());
 CREATE POLICY "Users can view own traces" ON public.trace_history FOR SELECT USING (user_id = auth.uid());
 CREATE POLICY "Teachers can view student traces" ON public.trace_history FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'hod', 'admin')
-  )
+  public.is_teacher(auth.uid())
 );
 
 CREATE POLICY "Users manage own progress" ON public.student_progress FOR ALL USING (user_id = auth.uid());
 CREATE POLICY "Teachers view student progress" ON public.student_progress FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'hod', 'admin')
-  )
+  public.is_teacher(auth.uid())
 );
 
 CREATE POLICY "Users view own achievements" ON public.achievements FOR SELECT USING (user_id = auth.uid());
@@ -194,7 +217,7 @@ CREATE POLICY "Anyone can view shared traces" ON public.shared_traces FOR SELECT
 CREATE POLICY "Authenticated users can share" ON public.shared_traces FOR INSERT WITH CHECK (user_id = auth.uid());
 CREATE POLICY "Users increment view count" ON public.shared_traces FOR UPDATE USING (true);
 
--- 4. CREATE TRIGGERS & FUNCTIONS
+-- 5. CREATE TRIGGERS & FUNCTIONS
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -205,7 +228,9 @@ BEGIN
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'avatar_url',
     NEW.email
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -252,7 +277,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. INDEXES
+-- 6. INDEXES
 
 CREATE INDEX IF NOT EXISTS idx_trace_history_user_id ON public.trace_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_trace_history_created_at ON public.trace_history(created_at DESC);

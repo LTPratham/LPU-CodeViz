@@ -37,6 +37,14 @@ export async function GET(request: Request) {
 
       // If no role is set in the database, lock in the login preference
       if (!activeRole && (role === "student" || role === "teacher")) {
+        if (role === "teacher") {
+          const facultyKey = searchParams.get("faculty_key");
+          const expectedKey = process.env.FACULTY_VERIFICATION_KEY || "LPU-FACULTY-2026";
+          if (facultyKey !== expectedKey) {
+            return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("Unauthorized: Invalid Faculty Verification Key. Contact Administrator.")}`);
+          }
+        }
+
         activeRole = role;
         await supabase
           .from("profiles")

@@ -7,13 +7,14 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, Briefcase } from "lucide-react";
+import { GraduationCap, Briefcase, KeyRound } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [rolePreference, setRolePreference] = useState<"student" | "teacher">("student");
+  const [facultyKey, setFacultyKey] = useState("");
   const searchParams = useSearchParams();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -28,6 +29,11 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
 
   const handleGoogleLogin = async () => {
+    if (rolePreference === "teacher" && !facultyKey.trim()) {
+      setError("Please enter the Faculty Verification Key.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -36,11 +42,16 @@ export default function LoginPage() {
     localStorage.removeItem("mock_role");
     sessionStorage.removeItem("tour_scenario");
 
+    let redirectUrl = `${window.location.origin}/auth/callback?next=/dashboard&role=${rolePreference}`;
+    if (rolePreference === "teacher") {
+      redirectUrl += `&faculty_key=${encodeURIComponent(facultyKey.trim())}`;
+    }
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard&role=${rolePreference}`,
+        redirectTo: redirectUrl,
         queryParams: { access_type: 'offline', prompt: 'select_account' }
       }
     });
@@ -49,6 +60,11 @@ export default function LoginPage() {
   };
 
   async function handleEmailSubmit(formData: FormData) {
+    if (rolePreference === "teacher" && !facultyKey.trim()) {
+      setError("Please enter the Faculty Verification Key.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -57,16 +73,12 @@ export default function LoginPage() {
     localStorage.removeItem("mock_role");
     sessionStorage.removeItem("tour_scenario");
 
-    // Add role preference to action data if sign up
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
     let result;
     if (isLogin) {
       result = await login(formData);
     } else {
-      // Pass role preference to signup action
-      result = await signup(formData, rolePreference);
+      // Pass role preference and key to signup action
+      result = await signup(formData, rolePreference, facultyKey.trim());
     }
     if (result?.error) setError(result.error);
     setLoading(false);
@@ -204,6 +216,31 @@ export default function LoginPage() {
               <Briefcase size={16} /> Faculty Hub
             </button>
           </div>
+        )}
+
+        {/* ── Faculty Verification Key Input ── */}
+        {!showForgotPassword && rolePreference === "teacher" && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            style={{ marginBottom: 20 }}
+          >
+            <label style={{ display: "block", fontSize: 13, marginBottom: 8, color: "var(--muted)", fontWeight: 500 }}>
+              Faculty Verification Key
+            </label>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <KeyRound size={16} style={{ position: "absolute", left: 12, color: "var(--muted)" }} />
+              <input 
+                type="password" 
+                required 
+                placeholder="Enter secret faculty access code" 
+                className="custom-input"
+                style={{ paddingLeft: 38 }}
+                value={facultyKey}
+                onChange={(e) => setFacultyKey(e.target.value)}
+              />
+            </div>
+          </motion.div>
         )}
 
         {/* Google OAuth Button — ABOVE the form */}

@@ -8,11 +8,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id           UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name    TEXT,
   avatar_url   TEXT,
+  email        TEXT,
   role         TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'teacher', 'hod', 'admin')),
   school_id    TEXT DEFAULT 'cse',
   xp           INTEGER NOT NULL DEFAULT 0,
   streak_days  INTEGER NOT NULL DEFAULT 0,
   last_active  DATE,
+  updated_at   TIMESTAMPTZ,
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -197,11 +199,12 @@ CREATE POLICY "Users increment view count" ON public.shared_traces FOR UPDATE US
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url)
+  INSERT INTO public.profiles (id, full_name, avatar_url, email)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'avatar_url'
+    NEW.raw_user_meta_data->>'avatar_url',
+    NEW.email
   );
   RETURN NEW;
 END;

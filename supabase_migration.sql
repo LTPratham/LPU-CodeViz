@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   full_name    TEXT,
   avatar_url   TEXT,
   email        TEXT,
-  role         TEXT NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'teacher', 'hod', 'admin')),
+  role         TEXT CHECK (role IN ('student', 'teacher', 'hod', 'admin')),
   school_id    TEXT DEFAULT 'cse',
   xp           INTEGER NOT NULL DEFAULT 0,
   streak_days  INTEGER NOT NULL DEFAULT 0,

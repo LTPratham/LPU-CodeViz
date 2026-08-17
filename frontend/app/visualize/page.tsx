@@ -18,7 +18,7 @@ import VisualizerErrorBoundary from "@/components/VisualizerErrorBoundary";
 const OnboardingTour = dynamic(() => import("@/components/OnboardingTour"), { ssr: false });
 import { getSchoolConfig } from "@/lib/schools";
 import LanguageSelector from "@/components/LanguageSelector";
-
+import { Sun, Moon, BookOpen, Share2, Loader2, CheckCircle2 } from "lucide-react";
 
 // Client-only components
 const CodeEditor  = dynamic(() => import("@/components/CodeEditor"),  { ssr: false });
@@ -487,15 +487,20 @@ function VisualizeContent() {
           display: "flex", alignItems: "center", gap: 8,
           textDecoration: "none", color: "inherit"
         }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 7,
-            background: `linear-gradient(135deg, ${activeColor}, #9A4BFF)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, fontWeight: 800, color: "white",
-            boxShadow: `0 0 10px ${activeColor}30`
-          }}>◈</div>
+          {mounted ? (
+            <img 
+              src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
+              alt="CodeCanvas Logo" 
+              style={{ height: 28, width: "auto", objectFit: "contain" }} 
+            />
+          ) : (
+            <img 
+              src="/logo-dark.png" 
+              alt="CodeCanvas Logo" 
+              style={{ height: 28, width: "auto", objectFit: "contain" }} 
+            />
+          )}
           <span style={{ fontWeight: 800, fontSize: 16, color: activeColor, display: "flex", alignItems: "center" }}>
-            CodeCanvas
             <span style={{ 
               fontSize: 9, 
               background: `${activeColor}15`, 
@@ -545,20 +550,20 @@ function VisualizeContent() {
           <button
             onClick={() => setIsCatalogOpen(true)}
             className="btn btn-ghost"
-            style={{ padding: "6px 12px", fontSize: 12, height: "auto" }}
+            style={{ padding: "6px 12px", fontSize: 12, height: "auto", display: "flex", alignItems: "center", gap: 6 }}
           >
-            📚 Catalog
+            <BookOpen size={14} /> Catalog
           </button>
 
           {/* Share Button */}
           <button
             className="btn btn-ghost"
-            style={{ padding: "6px 12px", fontSize: 12, height: "auto", display: "flex", alignItems: "center", gap: 4 }}
+            style={{ padding: "6px 12px", fontSize: 12, height: "auto", display: "flex", alignItems: "center", gap: 6 }}
             onClick={handleShare}
             disabled={!steps.length || isSharing}
             title={shareSlug ? `Copied! /share/${shareSlug}` : "Share this trace"}
           >
-            {isSharing ? "⏳" : shareSlug ? "✓ Copied" : "🔗 Share"}
+            {isSharing ? <Loader2 size={14} className="animate-spin" /> : shareSlug ? <><CheckCircle2 size={14} /> Copied</> : <><Share2 size={14} /> Share</>}
           </button>
 
           {/* Theme Toggle */}
@@ -568,7 +573,7 @@ function VisualizeContent() {
             style={{ borderRadius: "50%", padding: 6, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}
             title="Toggle theme"
           >
-            {mounted ? (theme === "dark" ? "☼" : "☾") : "☾"}
+            {mounted ? (theme === "dark" ? <Sun size={15} /> : <Moon size={15} />) : <Moon size={15} />}
           </button>
 
           {/* User Profile / Sign Out */}
@@ -647,7 +652,7 @@ function VisualizeContent() {
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          background: "#111827",
+          background: "var(--surface-1)",
           position: "relative",
         }}
           className="panel-visual"

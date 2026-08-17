@@ -1,68 +1,111 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Pages that don't require authentication
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/reset-password",
+  "/",        // Landing page is public
+];
+
+// Pages where demo (mock_role) cookie is accepted as a bypass
+const DEMO_ALLOWED_PATHS = [
+  "/visualize",
+  "/battleground",
+  "/dashboard/student",
+  "/dashboard/teacher",
+];
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   // Redirect PKCE auth codes to the callback route
-  // We exclude "/visualize" because it uses "code" as a query parameter for sharing code snippets.
   const code = request.nextUrl.searchParams.get("code");
   if (
     code &&
-    !request.nextUrl.pathname.startsWith("/auth/") &&
-    !request.nextUrl.pathname.startsWith("/visualize")
+    !pathname.startsWith("/auth/") &&
+    !pathname.startsWith("/visualize")
   ) {
     const callbackUrl = new URL("/auth/callback", request.url);
     callbackUrl.search = request.nextUrl.search;
     return NextResponse.redirect(callbackUrl);
   }
 
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  // Allow public paths through without any auth check
+  const isPublic = PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+  if (isPublic) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
 
-  // Check if user even has a Supabase auth cookie before making an external API call over network.
-  // This prevents Vercel 504 MIDDLEWARE_INVOCATION_TIMEOUT when users visit without auth or in demo mode.
-  const hasSupabaseCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+  // Check for demo/tour cookie first — allow demo access to specific routes
+  const mockRole = request.cookies.get("mock_role")?.value;
+  const isDemoAllowed = DEMO_ALLOWED_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+  if (mockRole && isDemoAllowed) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
 
+  // Real auth check — only if Supabase env vars are set
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (supabaseUrl && supabaseKey && hasSupabaseCookie) {
-    try {
-      const supabase = createServerClient(
-        supabaseUrl,
-        supabaseKey,
-        {
-          cookies: {
-            get(name: string) {
-              return request.cookies.get(name)?.value;
-            },
-            set(name: string, value: string, options: CookieOptions) {
-              request.cookies.set({ name, value, ...options });
-              response = NextResponse.next({ request: { headers: request.headers } });
-              response.cookies.set({ name, value, ...options });
-            },
-            remove(name: string, options: CookieOptions) {
-              request.cookies.set({ name, value: "", ...options });
-              response = NextResponse.next({ request: { headers: request.headers } });
-              response.cookies.set({ name, value: "", ...options });
-            },
-          },
-        }
-      );
+  if (!supabaseUrl || !supabaseKey) {
+    // Env vars not set — redirect to login
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 
-      // Refresh session with a strict 1500ms timeout to prevent Vercel Gateway Timeout (504)
-      const getUserPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Supabase auth timeout in middleware")), 1500)
-      );
+  let response = NextResponse.next({ request: { headers: request.headers } });
 
-      await Promise.race([getUserPromise, timeoutPromise]);
-    } catch (err) {
-      // Never crash or hang the middleware — just continue gracefully.
-      console.warn("Middleware: Supabase session refresh skipped/timed out:", err);
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: "", ...options });
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value: "", ...options });
+        },
+      },
+    });
+
+    // Enforce auth with a timeout to avoid Vercel 504
+    const getUserPromise = supabase.auth.getUser();
+    const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>(
+      (resolve) =>
+        setTimeout(
+          () => resolve({ data: { user: null }, error: new Error("timeout") }),
+          1500
+        )
+    );
+
+    const result = await Promise.race([getUserPromise, timeoutPromise]);
+    const user = (result as any).data?.user;
+
+    if (!user) {
+      // Not authenticated — redirect to login
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
     }
+  } catch (err) {
+    // On error, redirect to login rather than silently allowing access
+    console.warn("Middleware auth check failed:", err);
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return response;

@@ -5,20 +5,20 @@
 :root {
   /* Core Palette — from spec */
   --bg:             #09090B;
-  --canvas:         #0F0F11;
-  --panel:          #111113;
+  --canvas:         #111113;
+  --panel:          #18181B;
   --border:         #27272A;
   --border-subtle:  #1C1C1F;
   --text:           #FAFAFA;
   --muted:          #A1A1AA;
   --muted-dim:      #52525B;
-  --primary:        #3B82F6;
-  --primary-hover:  #2563EB;
-  --primary-light:  #60A5FA;
-  --primary-dark:   #1D4ED8;
-  --primary-dim:    rgba(59, 130, 246, 0.12);
-  --primary-border: rgba(59, 130, 246, 0.3);
-  --primary-glow:   rgba(59, 130, 246, 0.25);
+  --primary:        #F59E0B;
+  --primary-hover:  #D97706;
+  --primary-light:  #FBBF24;
+  --primary-dark:   #B45309;
+  --primary-dim:    rgba(245, 158, 11, 0.12);
+  --primary-border: rgba(245, 158, 11, 0.3);
+  --primary-glow:   rgba(245, 158, 11, 0.25);
 
   /* Surface Layers & Cards */
   --bg-secondary:   #09090B;
@@ -65,6 +65,36 @@
   --shadow:         0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg:      0 8px 24px rgba(0, 0, 0, 0.6);
   --shadow-panel:   1px 0 0 var(--border);
+
+  --nav-bg:         rgba(9, 9, 11, 0.95);
+}
+
+.light {
+  --bg:             #FFFFFF;
+  --canvas:         #F8FAFC;
+  --panel:          #F1F5F9;
+  --border:         #E2E8F0;
+  --border-subtle:  #F1F5F9;
+  --text:           #0F172A;
+  --muted:          #64748B;
+  --muted-dim:      #94A3B8;
+  
+  --surface-0:      #FFFFFF;
+  --surface-1:      #F8FAFC;
+  --surface-2:      #F1F5F9;
+  --surface-3:      #E2E8F0;
+  --surface-hover:  rgba(0, 0, 0, 0.04);
+  --surface-active: rgba(0, 0, 0, 0.07);
+
+  --card:           #FFFFFF;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+
+  --nav-bg:         rgba(255, 255, 255, 0.95);
+  
+  --shadow-sm:      0 1px 2px rgba(0,0,0,0.05);
+  --shadow:         0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg:      0 10px 25px rgba(0,0,0,0.12);
 }
 
 /* ─── Reset & Base ─── */
@@ -520,7 +550,7 @@ code, pre, .font-mono {
   justify-content: space-between;
   padding: 0 32px;
   height: 60px;
-  background: rgba(9, 9, 11, 0.95);
+  background: var(--nav-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }

@@ -46,38 +46,3 @@ export async function signout() {
   revalidatePath("/", "layout");
   redirect("/");
 }
-
-export async function sendOtp(formData: FormData) {
-  const supabase = await createClient();
-  const phone = formData.get("phone") as string;
-
-  const { error } = await supabase.auth.signInWithOtp({
-    phone,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { success: true };
-}
-
-export async function verifyPhoneOtp(formData: FormData) {
-  const supabase = await createClient();
-  const phone = formData.get("phone") as string;
-  const token = formData.get("token") as string;
-
-  const { error } = await supabase.auth.verifyOtp({
-    phone,
-    token,
-    type: "sms",
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/", "layout");
-  redirect("/visualize");
-}
-

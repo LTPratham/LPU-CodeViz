@@ -1,19 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { login, signup, sendOtp, verifyPhoneOtp } from "./actions";
+import { login, signup } from "./actions";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [authMode, setAuthMode] = useState<"email" | "phone">("email");
-  const [otpSent, setOtpSent] = useState(false);
-  const [phone, setPhone] = useState("");
-  
+  const searchParams = useSearchParams();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Forgot password states
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -61,22 +67,6 @@ export default function LoginPage() {
       result = await signup(formData);
     }
     if (result?.error) setError(result.error);
-    setLoading(false);
-  }
-
-  async function handlePhoneSubmit(formData: FormData) {
-    setLoading(true);
-    setError(null);
-    if (!otpSent) {
-      const result = await sendOtp(formData);
-      if (result?.error) setError(result.error);
-      else setOtpSent(true);
-    } else {
-      // Need to inject phone into the form data for verification
-      formData.set("phone", phone);
-      const result = await verifyPhoneOtp(formData);
-      if (result?.error) setError(result.error);
-    }
     setLoading(false);
   }
 
@@ -130,29 +120,31 @@ export default function LoginPage() {
         </Link>
         
         {/* Brand mark */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 9,
-            background: "linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 16, fontWeight: 800, color: "#fff", fontFamily: "var(--font-mono)"
-          }}>C</div>
-          <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" }}>CodeCanvas</span>
-        </div>
+        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
+          {mounted ? (
+            <img 
+              src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
+              alt="CodeCanvas Logo" 
+              style={{ height: 28, width: "auto", objectFit: "contain" }} 
+            />
+          ) : (
+            <img 
+              src="/logo-dark.png" 
+              alt="CodeCanvas Logo" 
+              style={{ height: 28, width: "auto", objectFit: "contain" }} 
+            />
+          )}
+        </Link>
 
         <h1 style={{ fontSize: 22, marginBottom: 6, color: "var(--text)", fontWeight: 700, letterSpacing: "-0.02em" }}>
           {showForgotPassword
             ? "Reset your password"
-            : (authMode === "email" 
-                ? (isLogin ? "Welcome back" : "Create an account") 
-                : "Sign in with Phone")}
+            : (isLogin ? "Welcome back" : "Create an account")}
         </h1>
         <p style={{ color: "var(--muted)", fontSize: 13.5, marginBottom: 28, lineHeight: 1.6 }}>
           {showForgotPassword
             ? "Enter your email and we'll send you a reset link."
-            : (authMode === "email" 
-                ? "Use your university email to access your visualizations."
-                : "We'll send a 6-digit secure code via SMS.")}
+            : "Use your university email to access your visualizations."}
         </p>
 
         {/* Instant Demo Access — One-click bypass for testing and walkthroughs */}
@@ -210,29 +202,7 @@ export default function LoginPage() {
           </>
         )}
 
-        {/* Email / Phone Tabs */}
-        {!showForgotPassword && (
-          <div style={{ display: "flex", gap: 6, marginBottom: 22, background: "rgba(0,0,0,0.3)", padding: 4, borderRadius: 10 }}>
-            <button 
-              onClick={() => { setAuthMode("email"); setError(null); }}
-              style={{
-                flex: 1, padding: "8px", borderRadius: 7, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer",
-                background: authMode === "email" ? "var(--primary)" : "transparent",
-                color: authMode === "email" ? "white" : "var(--muted)",
-                transition: "all 0.2s", fontFamily: "var(--font-ui)"
-              }}
-            >Email</button>
-            <button 
-              onClick={() => { setAuthMode("phone"); setError(null); }}
-              style={{
-                flex: 1, padding: "8px", borderRadius: 7, border: "none", fontSize: 13.5, fontWeight: 600, cursor: "pointer",
-                background: authMode === "phone" ? "var(--primary)" : "transparent",
-                color: authMode === "phone" ? "white" : "var(--muted)",
-                transition: "all 0.2s", fontFamily: "var(--font-ui)"
-              }}
-            >Phone</button>
-          </div>
-        )}
+
 
         <AnimatePresence mode="wait">
           {showForgotPassword ? (
@@ -263,7 +233,7 @@ export default function LoginPage() {
                 </button>
               </div>
             </motion.form>
-          ) : authMode === "email" ? (
+          ) : (
             <motion.form key="email" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
                 <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>Email Address</label>
@@ -294,24 +264,6 @@ export default function LoginPage() {
                   {isLogin ? "Sign up free" : "Log in"}
                 </button>
               </div>
-            </motion.form>
-          ) : (
-            <motion.form key="phone" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} action={handlePhoneSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {!otpSent ? (
-                <div>
-                  <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>Mobile Number</label>
-                  <input name="phone" type="tel" required placeholder="+91 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} className="custom-input" />
-                </div>
-              ) : (
-                <div>
-                  <label style={{ display: "block", fontSize: 13, marginBottom: 7, color: "var(--muted)", fontWeight: 500 }}>6-Digit OTP</label>
-                  <input name="token" type="text" required placeholder="123456" maxLength={6} className="custom-input" style={{ letterSpacing: 6, textAlign: "center", fontSize: 20, fontFamily: "var(--font-mono)" }} />
-                </div>
-              )}
-              {error && <div className="error-msg">{error}</div>}
-              <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 6 }}>
-                {loading ? "Sending..." : (!otpSent ? "Send SMS Code" : "Verify & Login")}
-              </button>
             </motion.form>
           )}
         </AnimatePresence>

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
-import { GraduationCap, BookOpen, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { ChevronRight, GraduationCap, MonitorPlay, BookOpen, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 type Role = "student" | "teacher";
 
@@ -44,13 +45,20 @@ const ROLE_CARDS: RoleCard[] = [
 
 export default function RoleSelectPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [hoveredRole, setHoveredRole] = useState<Role | null>(null);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // On mount — check if user is authed and role already set
   useEffect(() => {
@@ -200,13 +208,19 @@ export default function RoleSelectPage() {
             background: "var(--surface-1)", border: "1px solid var(--border)",
             borderRadius: 999,
           }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: "linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "var(--font-mono)"
-            }}>C</div>
-            <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text)" }}>CodeCanvas</span>
+            {mounted ? (
+              <img 
+                src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
+                alt="CodeCanvas Logo" 
+                style={{ height: 20, width: "auto", objectFit: "contain" }} 
+              />
+            ) : (
+              <img 
+                src="/logo-dark.png" 
+                alt="CodeCanvas Logo" 
+                style={{ height: 20, width: "auto", objectFit: "contain" }} 
+              />
+            )}
           </div>
 
           <h1 style={{

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { getSchoolConfig } from "../lib/schools";
-
+import { Swords, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 // ─── Feature Data ────────────────────────────────────────────────────────────
 
 const TRACER_FEATURES = [
@@ -307,7 +308,7 @@ function DemoContactForm() {
         </div>
         <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.6 }}>
           We&apos;ll reach out within 24 hours to your institutional email with a
-          personalised CodeCanvas walkthrough. 🎓
+          personalised CodeCanvas walkthrough.
         </p>
       </div>
     );
@@ -450,6 +451,7 @@ function DemoContactForm() {
 
 function MiniTracerPreview() {
   const [stepIndex, setStepIndex] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
 
   const steps = [
     {
@@ -515,11 +517,12 @@ function MiniTracerPreview() {
   ];
 
   useEffect(() => {
+    if (!isAutoPlay) return;
     const timer = setInterval(() => {
       setStepIndex((prev) => (prev + 1) % steps.length);
     }, 3200);
     return () => clearInterval(timer);
-  }, []);
+  }, [isAutoPlay, steps.length]);
 
   const currentStep = steps[stepIndex];
 
@@ -527,66 +530,68 @@ function MiniTracerPreview() {
     <div
       style={{
         width: "100%",
-        background: "#0F0F11",
-        border: "1px solid #27272A",
-        borderRadius: 12,
+        background: "var(--surface-0)",
+        border: "1px solid var(--border)",
+        borderRadius: 16,
         overflow: "hidden",
         position: "relative",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
       {/* Browser chrome */}
       <div
         style={{
-          background: "#111113",
-          borderBottom: "1px solid #27272A",
-          padding: "10px 14px",
+          background: "var(--surface-1)",
+          borderBottom: "1px solid var(--border)",
+          padding: "12px 16px",
           display: "flex",
           alignItems: "center",
           gap: 12,
         }}
       >
-        <div style={{ display: "flex", gap: 5 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           {["#EF4444", "#F59E0B", "#22C55E"].map((c) => (
-            <span key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c, display: "inline-block" }} />
+            <span key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c, display: "inline-block" }} />
           ))}
         </div>
         <div
           style={{
             flex: 1,
-            background: "#09090B",
-            border: "1px solid #27272A",
-            borderRadius: 4,
-            padding: "3px 10px",
-            fontSize: 10,
-            color: "#52525B",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+            padding: "4px 12px",
+            fontSize: 11,
+            color: "var(--text-muted)",
             fontFamily: "monospace",
+            textAlign: "center",
           }}
         >
           codecanvas.lpu.edu/visualize
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <div style={{ background: "#18181B", borderRadius: 4, padding: "3px 8px", fontSize: 10, color: "#52525B", border: "1px solid #27272A" }}>
+          <div style={{ background: "var(--surface-2)", borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "var(--text-muted)", border: "1px solid var(--border)", fontWeight: 500 }}>
             Bubble Sort Demo ▾
           </div>
         </div>
       </div>
 
       {/* Editor & visualizer mock split */}
-      <div style={{ display: "flex", height: 300, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", height: 320, flexWrap: "wrap" }}>
         {/* Editor panel */}
         <div
           style={{
             flex: "1 1 240px",
-            borderRight: "1px solid #27272A",
-            padding: "12px",
+            borderRight: "1px solid var(--border)",
+            padding: "16px",
             fontFamily: "monospace",
-            fontSize: 11,
-            background: "#09090B",
-            color: "#A1A1AA",
+            fontSize: 12,
+            background: "var(--surface-0)",
+            color: "var(--text-secondary)",
             overflow: "hidden",
           }}
         >
-          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+          <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", fontSize: 10, marginBottom: 12, letterSpacing: "0.05em" }}>
             bubble_sort.py
           </div>
           {[
@@ -603,15 +608,15 @@ function MiniTracerPreview() {
                 key={idx}
                 style={{
                   display: "flex",
-                  background: isCurrent ? "rgba(59,130,246,0.12)" : "transparent",
-                  color: isCurrent ? "#FAFAFA" : "#A1A1AA",
-                  padding: "2px 4px",
-                  borderRadius: 3,
-                  borderLeft: isCurrent ? "3px solid #3B82F6" : "3px solid transparent",
+                  background: isCurrent ? "var(--primary-dim)" : "transparent",
+                  color: isCurrent ? "var(--text)" : "var(--text-secondary)",
+                  padding: "3px 6px",
+                  borderRadius: 4,
+                  borderLeft: isCurrent ? "3px solid var(--primary)" : "3px solid transparent",
                   transition: "all 150ms ease",
                 }}
               >
-                <span style={{ width: 16, color: "#52525B", userSelect: "none" }}>{idx + 1}</span>
+                <span style={{ width: 20, color: "var(--muted-dim)", userSelect: "none" }}>{idx + 1}</span>
                 <span style={{ whiteSpace: "pre" }}>{line}</span>
               </div>
             );
@@ -622,7 +627,7 @@ function MiniTracerPreview() {
         <div
           style={{
             flex: "1.2 1 280px",
-            background: "#0F0F11",
+            background: "var(--surface-1)",
             padding: "16px",
             display: "flex",
             flexDirection: "column",
@@ -630,42 +635,51 @@ function MiniTracerPreview() {
             minHeight: 180,
           }}
         >
-          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+          <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", fontSize: 10, marginBottom: 12, letterSpacing: "0.05em", textAlign: "center" }}>
             Visual Canvas: Array
           </div>
           
           {/* Sorting bars */}
-          <div style={{ display: "flex", alignContent: "flex-end", alignItems: "flex-end", gap: 10, flex: 1, justifyContent: "center", paddingBottom: 16 }}>
+          <div style={{ display: "flex", alignContent: "flex-end", alignItems: "flex-end", gap: 12, flex: 1, justifyContent: "center", paddingBottom: 24 }}>
             {currentStep.bars.map((bar, idx) => {
-              let barColor = "#27272A";
-              if (bar.status === "comparing") barColor = "#3B82F6";
+              let barColor = "var(--surface-3)";
+              if (bar.status === "comparing") barColor = "var(--primary)";
               if (bar.status === "active") barColor = "#22C55E";
 
               return (
-                <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                   <div
                     style={{
-                      width: 24,
+                      width: 28,
                       height: bar.value * 4,
                       background: barColor,
-                      borderRadius: "4px 4px 0 0",
+                      borderRadius: "6px 6px 0 0",
                       transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                      boxShadow: bar.status !== "default" ? "0 0 10px rgba(59,130,246,0.2)" : "none",
+                      boxShadow: bar.status !== "default" ? "0 4px 12px var(--primary-glow)" : "none",
                     }}
                   />
-                  <span style={{ fontSize: 9, fontFamily: "monospace", color: "#52525B" }}>{bar.value}</span>
+                  <span style={{ fontSize: 11, fontFamily: "monospace", color: "var(--text-muted)", fontWeight: 600 }}>{bar.value}</span>
                 </div>
               );
             })}
           </div>
 
           {/* Stepper control bar preview */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #1C1C1F", paddingTop: 8, fontSize: 10, color: "#52525B" }}>
-            <span>Step {stepIndex + 1} / 5</span>
-            <div style={{ display: "flex", gap: 6 }}>
-              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A" }}>Prev</span>
-              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A", color: "#FAFAFA" }}>Playing</span>
-              <span style={{ background: "#111113", padding: "2px 6px", borderRadius: 3, border: "1px solid #27272A" }}>Next</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: 12, fontSize: 11, color: "var(--text-muted)" }}>
+            <span style={{ fontWeight: 600 }}>Step {stepIndex + 1} / {steps.length}</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button 
+                onClick={() => { setStepIndex((p) => (p - 1 + steps.length) % steps.length); setIsAutoPlay(false); }}
+                style={{ background: "var(--surface-2)", padding: "4px 10px", borderRadius: 4, border: "1px solid var(--border)", color: "var(--text)", cursor: "pointer", fontWeight: 600 }}
+              >Prev</button>
+              <button 
+                onClick={() => setIsAutoPlay(!isAutoPlay)}
+                style={{ background: isAutoPlay ? "var(--primary)" : "var(--surface-2)", padding: "4px 10px", borderRadius: 4, border: isAutoPlay ? "1px solid var(--primary)" : "1px solid var(--border)", color: isAutoPlay ? "#FFF" : "var(--text)", cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
+              >{isAutoPlay ? "Pause" : "Play"}</button>
+              <button 
+                onClick={() => { setStepIndex((p) => (p + 1) % steps.length); setIsAutoPlay(false); }}
+                style={{ background: "var(--surface-2)", padding: "4px 10px", borderRadius: 4, border: "1px solid var(--border)", color: "var(--text)", cursor: "pointer", fontWeight: 600 }}
+              >Next</button>
             </div>
           </div>
         </div>
@@ -674,28 +688,28 @@ function MiniTracerPreview() {
         <div
           style={{
             flex: "1 1 220px",
-            borderLeft: "1px solid #27272A",
-            background: "#111113",
-            padding: "12px",
+            borderLeft: "1px solid var(--border)",
+            background: "var(--surface-0)",
+            padding: "16px",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
           }}
         >
-          <div style={{ color: "#52525B", fontWeight: 700, textTransform: "uppercase", fontSize: 9, marginBottom: 8, letterSpacing: "0.05em" }}>
+          <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", fontSize: 10, marginBottom: 12, letterSpacing: "0.05em" }}>
             AI Tutor Explanation
           </div>
-          <div style={{ fontSize: 11, color: "#A1A1AA", lineHeight: 1.5, flex: 1 }}>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, flex: 1, fontWeight: 500 }}>
             {currentStep.explanation}
           </div>
           
-          <div style={{ borderTop: "1px solid #27272A", paddingTop: 8, marginTop: 8 }}>
-            <div style={{ fontSize: 8, color: "#52525B", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Variables Watch</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, marginTop: 12 }}>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8, letterSpacing: "0.05em" }}>Variables Watch</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {Object.entries(currentStep.vars).map(([name, val]) => (
-                <div key={name} style={{ display: "flex", justifyContent: "space-between", fontFamily: "monospace", fontSize: 10 }}>
-                  <span style={{ color: "#52525B" }}>{name}</span>
-                  <span style={{ color: "#FAFAFA", fontWeight: 600 }}>{val}</span>
+                <div key={name} style={{ display: "flex", justifyContent: "space-between", fontFamily: "monospace", fontSize: 11 }}>
+                  <span style={{ color: "var(--text-muted)" }}>{name}</span>
+                  <span style={{ color: "var(--text)", fontWeight: 700 }}>{val as string}</span>
                 </div>
               ))}
             </div>
@@ -713,6 +727,9 @@ function LandingPageContent() {
   const schoolParam = searchParams.get("school");
   const schoolConfig = getSchoolConfig(schoolParam);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [studentCount, setStudentCount] = useState(300);
 
@@ -724,28 +741,19 @@ function LandingPageContent() {
       {/* ── Navigation ── */}
       <nav className="landing-nav">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              background: "var(--primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
-              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" opacity="0.3" />
-            </svg>
-          </div>
-          <span style={{ fontWeight: 700, fontSize: 16, color: "var(--text)", letterSpacing: "-0.3px" }}>
-            CodeCanvas
-          </span>
+          {mounted ? (
+            <img 
+              src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
+              alt="CodeCanvas Logo" 
+              style={{ height: 32, width: "auto", objectFit: "contain" }} 
+            />
+          ) : (
+            <img 
+              src="/logo-dark.png" 
+              alt="CodeCanvas Logo" 
+              style={{ height: 32, width: "auto", objectFit: "contain" }} 
+            />
+          )}
           <span
             style={{
               fontSize: 10,
@@ -765,14 +773,12 @@ function LandingPageContent() {
         {/* Desktop Nav Links */}
         <div className="nav-desktop-links" style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <a href="#features" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>Features</a>
-          <a href="#pricing" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>Pricing</a>
-          <a href="#faq" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>FAQ</a>
-          <a href="#contact" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>Contact</a>
+          <Link href="/feedback" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }} onMouseOver={e => (e.currentTarget.style.color = "var(--text)")} onMouseOut={e => (e.currentTarget.style.color = "var(--muted)")}>Give Feedback</Link>
           <Link
             href="/battleground"
             style={{ fontSize: 13, color: "#F59E0B", textDecoration: "none", fontWeight: 700, padding: "5px 10px", background: "rgba(245, 158, 11, 0.1)", borderRadius: 6, border: "1px solid rgba(245, 158, 11, 0.3)" }}
           >
-            ⚔️ Battleground Arena
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Swords size={16} /> Battleground Arena</span>
           </Link>
           <Link
             href={`/visualize?school=${schoolConfig.id}`}
@@ -782,6 +788,22 @@ function LandingPageContent() {
           >
             Launch Visualizer
           </Link>
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 32, height: 32, borderRadius: 8,
+                background: "transparent", border: "1px solid var(--border)",
+                color: "var(--text)", cursor: "pointer", transition: "all 0.15s"
+              }}
+              onMouseOver={e => e.currentTarget.style.background = "var(--surface-1)"}
+              onMouseOut={e => e.currentTarget.style.background = "transparent"}
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -827,15 +849,13 @@ function LandingPageContent() {
           }}
         >
           <a href="#features" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Features</a>
-          <a href="#pricing" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Pricing</a>
-          <a href="#faq" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>FAQ</a>
-          <a href="#contact" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Contact</a>
+          <Link href="/feedback" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: 14, color: "var(--text)", textDecoration: "none", padding: "8px 0" }}>Give Feedback</Link>
           <Link
             href="/battleground"
             style={{ fontSize: 14, color: "#F59E0B", textDecoration: "none", fontWeight: 700, padding: "8px 0" }}
             onClick={() => setMobileMenuOpen(false)}
           >
-            ⚔️ Battleground Arena
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Swords size={16} /> Battleground Arena</span>
           </Link>
           <Link
             href={`/visualize?school=${schoolConfig.id}`}
@@ -845,6 +865,23 @@ function LandingPageContent() {
           >
             Launch Visualizer
           </Link>
+          {mounted && (
+            <button
+              onClick={() => {
+                setTheme(theme === "dark" ? "light" : "dark");
+                setMobileMenuOpen(false);
+              }}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                width: "100%", padding: "10px 0", marginTop: 8,
+                background: "transparent", border: "1px solid var(--border)", borderRadius: 6,
+                color: "var(--text)", cursor: "pointer", fontSize: 14
+              }}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              Toggle Theme
+            </button>
+          )}
         </div>
       )}
 
@@ -855,7 +892,7 @@ function LandingPageContent() {
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,130,246,0.06) 0%, transparent 60%)",
+              "radial-gradient(ellipse 80% 50% at 50% -10%, var(--primary-dim) 0%, transparent 60%)",
             pointerEvents: "none",
           }}
         />
@@ -931,8 +968,26 @@ function LandingPageContent() {
           >
             <Link
               href={`/visualize?school=${schoolConfig.id}`}
-              className="btn btn-primary"
-              style={{ padding: "11px 28px", fontSize: 14, fontWeight: 600 }}
+              style={{
+                padding: "11px 28px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#FFF",
+                background: "#C27803",
+                borderRadius: 8,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.15s",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = "#B45309";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = "#C27803";
+                e.currentTarget.style.transform = "none";
+              }}
               id="hero-cta-tracer"
             >
               Start Visualizing Free →
@@ -952,8 +1007,16 @@ function LandingPageContent() {
                 alignItems: "center",
                 gap: 8,
               }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = "linear-gradient(135deg, #F59E0B, #D97706)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = "linear-gradient(135deg, #F59E0B, #D97706)";
+                e.currentTarget.style.transform = "none";
+              }}
             >
-              ⚔️ Enter Battleground Arena
+              <Swords size={18} /> Enter Battleground Arena
             </Link>
           </div>
 
@@ -1248,126 +1311,6 @@ function LandingPageContent() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ── SECTION 2: Testimonials ──
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section
-        style={{
-          padding: "80px 24px",
-          maxWidth: 1100,
-          margin: "0 auto",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <h2
-            style={{
-              fontSize: "clamp(22px, 3vw, 32px)",
-              fontWeight: 700,
-              marginBottom: 8,
-              color: "var(--text)",
-            }}
-          >
-            What People Say
-          </h2>
-          <p style={{ fontSize: 14, color: "var(--muted)" }}>
-            Real results from pilot programs and early adopters.
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {TESTIMONIALS.map((t) => (
-            <div
-              key={t.name}
-              style={{
-                background: "var(--surface-1)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                padding: "32px 28px",
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {/* Decorative quote */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 20,
-                  fontSize: 56,
-                  lineHeight: 1,
-                  color: "var(--primary)",
-                  opacity: 0.08,
-                  fontFamily: "Georgia, serif",
-                  userSelect: "none",
-                  pointerEvents: "none",
-                }}
-              >
-                &ldquo;
-              </div>
-
-              {/* Stars */}
-              <div style={{ display: "flex", gap: 2, marginBottom: 18 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
-              </div>
-
-              {/* Quote */}
-              <blockquote
-                style={{
-                  fontSize: 14,
-                  lineHeight: 1.75,
-                  color: "var(--text)",
-                  margin: "0 0 24px",
-                  fontStyle: "italic",
-                  flex: 1,
-                }}
-              >
-                &ldquo;{t.quote}&rdquo;
-              </blockquote>
-
-              {/* Attribution */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background: t.gradient,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: "white",
-                    flexShrink: 0,
-                  }}
-                >
-                  {t.initials}
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
-                    {t.name}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                    {t.role}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ── CTA Banner ── */}
       <section
@@ -1400,468 +1343,6 @@ function LandingPageContent() {
         </Link>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ── SECTION 3: For Institutions ──
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section
-        id="pricing"
-        style={{
-          padding: "80px 24px",
-          maxWidth: 1100,
-          margin: "0 auto",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 7,
-              padding: "4px 14px",
-              borderRadius: "var(--radius-full)",
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              fontSize: 11,
-              color: "var(--muted)",
-              fontWeight: 700,
-              letterSpacing: "0.09em",
-              textTransform: "uppercase",
-              marginBottom: 18,
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            For Institutions
-          </div>
-          <h2
-            style={{
-              fontSize: "clamp(24px, 3.5vw, 40px)",
-              fontWeight: 800,
-              marginBottom: 12,
-              color: "var(--text)",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            For Departments &amp; Universities
-          </h2>
-          <p style={{ fontSize: 15, color: "var(--muted)", maxWidth: 520, margin: "0 auto" }}>
-            From a single student to an entire faculty rollout — CodeCanvas scales to your institution.
-          </p>
-        </div>
-
-        {/* Tier Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 20,
-            alignItems: "start",
-          }}
-        >
-          {INST_TIERS.map((tier) => (
-            <div
-              key={tier.name}
-              style={{
-                padding: "32px 28px",
-                background: tier.glowing
-                  ? "linear-gradient(160deg, rgba(34,197,94,0.05) 0%, var(--surface-1) 50%)"
-                  : "var(--surface-1)",
-                border: tier.glowing
-                  ? "1.5px solid var(--success)"
-                  : tier.ctaStyle === "primary"
-                  ? "1.5px solid var(--primary)"
-                  : "1px solid var(--border)",
-                borderRadius: 14,
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                boxShadow: tier.glowing
-                  ? "0 0 40px rgba(34,197,94,0.12), 0 8px 32px rgba(0,0,0,0.28)"
-                  : tier.ctaStyle === "primary"
-                  ? "0 0 24px rgba(59,130,246,0.08), 0 4px 16px rgba(0,0,0,0.2)"
-                  : "none",
-              }}
-            >
-              {/* Badge */}
-              {tier.badge && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 18,
-                    right: 18,
-                    background: tier.badgeColor ?? "var(--primary)",
-                    color: "white",
-                    fontSize: 9,
-                    fontWeight: 800,
-                    padding: "3px 10px",
-                    borderRadius: "var(--radius-full)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.09em",
-                  }}
-                >
-                  {tier.badge}
-                </div>
-              )}
-
-              {/* Title */}
-              <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
-                {tier.name}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 24 }}>
-                {tier.sub}
-              </div>
-
-              {/* Price */}
-              <div style={{ marginBottom: 28 }}>
-                <span
-                  style={{
-                    fontSize: 36,
-                    fontWeight: 800,
-                    color: tier.glowing ? "var(--success)" : "var(--text)",
-                    letterSpacing: "-1.5px",
-                  }}
-                >
-                  {tier.price}
-                </span>
-                <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 400, marginLeft: 5 }}>
-                  {tier.period}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div
-                style={{
-                  height: 1,
-                  background: "var(--border)",
-                  marginBottom: 24,
-                }}
-              />
-
-              {/* Features */}
-              <ul
-                style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: "0 0 32px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 11,
-                  flex: 1,
-                }}
-              >
-                {tier.features.map((feat) => (
-                  <li
-                    key={feat}
-                    style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13 }}
-                  >
-                    <span
-                      style={{
-                        color: tier.glowing ? "var(--success)" : "var(--primary)",
-                        marginTop: 1,
-                        flexShrink: 0,
-                        fontWeight: 700,
-                      }}
-                    >
-                      ✓
-                    </span>
-                    <span style={{ color: "var(--muted)", lineHeight: 1.5 }}>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA Button */}
-              {tier.ctaStyle === "primary" ? (
-                <Link
-                  href={tier.href}
-                  className="btn btn-primary"
-                  style={{ textAlign: "center", fontWeight: 700 }}
-                  id="pricing-pro-cta"
-                >
-                  {tier.cta}
-                </Link>
-              ) : tier.ctaStyle === "success" ? (
-                <a
-                  href={tier.href}
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    padding: "11px 20px",
-                    background: "rgba(34,197,94,0.14)",
-                    border: "1.5px solid var(--success)",
-                    borderRadius: 8,
-                    color: "var(--success)",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    transition: "background 0.15s",
-                    letterSpacing: "0.02em",
-                  }}
-                  onMouseOver={(e) =>
-                    ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(34,197,94,0.24)")
-                  }
-                  onMouseOut={(e) =>
-                    ((e.currentTarget as HTMLAnchorElement).style.background = "rgba(34,197,94,0.14)")
-                  }
-                >
-                  {tier.cta}
-                </a>
-              ) : (
-                <Link
-                  href={tier.href}
-                  className="btn btn-ghost"
-                  style={{ textAlign: "center", fontWeight: 600 }}
-                >
-                  {tier.cta}
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ── SECTION 3B: Interactive ROI Calculator ──
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section
-        id="roi-calculator"
-        style={{
-          padding: "80px 24px",
-          maxWidth: 900,
-          margin: "0 auto",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 44 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "4px 12px",
-              borderRadius: "var(--radius-full)",
-              background: "var(--surface-2)",
-              border: "1px solid var(--border)",
-              fontSize: 11,
-              color: "var(--primary)",
-              fontWeight: 750,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: 16,
-            }}
-          >
-            ROI Calculator
-          </div>
-          <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 800, marginBottom: 12, color: "var(--text)" }}>
-            Calculate Your Department's ROI
-          </h2>
-          <p style={{ fontSize: 15, color: "var(--muted)", maxWidth: 520, margin: "0 auto" }}>
-            See exactly how much time and budget CodeCanvas saves for your computer science courses.
-          </p>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 32,
-            background: "var(--surface-1)",
-            border: "1px solid var(--border)",
-            borderRadius: 16,
-            padding: 32,
-          }}
-        >
-          {/* Controls Column */}
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Department Setup</h3>
-            
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, fontSize: 14 }}>
-                <span style={{ color: "var(--muted)", fontWeight: 500 }}>Student Count</span>
-                <span style={{ fontWeight: 700, color: "var(--primary)" }}>{studentCount} Students</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="2000"
-                step="50"
-                value={studentCount}
-                onChange={(e) => setStudentCount(Number(e.target.value))}
-                style={{
-                  width: "100%",
-                  accentColor: "var(--primary)",
-                  cursor: "pointer",
-                  height: 6,
-                  borderRadius: 3,
-                  background: "var(--border)",
-                  outline: "none",
-                }}
-              />
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 11, color: "var(--muted)" }}>
-                <span>50</span>
-                <span>1,000</span>
-                <span>2,000</span>
-              </div>
-            </div>
-
-            <div style={{ background: "var(--surface-2)", border: "1px solid var(--border)", padding: 16, borderRadius: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--muted)", marginBottom: 6 }}>
-                <span>Est. Student Licenses</span>
-                <span>₹299 / student</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 700 }}>
-                <span>Total Semester Investment</span>
-                <span style={{ color: "var(--text)" }}>₹{studentCount * 299}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Results Column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Expected Outcome</h3>
-
-            {/* Metric 1 */}
-            <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              <div style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: "var(--primary-dim)",
-                border: "1px solid var(--primary-border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--primary)",
-                flexShrink: 0
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>{gradingHoursSaved} Hours Saved</div>
-                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>In manual student code grading &amp; lab assistance</div>
-              </div>
-            </div>
-
-            {/* Metric 2 */}
-            <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              <div style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: "rgba(34, 197, 94, 0.12)",
-                border: "1px solid rgba(34, 197, 94, 0.24)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--success)",
-                flexShrink: 0
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--success)" }}>{labPrepDaysSaved} Days Saved</div>
-                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>Preparing NAAC &amp; NBA accreditation audit data logs</div>
-              </div>
-            </div>
-
-            {/* Metric 3 */}
-            <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              <div style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                background: "rgba(245, 158, 11, 0.12)",
-                border: "1px solid rgba(245, 158, 11, 0.24)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#F59E0B",
-                flexShrink: 0
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#F59E0B" }}>+34% Improvement</div>
-                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>In student exam scores &amp; placement lab clearances</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ── SECTION 4: Institutional Demo Contact Form ──
-      ══════════════════════════════════════════════════════════════════════════ */}
-      <section
-        id="contact"
-        style={{
-          padding: "80px 24px",
-          borderTop: "1px solid var(--border)",
-          background: "linear-gradient(180deg, var(--bg) 0%, var(--surface-1) 40%, var(--bg) 100%)",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: 44,
-            maxWidth: 560,
-            margin: "0 auto 44px",
-          }}
-        >
-          {/* Icon badge */}
-          <div
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 12,
-              background: "var(--primary-dim)",
-              border: "1px solid var(--primary-border)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 20px",
-              color: "var(--primary)",
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <rect x="2" y="3" width="20" height="14" rx="2" />
-              <path d="M8 21h8M12 17v4" />
-            </svg>
-          </div>
-
-          <h2
-            style={{
-              fontSize: "clamp(22px, 3vw, 36px)",
-              fontWeight: 800,
-              marginBottom: 12,
-              color: "var(--text)",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Get a Free Demo for Your Department
-          </h2>
-          <p style={{ fontSize: 15, color: "var(--muted)", lineHeight: 1.65 }}>
-            We&apos;ll show you how CodeCanvas works for your specific course curriculum and student count.
-          </p>
-        </div>
-
-        <DemoContactForm />
-      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           ── FAQ Section ──
@@ -2005,7 +1486,6 @@ function LandingPageContent() {
             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>Product</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <a href="#features" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Features</a>
-              <a href="#pricing" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Pricing</a>
               <Link href={`/visualize?school=${schoolConfig.id}`} style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Visualizer</Link>
               <Link href="/login" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Sign In</Link>
             </div>
@@ -2015,8 +1495,7 @@ function LandingPageContent() {
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>Resources</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <a href="#faq" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>FAQ</a>
-              <a href="#contact" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Contact Us</a>
+              <Link href="/feedback" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>Give Feedback</Link>
               <Link href="/about" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>About Us</Link>
               <Link href="/integrations" style={{ fontSize: 13, color: "var(--muted)", textDecoration: "none" }}>LMS Integrations</Link>
             </div>

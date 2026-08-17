@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, ChevronDown, BookOpen, LayoutDashboard, User } from "lucide-react";
+import { LogOut, ChevronDown, BookOpen, LayoutDashboard, User, Sun, Moon } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 
 interface Profile {
@@ -23,7 +24,14 @@ interface Props {
 
 export default function DashboardTopBar({ profile, userId }: Props) {
   const router = useRouter();
+  const supabase = createClient();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,34 +85,19 @@ export default function DashboardTopBar({ profile, userId }: Props) {
           textDecoration: "none",
         }}
       >
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            background: "var(--primary)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 16,
-            fontWeight: 800,
-            color: "#fff",
-            fontFamily: "var(--font-mono)",
-            flexShrink: 0,
-          }}
-        >
-          {"<>"}
-        </div>
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: 16,
-            color: "var(--text)",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          CodeCanvas
-        </span>
+        {mounted ? (
+          <img 
+            src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
+            alt="CodeCanvas Logo" 
+            style={{ height: 26, width: "auto", objectFit: "contain" }} 
+          />
+        ) : (
+          <img 
+            src="/logo-dark.png" 
+            alt="CodeCanvas Logo" 
+            style={{ height: 26, width: "auto", objectFit: "contain" }} 
+          />
+        )}
       </Link>
 
       {/* Nav links */}
@@ -213,7 +206,37 @@ export default function DashboardTopBar({ profile, userId }: Props) {
         </button>
       </nav>
 
-      <LanguageSelector />
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="btn-icon"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--muted)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 6,
+            borderRadius: "50%",
+            transition: "all 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--surface-hover)";
+            e.currentTarget.style.color = "var(--text)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--muted)";
+          }}
+          title="Toggle theme"
+        >
+          {mounted ? (theme === "dark" ? <Sun size={18} /> : <Moon size={18} />) : <Moon size={18} />}
+        </button>
+
+        <LanguageSelector />
+      </div>
 
       {/* Avatar dropdown */}
       <div ref={dropdownRef} style={{ position: "relative" }}>

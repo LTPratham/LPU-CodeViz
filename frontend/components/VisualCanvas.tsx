@@ -332,7 +332,7 @@ export default function VisualCanvas({
       {activeTab === "visualizer" && (
         <div style={{
           height: isConsoleCollapsed ? 32 : 180,
-          background: "#080C14",
+          background: "var(--surface-2)",
           borderTop: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",

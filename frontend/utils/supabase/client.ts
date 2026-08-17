@@ -1,12 +1,15 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-export function createClient() {
-  let role = "student";
-  if (typeof window !== "undefined") {
-    const match = document.cookie.match(/(?:^|; )mock_role=([^;]*)/);
-    if (match) role = match[1];
-  }
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+// ─── Real Supabase client ─────────────────────────────────────────────────────
+function createRealClient() {
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}
+
+// ─── Mock client (only used when mock_role cookie is present for demo tour) ───
+function createMockClient(role: string) {
   const mockUser = {
     id: "test-user-id",
     email: role === "teacher" ? "teacher@university.edu" : "student@university.edu",
@@ -112,7 +115,7 @@ export function createClient() {
     return builder;
   };
 
-  const client = {
+  return {
     auth: {
       getUser: async () => ({ data: { user: mockUser }, error: null }),
       getSession: async () => ({ data: { session: { user: mockUser } }, error: null }),
@@ -123,6 +126,7 @@ export function createClient() {
       signOut: async () => {
         if (typeof window !== "undefined") {
           document.cookie = "mock_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+          localStorage.removeItem("mock_role");
         }
         return { error: null };
       },
@@ -130,13 +134,25 @@ export function createClient() {
       signInWithPassword: async () => ({ data: { user: mockUser }, error: null }),
       signInWithOtp: async () => ({ data: { user: mockUser }, error: null }),
       verifyOtp: async () => ({ data: { user: mockUser }, error: null }),
-      signInWithOAuth: async () => ({ data: { user: mockUser }, error: null }),
+      // For demo mode, Google OAuth is not supported — user must use real login
+      signInWithOAuth: async () => ({ data: null, error: { message: "Google sign-in not available in demo mode." } }),
+      resetPasswordForEmail: async () => ({ data: null, error: null }),
+      updateUser: async () => ({ data: { user: mockUser }, error: null }),
     },
     from: mockQueryBuilder,
     rpc: async (fn: string, args?: any) => {
       return { data: null, error: null };
     }
-  };
+  } as any;
+}
 
-  return client as any;
+// ─── Exported factory: returns mock ONLY when in demo mode ────────────────────
+export function createClient() {
+  if (typeof window !== "undefined") {
+    const match = document.cookie.match(/(?:^|; )mock_role=([^;]*)/);
+    if (match && match[1]) {
+      return createMockClient(match[1]);
+    }
+  }
+  return createRealClient();
 }

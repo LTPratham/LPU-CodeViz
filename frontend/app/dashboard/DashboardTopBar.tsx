@@ -25,7 +25,7 @@ interface Props {
 export default function DashboardTopBar({ profile, userId }: Props) {
   const router = useRouter();
   const supabase = createClient();
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 

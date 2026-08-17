@@ -22,7 +22,7 @@ export async function login(formData: FormData) {
   redirect("/visualize");
 }
 
-export async function signup(formData: FormData) {
+export async function signup(formData: FormData, role: "student" | "teacher" = "student") {
   const supabase = await createClient();
 
   const data = {
@@ -30,10 +30,23 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  const { data: signUpData, error } = await supabase.auth.signUp(data);
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Auto-create profile with selected role on signup
+  if (signUpData?.user) {
+    await supabase
+      .from("profiles")
+      .upsert({
+        id: signUpData.user.id,
+        email: data.email,
+        role: role,
+        full_name: data.email.split("@")[0],
+        updated_at: new Date().toISOString()
+      }, { onConflict: "id" });
   }
 
   revalidatePath("/", "layout");

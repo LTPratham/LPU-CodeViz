@@ -7,11 +7,13 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { useSearchParams } from "next/navigation";
+import { GraduationCap, Briefcase } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [rolePreference, setRolePreference] = useState<"student" | "teacher">("student");
   const searchParams = useSearchParams();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -24,8 +26,6 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-
-
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -40,7 +40,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard&role=${rolePreference}`,
         queryParams: { access_type: 'offline', prompt: 'select_account' }
       }
     });
@@ -57,11 +57,16 @@ export default function LoginPage() {
     localStorage.removeItem("mock_role");
     sessionStorage.removeItem("tour_scenario");
 
+    // Add role preference to action data if sign up
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
     let result;
     if (isLogin) {
       result = await login(formData);
     } else {
-      result = await signup(formData);
+      // Pass role preference to signup action
+      result = await signup(formData, rolePreference);
     }
     if (result?.error) setError(result.error);
     setLoading(false);
@@ -117,7 +122,7 @@ export default function LoginPage() {
         </Link>
         
         {/* Brand mark */}
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
+        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
           {mounted ? (
             <img 
               src={theme === "light" ? "/logo-light.png" : "/logo-dark.png"} 
@@ -138,13 +143,68 @@ export default function LoginPage() {
             ? "Reset your password"
             : (isLogin ? "Welcome back" : "Create an account")}
         </h1>
-        <p style={{ color: "var(--muted)", fontSize: 13.5, marginBottom: 28, lineHeight: 1.6 }}>
+        <p style={{ color: "var(--muted)", fontSize: 13.5, marginBottom: 24, lineHeight: 1.6 }}>
           {showForgotPassword
             ? "Enter your email and we'll send you a reset link."
-            : "Use your university email to access your visualizations."}
+            : "Select your role and sign in with your email or Google account."}
         </p>
 
-
+        {/* ── Role Preference Selector ── */}
+        {!showForgotPassword && (
+          <div style={{
+            display: "flex",
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            padding: 4,
+            marginBottom: 24,
+          }}>
+            <button
+              type="button"
+              onClick={() => setRolePreference("student")}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "10px 16px",
+                borderRadius: 8,
+                border: "none",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer",
+                background: rolePreference === "student" ? "var(--primary)" : "transparent",
+                color: rolePreference === "student" ? "#000" : "var(--muted)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <GraduationCap size={16} /> Student Portal
+            </button>
+            <button
+              type="button"
+              onClick={() => setRolePreference("teacher")}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "10px 16px",
+                borderRadius: 8,
+                border: "none",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer",
+                background: rolePreference === "teacher" ? "var(--primary)" : "transparent",
+                color: rolePreference === "teacher" ? "#000" : "var(--muted)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <Briefcase size={16} /> Faculty Hub
+            </button>
+          </div>
+        )}
 
         {/* Google OAuth Button — ABOVE the form */}
         {!showForgotPassword && (
@@ -161,7 +221,7 @@ export default function LoginPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Continue with Google
+              Continue with Google as {rolePreference === "student" ? "Student" : "Faculty"}
             </button>
 
             {/* OR Divider */}
@@ -172,8 +232,6 @@ export default function LoginPage() {
             </div>
           </>
         )}
-
-
 
         <AnimatePresence mode="wait">
           {showForgotPassword ? (
@@ -227,7 +285,7 @@ export default function LoginPage() {
               </div>
               {error && <div className="error-msg">{error}</div>}
               <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: 6 }}>
-                {loading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account")}
+                {loading ? "Please wait..." : (isLogin ? `Sign In as ${rolePreference === "student" ? "Student" : "Faculty"}` : "Create Account")}
               </button>
               <div style={{ marginTop: 18, textAlign: "center", fontSize: 13, color: "var(--muted)" }}>
                 {isLogin ? "Don't have an account? " : "Already have an account? "}

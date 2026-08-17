@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const type = searchParams.get("type");
+  const role = searchParams.get("role");
   const next = searchParams.get("next") ?? "/visualize";
 
   if (code) {
@@ -26,22 +27,39 @@ export async function GET(request: Request) {
       }
 
       // Check user's profile for existing role
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
 
-      // No profile or no role set → send to role selection
-      if (profileError || !profile?.role) {
+      let activeRole = profile?.role;
+
+      // If no role is set in the database, lock in the login preference
+      if (!activeRole && (role === "student" || role === "teacher")) {
+        activeRole = role;
+        await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            email: user.email,
+            role: role,
+            full_name: user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "User",
+            avatar_url: user.user_metadata?.avatar_url ?? null,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "id" });
+      }
+
+      // No profile or no role set → send to role selection fallback
+      if (!activeRole) {
         return NextResponse.redirect(`${origin}/auth/role-select`);
       }
 
       // Route based on role
-      if (profile.role === "teacher") {
+      if (activeRole === "teacher") {
         return NextResponse.redirect(`${origin}/dashboard/teacher`);
       }
-      if (profile.role === "student") {
+      if (activeRole === "student") {
         return NextResponse.redirect(`${origin}/dashboard/student`);
       }
 

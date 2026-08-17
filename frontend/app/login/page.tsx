@@ -25,26 +25,17 @@ export default function LoginPage() {
   const [resetSent, setResetSent] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
-  // Auto-redirect if user came here during an interactive demo or tour so they never get stuck on login!
-  useEffect(() => {
-    const activeTour = sessionStorage.getItem("tour_scenario");
-    if (activeTour) {
-      document.cookie = `mock_role=${activeTour}; path=/; max-age=31536000`;
-      localStorage.setItem("mock_role", activeTour);
-      const targetUrl = activeTour === "teacher" ? "/dashboard/teacher" : "/dashboard/student";
-      window.location.href = targetUrl;
-    }
-  }, []);
 
-  const handleInstantDemo = (role: "student" | "teacher") => {
-    document.cookie = `mock_role=${role}; path=/; max-age=31536000`;
-    localStorage.setItem("mock_role", role);
-    window.location.href = role === "teacher" ? "/dashboard/teacher" : "/dashboard/student";
-  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
+    
+    // Clear mock cookies/storage to ensure real sign-in
+    document.cookie = "mock_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    localStorage.removeItem("mock_role");
+    sessionStorage.removeItem("tour_scenario");
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -60,6 +51,12 @@ export default function LoginPage() {
   async function handleEmailSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
+    
+    // Clear mock cookies/storage to ensure real sign-in
+    document.cookie = "mock_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    localStorage.removeItem("mock_role");
+    sessionStorage.removeItem("tour_scenario");
+
     let result;
     if (isLogin) {
       result = await login(formData);
@@ -147,33 +144,7 @@ export default function LoginPage() {
             : "Use your university email to access your visualizations."}
         </p>
 
-        {/* Instant Demo Access — One-click bypass for testing and walkthroughs */}
-        {!showForgotPassword && (
-          <div style={{ background: "rgba(59, 130, 246, 0.08)", border: "1px dashed rgba(59, 130, 246, 0.35)", borderRadius: 12, padding: "16px", marginBottom: 24, textAlign: "center" }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
-              ✨ Instant Proctored Evaluation
-            </div>
-            <p style={{ fontSize: 12, color: "var(--muted)", margin: "0 0 14px", lineHeight: 1.5 }}>
-              Evaluating CodeCanvas? Skip credential entry and jump straight into our live preview portals.
-            </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => handleInstantDemo("student")}
-                style={{ flex: 1, padding: "9px 12px", background: "var(--primary)", color: "#FFF", border: "none", borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 12px rgba(59, 130, 246, 0.25)" }}
-              >
-                🎓 Student Portal
-              </button>
-              <button
-                type="button"
-                onClick={() => handleInstantDemo("teacher")}
-                style={{ flex: 1, padding: "9px 12px", background: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-              >
-                🏫 Faculty Portal
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* Google OAuth Button — ABOVE the form */}
         {!showForgotPassword && (

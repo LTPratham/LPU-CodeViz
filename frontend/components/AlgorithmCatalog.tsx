@@ -137,10 +137,10 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
           bottom: 0,
           width: "calc(100vw - 40px)",
           maxWidth: 420,
-          background: "rgba(17, 24, 39, 0.85)",
+          background: "var(--nav-bg)",
           backdropFilter: "blur(20px)",
           borderRight: "1px solid var(--border)",
-          boxShadow: "10px 0 30px rgba(0, 0, 0, 0.5)",
+          boxShadow: "var(--shadow-lg)",
           zIndex: 2001,
           display: "flex",
           flexDirection: "column",
@@ -169,7 +169,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
           <button
             onClick={onClose}
             style={{
-              background: "rgba(255, 255, 255, 0.05)",
+              background: "var(--surface-hover)",
               border: "1px solid var(--border)",
               borderRadius: "50%",
               width: 32,
@@ -188,7 +188,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
               e.currentTarget.style.color = "#F87171";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+              e.currentTarget.style.background = "var(--surface-hover)";
               e.currentTarget.style.borderColor = "var(--border)";
               e.currentTarget.style.color = "var(--text)";
             }}
@@ -223,7 +223,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
                 padding: "10px 12px 10px 36px",
                 borderRadius: 8,
                 border: "1px solid var(--border)",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--surface-2)",
                 color: "var(--text)",
                 fontSize: 13,
                 outline: "none",
@@ -231,11 +231,11 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "var(--primary)";
-                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                e.currentTarget.style.background = "var(--surface-1)";
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                e.currentTarget.style.background = "var(--surface-2)";
               }}
             />
             {searchQuery && (
@@ -288,7 +288,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
               const isExpanded = !!expandedCategories[cat];
 
               return (
-                <div key={cat} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", paddingBottom: 12 }}>
+                <div key={cat} style={{ borderBottom: "1px solid var(--border)", paddingBottom: 12 }}>
                   {/* Category Trigger */}
                   <button
                     onClick={() => toggleCategory(cat)}
@@ -312,7 +312,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
                       <span
                         style={{
                           fontSize: 10,
-                          background: "rgba(255,255,255,0.08)",
+                          background: "var(--surface-3)",
                           padding: "2px 8px",
                           borderRadius: 20,
                           color: "var(--text-muted)",
@@ -339,7 +339,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
                             style={{
                               padding: "12px 16px",
                               borderRadius: 10,
-                              background: "rgba(255, 255, 255, 0.02)",
+                              background: "var(--card)",
                               border: "1px solid var(--border)",
                               cursor: "pointer",
                               transition: "all 0.2s",
@@ -355,7 +355,7 @@ export default function AlgorithmCatalog({ isOpen, onClose, onSelect }: Props) {
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = "none";
                               e.currentTarget.style.borderColor = "var(--border)";
-                              e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
+                              e.currentTarget.style.background = "var(--card)";
                               e.currentTarget.style.boxShadow = "none";
                             }}
                           >
